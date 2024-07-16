@@ -1,0 +1,64 @@
+{
+  "HomePage": {
+    "title": "Hello world!"
+  },
+  "Navbar": {
+    "posts": "Posts",
+    "tenders": "Tenders",
+    "companies": "Companies",
+    "contact": "Contact"
+  },
+  "Hero": {
+    "title": "Elevate Your Business with Elaf",
+    "description": "Elaf is a powerful tender platform that empowers companies to streamline their procurement processes, connect with suppliers, and grow their business.",
+    "cta": "Get Started",
+    "imageAlt": "Hero"
+  },
+  "Features": {
+    "title": "Explore Elaf's Key Features",
+    "description": "Elaf offers a comprehensive suite of tools to streamline your procurement process and connect with suppliers.",
+    "tenderManagement": {
+      "title": "Tender Management",
+      "description": "Easily create, publish, and manage tenders on the platform."
+    },
+    "supplierProfiles": {
+      "title": "Supplier Profiles",
+      "description": "Discover and connect with qualified suppliers in your industry."
+    },
+    "bidManagement": {
+      "title": "Bid Management",
+      "description": "Streamline the bidding process and evaluate proposals efficiently."
+    }
+  },
+  "SocialMedia": {
+    "title": "Elevate Your Social Media Presence",
+    "description": "Elaf's social media platform allows you to showcase your company, share updates, and engage with potential customers.",
+    "companyProfiles": {
+      "title": "Company Profiles",
+      "description": "Create a professional company profile to showcase your services and expertise."
+    },
+    "socialSharing": {
+      "title": "Social Sharing",
+      "description": "Share updates, news, and content with your followers and potential clients."
+    },
+    "engagementTools": {
+      "title": "Engagement Tools",
+      "description": "Interact with your audience through comments, likes, and direct messaging."
+    }
+  },
+  "SignUp": {
+    "title": "Join the Elaf Community",
+    "description": "Sign up today and start leveraging the power of Elaf to grow your business.",
+    "emailPlaceholder": "Enter your email",
+    "ctaButton": "Get Started",
+    "termsText": "By signing up, you agree to our",
+    "termsLink": "Terms of Service"
+  },
+  "Footer": {
+    "copyright": "© {year} Elaf. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms of Use",
+    "contact": "Contact"
+  }
+}
+

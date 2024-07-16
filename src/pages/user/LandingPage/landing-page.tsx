@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Layers, FileText, Users } from "lucide-react";
 
-export function LandingPage() {
+export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <main className="flex-1">

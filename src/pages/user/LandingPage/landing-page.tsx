@@ -82,7 +82,7 @@ export function LandingPage() {
                 Elevate Your Social Media Presence
               </h2>
               <p className="mx-auto max-w-[600px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Elaf's social media platform allows you to showcase your
+                Elaf social media platform allows you to showcase your
                 company, share updates, and engage with potential customers.
               </p>
             </div>

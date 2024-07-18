@@ -3,7 +3,7 @@ import { FeatureCard } from "./ui/feature-card";
 import { FileText, Layers, Users } from "lucide-react";
 import { FeatureCardProps } from "@/types";
 
-export const FeatureSection: React.FC = () => {
+ const FeatureSection: React.FC = () => {
     const t = useTranslations('Features');
   
     const features: FeatureCardProps[] = [
@@ -44,3 +44,5 @@ export const FeatureSection: React.FC = () => {
       </section>
     );
   };
+
+  export default FeatureSection

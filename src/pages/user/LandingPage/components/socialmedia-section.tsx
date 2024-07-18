@@ -3,7 +3,7 @@ import { FeatureCard } from "./ui/feature-card";
 import { FactoryIcon, MessageCircleHeart, ShareIcon, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export const SocialMediaSection: React.FC = () => {
+ const SocialMediaSection: React.FC = () => {
     const t = useTranslations('SocialMedia');
   
     const features: FeatureCardProps[] = [
@@ -45,4 +45,4 @@ export const SocialMediaSection: React.FC = () => {
     );
   };
   
-  
+  export default SocialMediaSection

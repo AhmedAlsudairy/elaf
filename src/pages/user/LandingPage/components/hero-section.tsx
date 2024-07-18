@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLangDir } from 'rtl-detect';
 
-export const HeroSection: React.FC = () => {
+ const HeroSection: React.FC = () => {
   const t = useTranslations('Hero');
   const locale = useLocale();
   const direction = getLangDir(locale);
@@ -38,3 +38,5 @@ export const HeroSection: React.FC = () => {
     </section>
   );
 };
+
+export default HeroSection

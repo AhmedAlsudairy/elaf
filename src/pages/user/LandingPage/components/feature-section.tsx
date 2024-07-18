@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
-import { FeatureCard } from "./ui/feature-card";
 import { FileText, Layers, Users } from "lucide-react";
 import { FeatureCardProps } from "@/types";
+import FeatureCard from "./ui/feature-card";
 
  const FeatureSection: React.FC = () => {
     const t = useTranslations('Features');

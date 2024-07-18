@@ -1,7 +1,7 @@
 import { FeatureCardProps } from "@/types";
-import { FeatureCard } from "./ui/feature-card";
 import { FactoryIcon, MessageCircleHeart, ShareIcon, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+import FeatureCard from "./ui/feature-card";
 
  const SocialMediaSection: React.FC = () => {
     const t = useTranslations('SocialMedia');

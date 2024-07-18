@@ -3,7 +3,7 @@ import { Layers, FileText, Users, LucideIcon } from "lucide-react";
 import { FeatureCardProps } from "@/types";
 
  
-export      const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description }) => {
+   const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description }) => {
   return (
     <div className="flex flex-col items-center space-y-2 border p-4 rounded-lg">
       <Icon className="h-8 w-8 mb-2 text-primary" />
@@ -13,3 +13,5 @@ export      const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title
   );
 };
 
+
+export default FeatureCard

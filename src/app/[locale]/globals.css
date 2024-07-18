@@ -1,6 +1,24 @@
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face {
+  font-family: 'Adobe Arabic';
+  src: url('/fonts/AdobeArabic-Regular.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Baloo Bhaijaan 2';
+  src: url('/fonts/BalooBhaijaan2-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'URW Geometric Arabic';
+  src: url('/fonts/URWGeometricArabic-SemiBold.ttf') format('truetype');
+}
+
+
 
   @layer base {
     :root {

@@ -5,6 +5,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, unstable_setRequestLocale} from 'next-intl/server';
 import {getLangDir} from 'rtl-detect';
 import { Header } from "@/components/common/user/NavBar";
+import { Footer } from "@/components/common/user/footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -35,8 +36,9 @@ export default async function RootLayout({
       <NextIntlClientProvider messages={messages}>
         <Header/>
         {children}
+        <Footer/>
         </NextIntlClientProvider>
-
+  
         </body>
     </html>
   );

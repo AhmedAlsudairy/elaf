@@ -58,6 +58,11 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        adobeArabic: ['"Adobe Arabic"', 'sans-serif'],
+        balooBhaijaan: ['"Baloo Bhaijaan 2"', 'sans-serif'],
+        urwGeometric: ['"URW Geometric Arabic"', 'sans-serif'],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

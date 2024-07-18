@@ -60,3 +60,4 @@ export function MenuIcon(props:any) {
     )
   }
   
+  export const ELAF_LOGO_URL = '/logo/logomain.svg';

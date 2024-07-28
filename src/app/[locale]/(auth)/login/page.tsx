@@ -1,8 +1,14 @@
+'use client'
+import LoginPage from '@/components/pages/auth/LoginPage/login';
+
 const Login = () => {
+
+
     return (
-        <div>
-            login using googl
-        </div>
+        <>
+        <LoginPage/>
+        </>
+
     );
 }
 

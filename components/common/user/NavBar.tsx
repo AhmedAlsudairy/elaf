@@ -8,7 +8,7 @@ import { useLocale } from 'next-intl';
 import { getLangDir } from 'rtl-detect';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
-import LocalSwitcher from './local-switcher';
+import LocalSwitcher from '../local-switcher';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,10 +46,15 @@ export const Header = () => {
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
         <LocalSwitcher />
         <Button
+        asChild
           variant="outline"
           className="text-primary border-primary hover:bg-primary hover:text-white font-balooBhaijaan"
         >
-          {t('signin')}
+
+          <Link href='/login'>
+           {t('signin')}
+          </Link>
+         
         </Button>
       </div>
       <div className="md:hidden flex items-center">

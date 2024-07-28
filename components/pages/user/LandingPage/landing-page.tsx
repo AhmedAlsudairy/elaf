@@ -9,6 +9,8 @@ import FeatureSection from "./components/feature-section";
 import SocialMediaSection from "./components/socialmedia-section";
 
 export default function LandingPage() {
+
+  
   return (
     <div className="flex flex-col min-h-[100dvh] font-balooBhaijaan">
       <main className="flex-1">

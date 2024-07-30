@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserDetails } from '@/actions/supabase/get-user-details';
 import { companySchema, userProfileSchema } from '@/schema';
-import { z } from 'zod';
 import UserProfileForm from './components/user-profile-form';
 import StepIndicator from './components/StepIndicator';
 import CompanyForm from './components/company-profile-form';
+import { submitCompany, submitFinalForm, submitUserProfile } from '@/actions/supabase/profile-form-submit';
+import { useReusableToast } from '@/components/common/success-toast';
+import { z } from 'zod';
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -19,6 +20,9 @@ const MultiStepRegistrationForm: React.FC = () => {
   const [step, setStep] = useState<number>(1);
   const [skipCompany, setSkipCompany] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userProfileData, setUserProfileData] = useState<UserProfileFormData | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyFormData | null>(null);
+  const showToast = useReusableToast();
 
   const userProfileForm = useForm<UserProfileFormData>({
     resolver: zodResolver(userProfileSchema),
@@ -68,21 +72,63 @@ const MultiStepRegistrationForm: React.FC = () => {
     fetchUserDetails();
   }, [userProfileForm]);
 
-  const onSubmitUserProfile = (data: UserProfileFormData) => {
-    console.log("User profile data:", data);
-    setStep(skipCompany ? 3 : 2);
+  const onSubmitUserProfile = async (data: UserProfileFormData) => {
+    try {
+      const result = await submitUserProfile(data);
+      if (result.success) {
+        setUserProfileData(data);
+        setStep(skipCompany ? 3 : 2);
+        showToast('success', 'User profile submitted successfully');
+      } else {
+        // Handle error
+        console.error("Failed to submit user profile:", result.message);
+        showToast('error', result.message);
+      }
+    } catch (error:any) {
+      console.error("Error submitting user profile:", error);
+      showToast('error', error.message || 'Failed to submit user profile');
+    }
   };
 
-  const onSubmitCompany = (data: CompanyFormData) => {
-    console.log("Company data:", data);
-    setStep(3);
+  const onSubmitCompany = async (data: CompanyFormData) => {
+    try {
+      const result = await submitCompany(data);
+      if (result.success) {
+        setCompanyData(data);
+        setStep(3);
+        showToast('success', 'Company profile submitted successfully');
+      } else {
+        // Handle error
+        console.error("Failed to submit company profile:", result.message);
+        showToast('error', result.message);
+      }
+    } catch (error:any) {
+      console.error("Error submitting company profile:", error);
+      showToast('error', error.message || 'Failed to submit company profile');
+    }
   };
 
-  const onSubmitFinal = () => {
-    const userProfileData = userProfileForm.getValues();
-    const companyData = skipCompany ? null : companyForm.getValues();
-    console.log("Final submission:", { userProfile: userProfileData, company: companyData });
-    // Here you would typically send this data to your backend
+  const onSubmitFinal = async () => {
+    if (!userProfileData) {
+      console.error("User profile data is missing");
+      return;
+    }
+
+    try {
+      const result = await submitFinalForm(userProfileData, companyData);
+      if (result.success) {
+        console.log("Registration completed successfully");
+        showToast('success', 'Registration completed successfully');
+        // Redirect or show success message
+      } else {
+        // Handle error
+        console.error("Failed to complete registration:", result.message);
+        showToast('error', result.message);
+      }
+    } catch (error:any) {
+      console.error("Error completing registration:", error);
+      showToast('error', error.message || 'Failed to complete registration');
+    }
   };
 
   const handleBack = () => {

@@ -60,6 +60,7 @@ export async function middleware(request: NextRequest) {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
   // Check if the user is logged in
   const { data: { user } } = await supabase.auth.getUser();
+  console.log(user?.user_metadata)
   console.log("User authentication status:", user ? "Logged in" : "Not logged in");
 
   const locale = request.nextUrl.pathname.split('/')[1];

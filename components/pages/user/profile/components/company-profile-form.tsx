@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import { UseFormReturn, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import ImageUpload from './upload-image';
 import { SectorEnum } from '@/constant/text';
 import { MultiSelect, MultiSelectOption } from './multiselect';
+import { useReusableToast } from '@/components/common/success-toast';
 
 type CompanyFormData = z.infer<typeof companySchema>;
 
@@ -21,6 +23,7 @@ interface CompanyFormProps {
 
 const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => {
   const [profileImageUrls, setProfileImageUrls] = React.useState<string[]>([]);
+  const showToast = useReusableToast();
 
   const handleProfileImageChange = (url: string) => {
     setProfileImageUrls([url]);
@@ -32,15 +35,23 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
     form.setValue("profile_image", "");
   };
 
-  // Transform SectorEnum into the format expected by MultiSelect
   const sectorOptions: MultiSelectOption[] = Object.values(SectorEnum).map((sector) => ({
     id: sector,
     name: sector
   }));
 
+  const onSubmitWithToast: SubmitHandler<CompanyFormData> = async (data) => {
+    try {
+      await onSubmit(data);
+      showToast('success', 'Company profile submitted successfully');
+    } catch (error:any) {
+      showToast('error', error.message || 'Failed to submit company profile');
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmitWithToast)} className="space-y-6">
         <FormField
           control={form.control}
           name="profile_image"
@@ -73,20 +84,6 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               </FormItem>
             )}
           />
-               <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <Label className="text-sm font-medium">Company Bio</Label>
-              <FormControl>
-                <Textarea placeholder="Tell us about your company" {...field} className="mt-1 w-full" />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-      
           <FormField
             control={form.control}
             name="company_number"
@@ -95,6 +92,19 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
                 <Label className="text-sm font-medium">Company Number</Label>
                 <FormControl>
                   <Input placeholder="12345678" {...field} className="mt-1 w-full" />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="company_website"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="text-sm font-medium">Company Website</Label>
+                <FormControl>
+                  <Input placeholder="https://www.example.com" {...field} className="mt-1 w-full" />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -120,35 +130,47 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               <FormItem>
                 <Label className="text-sm font-medium">Address</Label>
                 <FormControl>
-                  <Input placeholder="123 Main St, City, Country" {...field} className="mt-1 w-full" />
+                  <Input placeholder="123 Business Ave, City, Country" {...field} className="mt-1 w-full" />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
-            <FormField
+          <FormField
+            control={form.control}
+            name="sectors"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="text-sm font-medium">Sectors</Label>
+                <FormControl>
+                  <MultiSelect
+                    options={sectorOptions}
+                    selected={field.value || []}
+                    onChange={(selectedSectors) => {
+                      field.onChange(selectedSectors);
+                    }}
+                    placeholder="Select sectors..."
+                    className="mt-1"
+                  />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        </div>
+        <FormField
           control={form.control}
-          name="sectors"
+          name="bio"
           render={({ field }) => (
             <FormItem>
-              <Label className="text-sm font-medium">Sectors</Label>
+              <Label className="text-sm font-medium">Company Bio</Label>
               <FormControl>
-                <MultiSelect
-                  options={sectorOptions}
-                  selected={field.value || []}
-                  onChange={(selectedSectors) => {
-                    field.onChange(selectedSectors);
-                  }}
-                  placeholder="Select sectors..."
-                  className="mt-1"
-                />
+                <Textarea placeholder="Tell us about your company" {...field} className="mt-1 w-full" />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
-        </div>
-   
         <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
           <Button
             type="button"

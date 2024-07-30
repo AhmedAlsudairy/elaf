@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import { UseFormReturn, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ImageUpload from './upload-image';
 import { z } from "zod";
 import { userProfileSchema } from '@/schema';
-import { Label } from "@/components/ui/label";
+import { useReusableToast } from '@/components/common/success-toast';
+import { Label } from '@/components/ui/label';
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
 
@@ -21,6 +23,7 @@ interface UserProfileFormProps {
 
 const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipCompany, setSkipCompany }) => {
   const [avatarUrls, setAvatarUrls] = React.useState<string[]>([]);
+  const showToast = useReusableToast();
 
   const handleAvatarChange = (url: string) => {
     setAvatarUrls([url]);
@@ -32,9 +35,18 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
     form.setValue("profile_image", "");
   };
 
+  const onSubmitWithToast: SubmitHandler<UserProfileFormData> = async (data) => {
+    try {
+      await onSubmit(data);
+      showToast('success', 'User profile submitted successfully');
+    } catch (error:any) {
+      showToast('error', error.message || 'Failed to submit user profile');
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmitWithToast)} className="space-y-6">
         <FormField
           control={form.control}
           name="profile_image"

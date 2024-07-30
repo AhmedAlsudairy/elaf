@@ -16,7 +16,8 @@ export async function GET(request: Request) {
     const supabase = createClient()
   
     const { error } = await supabase.auth.exchangeCodeForSession(code)
- upsertUserDetails()
+//TODO: LATER AFTER ADD CREDINTIAL
+//  upsertUserDetails()
 
     if (!error) {
  

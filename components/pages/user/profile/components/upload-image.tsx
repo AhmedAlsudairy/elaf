@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ImagePlus, Trash } from "lucide-react";
 import Image from "next/image";
 import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
+import { Input } from '@/components/ui/input';
 
 // Initialize Supabase client
 
@@ -82,7 +83,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         ))}
       </div>
       <div>
-        <input
+        <Input
           type="file"
           id="imageUpload"
           accept="image/*"

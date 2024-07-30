@@ -1,4 +1,4 @@
-import MultiStepRegistrationForm from "@/components/pages/user/profile/components/profile-form";
+import MultiStepRegistrationForm from "@/components/pages/user/profile/main-form";
 
 const page = () => {
     return (

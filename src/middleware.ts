@@ -25,8 +25,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-
-    let response = intlMiddleware(request);
+ let response = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    });
+     response = intlMiddleware(request);
 
 
     const supabase = createServerClient(

@@ -10,16 +10,6 @@ const supabase = createClient()
 export async function submitUserProfile(data: z.infer<typeof userProfileSchema>) {
   // Validate the data
   const validatedData = userProfileSchema.parse(data)
-const {error}=await supabase.auth.updateUser({
-    data: { avatar_url:validatedData.profile_image ,
-        full_name:validatedData.name,
-        email: validatedData.email
-
-    }
-
-  })
-
-console.log(error)
   // Here you would typically save the data to your database
   console.log('Saving user profile:', validatedData)
 
@@ -42,10 +32,26 @@ export async function submitFinalForm(userProfile: z.infer<typeof userProfileSch
   // Validate the data
   const validatedUserProfile = userProfileSchema.parse(userProfile)
   const validatedCompany = company ? companySchema.parse(company) : null
-  
-  // Here you would typically save both profiles to your database
-  console.log('Saving final submission:', { userProfile: validatedUserProfile, company: validatedCompany })
-  
-  // Return some response
-  return { success: true, message: 'Registration completed successfully' }
+  const { data, error } = await supabase.rpc('upsert_user_and_profile', {
+    p_email: validatedUserProfile.email,
+    p_name: validatedUserProfile.name,
+    p_imageurl: validatedUserProfile.profile_image,
+    p_bio: validatedUserProfile.bio || null,
+    p_phone_number: validatedUserProfile.phone_number || null,
+    p_address: validatedUserProfile.address || null,
+    p_role: validatedUserProfile.role || null,
+    p_company_that_worked_with: validatedUserProfile.company_that_worked_with || null
+  })
+
+  if (error) {
+    console.error('Error upserting user and profile:', error)
+    return { success: false, message: 'Failed to save user data', error: error.message }
+  }
+
+  // Here you would typically save the company profile if it exists
+  if (validatedCompany) {
+    console.log('Saving company profile:', validatedCompany)
+    // Implement company profile saving logic here
+  }
+  return { success: true, message: 'Registration completed successfully', user: data }
 }

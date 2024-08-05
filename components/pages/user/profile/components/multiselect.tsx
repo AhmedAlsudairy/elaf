@@ -28,6 +28,7 @@ interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   placeholder: string;
   className?: string;
+  disabled?: boolean;
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -36,30 +37,38 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onChange,
   placeholder,
   className,
+  disabled = false,
   ...props
 }) => {
   const [open, setOpen] = React.useState(false);
 
   const handleUnselect = (item: string) => {
-    onChange(selected.filter((i) => i !== item));
+    if (!disabled) {
+      onChange(selected.filter((i) => i !== item));
+    }
   };
 
   const handleSelect = (id: string) => {
-    const newSelectedValues = selected.includes(id)
-      ? selected.filter((item) => item !== id)
-      : [...selected, id];
-    onChange(newSelectedValues);
+    if (!disabled) {
+      const newSelectedValues = selected.includes(id)
+        ? selected.filter((item) => item !== id)
+        : [...selected, id];
+      onChange(newSelectedValues);
+    }
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen} {...props}>
+    <Popover open={open && !disabled} onOpenChange={setOpen} {...props}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between h-auto", className)}
-          onClick={() => setOpen(!open)}
+          className={cn("w-full justify-between h-auto", className, {
+            "opacity-50 cursor-not-allowed": disabled,
+          })}
+          onClick={() => !disabled && setOpen(!open)}
+          disabled={disabled}
         >
           <div className="flex gap-1 flex-wrap">
             {selected.length > 0 ? (
@@ -67,14 +76,18 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 <Badge
                   variant="default"
                   key={item}
-                  className="mr-1 mb-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className={cn("mr-1 mb-1 bg-primary text-primary-foreground hover:bg-primary/90", {
+                    "opacity-50": disabled,
+                  })}
                 >
                   {options.find((option) => item === option.id)?.name}
                   <button
                     type="button"
-                    className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className={cn("ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", {
+                      "cursor-not-allowed": disabled,
+                    })}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" && !disabled) {
                         handleUnselect(item);
                       }
                     }}
@@ -83,6 +96,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                       e.stopPropagation();
                     }}
                     onClick={() => handleUnselect(item)}
+                    disabled={disabled}
                   >
                     <X className="h-3 w-3 text-white hover:text-foreground" />
                   </button>
@@ -105,6 +119,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 <CommandItem
                   key={option.id}
                   onSelect={() => handleSelect(option.id)}
+                  disabled={disabled}
                 >
                   <Check
                     className={cn(

@@ -1,4 +1,6 @@
+import { companySchema, userProfileSchema } from "@/schema";
 import { LucideIcon } from "lucide-react";
+import { z } from "zod";
 
 export interface FeatureCardProps {
     icon: LucideIcon;
@@ -31,4 +33,14 @@ export interface FeatureCardProps {
     email: string;
     name: string;
     imageurl?: string; // optional property
+  }
+  export type UserProfile = z.infer<typeof userProfileSchema>;
+  export type CompanyProfile = z.infer<typeof companySchema>;
+  export interface UserMenuProps {
+    userProfile: UserProfile | null;
+    companyProfile: CompanyProfile | null;
+    isMobile: boolean;
+    onMenuItemClick: () => void;
+    onSignOut: () => void;
+
   }

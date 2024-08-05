@@ -1,57 +1,75 @@
-// app/actions/registration.ts
 'use server'
-
 import { z } from 'zod'
 import { userProfileSchema, companySchema } from '@/schema'
 import { createClient } from '@/lib/utils/supabase/server'
 
 const supabase = createClient()
 
-export async function submitUserProfile(data: z.infer<typeof userProfileSchema>) {
-  // Validate the data
-  const validatedData = userProfileSchema.parse(data)
-  // Here you would typically save the data to your database
-  console.log('Saving user profile:', validatedData)
+type UserProfileData = z.infer<typeof userProfileSchema>
+type CompanyData = z.infer<typeof companySchema>
 
-  // Return some response
-  return { success: true, message: 'User profile saved successfully' }
+interface RegistrationResult {
+  success: boolean
+  message: string
+  userId?: string
+  companyId?: string
+  error?: string
 }
 
-export async function submitCompany(data: z.infer<typeof companySchema>) {
-  // Validate the data
-  const validatedData = companySchema.parse(data)
-  
-  // Here you would typically save the data to your database
-  console.log('Saving company profile:', validatedData)
-  
-  // Return some response
-  return { success: true, message: 'Company profile saved successfully' }
-}
+export async function submitFinalForm(
+  userProfile: UserProfileData,
+  company: CompanyData | null
+): Promise<RegistrationResult> {
+  try {
+    console.log('Starting submitFinalForm...');
 
-export async function submitFinalForm(userProfile: z.infer<typeof userProfileSchema>, company: z.infer<typeof companySchema> | null) {
-  // Validate the data
-  const validatedUserProfile = userProfileSchema.parse(userProfile)
-  const validatedCompany = company ? companySchema.parse(company) : null
-  const { data, error } = await supabase.rpc('upsert_user_and_profile', {
-    p_email: validatedUserProfile.email,
-    p_name: validatedUserProfile.name,
-    p_imageurl: validatedUserProfile.profile_image,
-    p_bio: validatedUserProfile.bio || null,
-    p_phone_number: validatedUserProfile.phone_number || null,
-    p_address: validatedUserProfile.address || null,
-    p_role: validatedUserProfile.role || null,
-    p_company_that_worked_with: validatedUserProfile.company_that_worked_with || null
-  })
+    // Validate the data
+    const validatedUserProfile = userProfileSchema.parse(userProfile)
+    const validatedCompany = company ? companySchema.parse(company) : null
 
-  if (error) {
-    console.error('Error upserting user and profile:', error)
-    return { success: false, message: 'Failed to save user data', error: error.message }
+    console.log('Data validated successfully');
+
+    // Start a Supabase transaction
+    console.log('Calling Supabase RPC...');
+    const { data, error } = await supabase.rpc('register_user_and_company', {
+      p_user_profile: validatedUserProfile,
+      p_company: validatedCompany
+    })
+
+    console.log("here",data)
+
+    if (error) {
+      console.error('Error in registration process:', error)
+      return {
+        success: false,
+        message: 'Registration failed due to a database error',
+        error: error.message
+      }
+    }
+
+    if (!data) {
+      console.error('No data returned from registration process')
+      return {
+        success: false,
+        message: 'Registration failed due to an unexpected error',
+        error: 'No data returned from database'
+      }
+    }
+
+    console.log('Registration successful, data:', data);
+
+    return {
+      success: true,
+      message: 'Registration completed successfully',
+      userId: data?.user_id,
+      companyId: data?.company_profile_id
+    }
+  } catch (error) {
+    console.error('Unexpected error during registration:', error)
+    return {
+      success: false,
+      message: 'An unexpected error occurred during registration',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
   }
-
-  // Here you would typically save the company profile if it exists
-  if (validatedCompany) {
-    console.log('Saving company profile:', validatedCompany)
-    // Implement company profile saving logic here
-  }
-  return { success: true, message: 'Registration completed successfully', user: data }
 }

@@ -1,24 +1,65 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from "next/link";
-import { ELAF_LOGO_URL, EraserIcon, MenuIcon, XIcon } from '@/constant/svg';
+import Image from "next/image";
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { getLangDir } from 'rtl-detect';
 import { Button } from '@/components/ui/button';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import LocalSwitcher from '../local-switcher';
+import { ELAF_LOGO_URL, MenuIcon, XIcon } from '@/constant/svg';
+
+import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profile';
+import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
+import { ProfileMenu } from './navs/user-menu';
+import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [companyProfile, setCompanyProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const t = useTranslations('Navbar');
   const locale = useLocale();
   const direction = getLangDir(locale);
   const pathName = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        setIsAuthenticated(!!user);
+        if (user) {
+          const [userData, companyData] = await Promise.all([
+            getCurrentUserProfile(),
+            getCurrentCompanyProfile()
+          ]);
+          setUserProfile(userData);
+          setCompanyProfile(companyData);
+        }
+      } catch (error) {
+        console.error('Error fetching profiles:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleSignOut = async () => {
+    setIsAuthenticated(false);
+    setUserProfile(null);
+    setCompanyProfile(null);
+    router.push('/');
   };
 
   const navItems = ["posts", "tenders", "companies", "contact"];
@@ -27,8 +68,7 @@ export const Header = () => {
   return (
     <header className={`px-4 lg:px-6 h-14 flex items-center justify-between font-balooBhaijaan`} dir={direction}>
       <Link href={`/${locale}`} className="flex items-center justify-center" prefetch={false}>
-      <img src={ELAF_LOGO_URL} alt="Elaf Logo" className="h-20 w-20" /> {/* Use the logo here */}
-
+        <img src={ELAF_LOGO_URL} alt="Elaf Logo" className="h-20 w-20" />
         <span className="sr-only">Elaf</span>
       </Link>
       <nav className={`hidden md:flex flex-row items-center font-balooBhaijaan`}>
@@ -45,17 +85,29 @@ export const Header = () => {
       </nav>
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
         <LocalSwitcher />
-        <Button
-        asChild
-          variant="outline"
-          className="text-primary border-primary hover:bg-primary hover:text-white font-balooBhaijaan"
-        >
-
-          <Link href='/login'>
-           {t('signin')}
-          </Link>
-         
-        </Button>
+        {isLoading ? (
+          <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
+            <span className="animate-spin">⌛</span>
+          </Button>
+        ) : isAuthenticated ? (
+          <ProfileMenu 
+            userProfile={userProfile} 
+            companyProfile={companyProfile} 
+            isMobile={false} 
+            onMenuItemClick={() => {}}
+            onSignOut={handleSignOut}
+          />
+        ) : (
+          <Button
+            asChild
+            variant="outline"
+            className="text-primary border-primary hover:bg-primary hover:text-white font-balooBhaijaan"
+          >
+            <Link href='/login'>
+              {t('signin')}
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="md:hidden flex items-center">
         <Button
@@ -82,15 +134,32 @@ export const Header = () => {
           ))}
           <div className="px-4 py-2 space-y-2">
             <LocalSwitcher />
-            <Button
-              variant="outline"
-              className="text-primary border-primary w-full hover:bg-primary hover:text-white"
-            >
-              {t('signin')}
-            </Button>
+            {isLoading ? (
+              <Button variant="outline" className="w-full">
+                <span className="animate-spin mr-2">⌛</span> {t('loading')}
+              </Button>
+            ) : isAuthenticated ? (
+              <ProfileMenu 
+                userProfile={userProfile} 
+                companyProfile={companyProfile} 
+                isMobile={true} 
+                onMenuItemClick={() => setIsMenuOpen(false)}
+                onSignOut={handleSignOut}
+              />
+            ) : (
+              <Button
+                variant="outline"
+                className="text-primary border-primary w-full hover:bg-primary hover:text-white"
+                asChild
+              >
+                <Link href='/login'>
+                  {t('signin')}
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       )}
     </header>
   );
-}
+};

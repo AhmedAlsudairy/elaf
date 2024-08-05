@@ -7,7 +7,13 @@
     "tenders": "Tenders",
     "companies": "Companies",
     "contact": "Contact",
-    "signin": "Sign In"
+    "signin": "Sign In",
+    "logout": "Logout",
+    "myProfile": "My Profile",
+    "myCompany": "My Company",
+    "newCompany": "New Company",
+    "myAccount": "My Account",
+    "loading": "Loading..."
 
   },
   "LocalSwitcher": {

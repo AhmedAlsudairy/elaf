@@ -1,133 +1,89 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { useForm } from "react-hook-form";
+import React, { useState, useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserDetails } from '@/actions/supabase/get-user-details';
-import { companySchema, userProfileSchema } from '@/schema';
-import UserProfileForm from './components/user-profile-form';
-import StepIndicator from './components/StepIndicator';
-import CompanyForm from './components/company-profile-form';
-import { submitCompany, submitFinalForm, submitUserProfile } from '@/actions/supabase/profile-form-submit';
-import { useReusableToast } from '@/components/common/success-toast';
-import { z } from 'zod';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { getUserDetails } from "@/actions/supabase/get-user-details";
+import { companySchema, userProfileSchema } from "@/schema";
+import UserProfileForm from "./components/user-profile-form";
+import StepIndicator from "./components/StepIndicator";
+import CompanyForm from "./components/company-profile-form";
+import { useReusableToast } from "@/components/common/success-toast";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { submitFinalForm } from "@/actions/supabase/profile-form-submit";
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
 type CompanyFormData = z.infer<typeof companySchema>;
+
+interface FormData {
+  userProfile: UserProfileFormData;
+  company: CompanyFormData | null;
+}
 
 const MultiStepRegistrationForm: React.FC = () => {
   const [step, setStep] = useState<number>(1);
   const [skipCompany, setSkipCompany] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userProfileData, setUserProfileData] = useState<UserProfileFormData | null>(null);
-  const [companyData, setCompanyData] = useState<CompanyFormData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
+    userProfile: {} as UserProfileFormData,
+    company: null,
+  });
   const showToast = useReusableToast();
+  const router = useRouter();
 
   const userProfileForm = useForm<UserProfileFormData>({
     resolver: zodResolver(userProfileSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      bio: "",
-      phone_number: "",
-      address: "",
-      profile_image: "",
-      role: "",
-      company_that_worked_with: "",
-    },
+    defaultValues: formData.userProfile,
   });
 
   const companyForm = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
-    defaultValues: {
-      company_title: "",
-      company_number: "",
-      company_website: "",
-      sectors: [],
-      bio: "",
-      phone_number: "",
-      address: "",
-      profile_image: "",
-    },
+    defaultValues: formData.company || {},
   });
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        setIsLoading(true);
         const userDetails = await getUserDetails();
-        userProfileForm.reset({
-          name: userDetails.name || "",
-          email: userDetails.email || "",
-          profile_image: userDetails.avatarUrl || "",
-        });
+        const initialUserProfile = {
+          name: userDetails?.name || "",
+          email: userDetails?.email || "",
+          profile_image: userDetails?.avatarUrl || "",
+          bio: "",
+          phone_number: "",
+          address: "",
+          role: "",
+          company_that_worked_with: "",
+        };
+        setFormData(prev => ({ ...prev, userProfile: initialUserProfile }));
+        userProfileForm.reset(initialUserProfile);
       } catch (error) {
         console.error("Error fetching user details:", error);
+        showToast("error", "Failed to fetch user details");
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchUserDetails();
-  }, [userProfileForm]);
+  }, [userProfileForm, showToast]);
 
-  const onSubmitUserProfile = async (data: UserProfileFormData) => {
-    try {
-      const result = await submitUserProfile(data);
-      if (result.success) {
-        setUserProfileData(data);
-        setStep(skipCompany ? 3 : 2);
-        showToast('success', 'User profile submitted successfully');
-      } else {
-        // Handle error
-        console.error("Failed to submit user profile:", result.message);
-        showToast('error', result.message);
-      }
-    } catch (error:any) {
-      console.error("Error submitting user profile:", error);
-      showToast('error', error.message || 'Failed to submit user profile');
-    }
-  };
-
-  const onSubmitCompany = async (data: CompanyFormData) => {
-    try {
-      const result = await submitCompany(data);
-      if (result.success) {
-        setCompanyData(data);
-        setStep(3);
-        showToast('success', 'Company profile submitted successfully');
-      } else {
-        // Handle error
-        console.error("Failed to submit company profile:", result.message);
-        showToast('error', result.message);
-      }
-    } catch (error:any) {
-      console.error("Error submitting company profile:", error);
-      showToast('error', error.message || 'Failed to submit company profile');
-    }
-  };
-
-  const onSubmitFinal = async () => {
-    if (!userProfileData) {
-      console.error("User profile data is missing");
-      return;
-    }
-
-    try {
-      const result = await submitFinalForm(userProfileData, companyData);
-      if (result.success) {
-        console.log("Registration completed successfully");
-        showToast('success', 'Registration completed successfully');
-        // Redirect or show success message
-      } else {
-        // Handle error
-        console.error("Failed to complete registration:", result.message);
-        showToast('error', result.message);
-      }
-    } catch (error:any) {
-      console.error("Error completing registration:", error);
-      showToast('error', error.message || 'Failed to complete registration');
+  const handleNextStep = (data: UserProfileFormData | CompanyFormData) => {
+    if (step === 1) {
+      setFormData(prev => ({ ...prev, userProfile: data as UserProfileFormData }));
+      setStep(skipCompany ? 3 : 2);
+    } else if (step === 2) {
+      setFormData(prev => ({ ...prev, company: data as CompanyFormData }));
+      setStep(3);
     }
   };
 
@@ -139,10 +95,35 @@ const MultiStepRegistrationForm: React.FC = () => {
     }
   };
 
+  const onSubmitFinal = async () => {
+    setIsSubmitting(true);
+    try {
+      const result = await submitFinalForm(formData.userProfile, formData.company);
+      if (result instanceof Response && result.redirected) {
+        window.location.href = result.url;
+      } else if ('success' in result && result.success) {
+        showToast('success', 'Registration completed successfully');
+        window.location.href = '/profile/myprofile';
+      } else {
+        showToast('error', result.message || 'Failed to complete registration');
+        console.error('Registration failed:', result.error);
+      }
+    } catch (error: any) {
+      console.error("Error completing registration:", error);
+      showToast('error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const totalSteps = skipCompany ? 2 : 3;
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -150,23 +131,29 @@ const MultiStepRegistrationForm: React.FC = () => {
       <Card className="w-full max-w-screen-2xl">
         <CardHeader>
           <CardTitle>Create your profile</CardTitle>
-          <CardDescription>Enter your information to get started.</CardDescription>
+          <CardDescription>
+            Enter your information to get started.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <StepIndicator currentStep={step} totalSteps={totalSteps} />
           {step === 1 && (
-            <UserProfileForm 
-              form={userProfileForm} 
-              onSubmit={onSubmitUserProfile} 
+            <UserProfileForm
+              form={userProfileForm}
+              onSubmit={handleNextStep}
+              showStepIndicator={true}
               skipCompany={skipCompany}
               setSkipCompany={setSkipCompany}
+              isSubmitting={isSubmitting}
             />
           )}
           {step === 2 && !skipCompany && (
-            <CompanyForm 
-              form={companyForm} 
-              onSubmit={onSubmitCompany} 
-              onBack={handleBack} 
+            <CompanyForm
+              form={companyForm}
+              onSubmit={handleNextStep}
+              showStepIndicator={true}
+              onBack={handleBack}
+              isSubmitting={isSubmitting}
             />
           )}
           {step === 3 && (
@@ -174,8 +161,19 @@ const MultiStepRegistrationForm: React.FC = () => {
               <h3 className="text-lg font-semibold">Review Your Information</h3>
               <p>Please review your information before submitting.</p>
               <div className="flex justify-between">
-                <Button type="button" variant="outline" onClick={handleBack}>Back</Button>
-                <Button onClick={onSubmitFinal}>Submit</Button>
+                <Button type="button" variant="outline" onClick={handleBack} disabled={isSubmitting}>
+                  Back
+                </Button>
+                <Button onClick={onSubmitFinal} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
               </div>
             </div>
           )}

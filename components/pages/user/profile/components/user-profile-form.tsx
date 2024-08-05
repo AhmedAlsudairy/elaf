@@ -1,4 +1,3 @@
-'use client'
 import React from 'react';
 import { UseFormReturn, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -11,19 +10,43 @@ import { z } from "zod";
 import { userProfileSchema } from '@/schema';
 import { useReusableToast } from '@/components/common/success-toast';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from "lucide-react";
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
 
 interface UserProfileFormProps {
   form: UseFormReturn<UserProfileFormData>;
   onSubmit: SubmitHandler<UserProfileFormData>;
-  skipCompany: boolean;
-  setSkipCompany: (skip: boolean) => void;
+  initialData?: Partial<UserProfileFormData>;
+  isEditMode?: boolean;
+  showStepIndicator?: boolean;
+  skipCompany?: boolean;
+  setSkipCompany?: (skip: boolean) => void;
+  onBack?: () => void;
+  isSubmitting: boolean;
 }
 
-const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipCompany, setSkipCompany }) => {
-  const [avatarUrls, setAvatarUrls] = React.useState<string[]>([]);
+const UserProfileForm: React.FC<UserProfileFormProps> = ({
+  form,
+  onSubmit,
+  initialData,
+  isEditMode = false,
+  showStepIndicator = false,
+  skipCompany,
+  setSkipCompany,
+  onBack,
+  isSubmitting
+}) => {
+  const [avatarUrls, setAvatarUrls] = React.useState<string[]>(initialData?.profile_image ? [initialData.profile_image] : []);
   const showToast = useReusableToast();
+
+  React.useEffect(() => {
+    if (initialData) {
+      Object.entries(initialData).forEach(([key, value]) => {
+        form.setValue(key as keyof UserProfileFormData, value);
+      });
+    }
+  }, [initialData, form]);
 
   const handleAvatarChange = (url: string) => {
     setAvatarUrls([url]);
@@ -38,9 +61,9 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
   const onSubmitWithToast: SubmitHandler<UserProfileFormData> = async (data) => {
     try {
       await onSubmit(data);
-      showToast('success', 'User profile submitted successfully');
-    } catch (error:any) {
-      showToast('error', error.message || 'Failed to submit user profile');
+      showToast('success', `User profile ${isEditMode ? 'updated' : 'submitted'} successfully`);
+    } catch (error: any) {
+      showToast('error', error.message || `Failed to ${isEditMode ? 'update' : 'submit'} user profile`);
     }
   };
 
@@ -59,6 +82,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
                   onChange={handleAvatarChange}
                   onRemove={handleAvatarRemove}
                   bucketName="profile"
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormMessage className="text-xs" />
@@ -73,7 +97,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
               <FormItem>
                 <Label className="text-sm font-medium">Name</Label>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} className="mt-1 w-full" />
+                  <Input placeholder="John Doe" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -86,7 +110,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
               <FormItem>
                 <Label className="text-sm font-medium">Email</Label>
                 <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} className="mt-1 w-full" />
+                  <Input type="email" placeholder="john@example.com" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -99,7 +123,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
               <FormItem>
                 <Label className="text-sm font-medium">Phone Number</Label>
                 <FormControl>
-                  <Input placeholder="+1 (555) 123-4567" {...field} className="mt-1 w-full" />
+                  <Input placeholder="+1 (555) 123-4567" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -112,7 +136,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
               <FormItem>
                 <Label className="text-sm font-medium">Address</Label>
                 <FormControl>
-                  <Input placeholder="123 Main St, City, Country" {...field} className="mt-1 w-full" />
+                  <Input placeholder="123 Main St, City, Country" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -125,7 +149,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
               <FormItem>
                 <Label className="text-sm font-medium">Role</Label>
                 <FormControl>
-                  <Input placeholder="Software Developer" {...field} className="mt-1 w-full" />
+                  <Input placeholder="Software Developer" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -138,7 +162,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
               <FormItem>
                 <Label className="text-sm font-medium">Companies Worked With</Label>
                 <FormControl>
-                  <Input placeholder="Acme Inc., Tech Co." {...field} className="mt-1 w-full" />
+                  <Input placeholder="Acme Inc., Tech Co." {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -152,23 +176,42 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ form, onSubmit, skipC
             <FormItem>
               <Label className="text-sm font-medium">Bio</Label>
               <FormControl>
-                <Textarea placeholder="Tell us about yourself" {...field} className="mt-1 w-full" />
+                <Textarea placeholder="Tell us about yourself" {...field} className="mt-1 w-full" disabled={isSubmitting} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="skipCompany"
-            checked={skipCompany}
-            onCheckedChange={(checked: boolean) => setSkipCompany(checked)}
-          />
-          <Label htmlFor="skipCompany" className="text-sm">
-            Skip company information
-          </Label>
+        {skipCompany !== undefined && setSkipCompany && (
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="skipCompany"
+              checked={skipCompany}
+              onCheckedChange={(checked: boolean) => setSkipCompany(checked)}
+              disabled={isSubmitting}
+            />
+            <Label htmlFor="skipCompany" className="text-sm">
+              Skip company information
+            </Label>
+          </div>
+        )}
+        <div className="flex justify-between">
+          {showStepIndicator && onBack && (
+            <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
+              Back
+            </Button>
+          )}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              isEditMode ? 'Update Profile' : (showStepIndicator ? 'Next' : 'Submit')
+            )}
+          </Button>
         </div>
-        <Button type="submit" className="w-full sm:w-auto">Next</Button>
       </form>
     </Form>
   );

@@ -1,4 +1,3 @@
-'use client'
 import React from 'react';
 import { UseFormReturn, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -12,18 +11,39 @@ import ImageUpload from './upload-image';
 import { SectorEnum } from '@/constant/text';
 import { MultiSelect, MultiSelectOption } from './multiselect';
 import { useReusableToast } from '@/components/common/success-toast';
+import { Loader2 } from "lucide-react";
 
 type CompanyFormData = z.infer<typeof companySchema>;
 
 interface CompanyFormProps {
   form: UseFormReturn<CompanyFormData>;
   onSubmit: SubmitHandler<CompanyFormData>;
-  onBack: () => void;
+  initialData?: Partial<CompanyFormData>;
+  isEditMode?: boolean;
+  showStepIndicator?: boolean;
+  onBack?: () => void;
+  isSubmitting: boolean;
 }
 
-const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => {
-  const [profileImageUrls, setProfileImageUrls] = React.useState<string[]>([]);
+const CompanyForm: React.FC<CompanyFormProps> = ({
+  form,
+  onSubmit,
+  initialData,
+  isEditMode = false,
+  showStepIndicator = false,
+  onBack,
+  isSubmitting
+}) => {
+  const [profileImageUrls, setProfileImageUrls] = React.useState<string[]>(initialData?.profile_image ? [initialData.profile_image] : []);
   const showToast = useReusableToast();
+
+  React.useEffect(() => {
+    if (initialData) {
+      Object.entries(initialData).forEach(([key, value]) => {
+        form.setValue(key as keyof CompanyFormData, value);
+      });
+    }
+  }, [initialData, form]);
 
   const handleProfileImageChange = (url: string) => {
     setProfileImageUrls([url]);
@@ -43,9 +63,9 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
   const onSubmitWithToast: SubmitHandler<CompanyFormData> = async (data) => {
     try {
       await onSubmit(data);
-      showToast('success', 'Company profile submitted successfully');
-    } catch (error:any) {
-      showToast('error', error.message || 'Failed to submit company profile');
+      showToast('success', `Company profile ${isEditMode ? 'updated' : 'submitted'} successfully`);
+    } catch (error: any) {
+      showToast('error', error.message || `Failed to ${isEditMode ? 'update' : 'submit'} company profile`);
     }
   };
 
@@ -64,6 +84,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
                   onChange={handleProfileImageChange}
                   onRemove={handleProfileImageRemove}
                   bucketName="company"
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormMessage className="text-xs" />
@@ -78,7 +99,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               <FormItem>
                 <Label className="text-sm font-medium">Company Title</Label>
                 <FormControl>
-                  <Input placeholder="Acme Inc." {...field} className="mt-1 w-full" />
+                  <Input placeholder="Acme Inc." {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -91,7 +112,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               <FormItem>
                 <Label className="text-sm font-medium">Company Number</Label>
                 <FormControl>
-                  <Input placeholder="12345678" {...field} className="mt-1 w-full" />
+                  <Input placeholder="12345678" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -104,7 +125,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               <FormItem>
                 <Label className="text-sm font-medium">Company Website</Label>
                 <FormControl>
-                  <Input placeholder="https://www.example.com" {...field} className="mt-1 w-full" />
+                  <Input placeholder="https://www.example.com" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -117,7 +138,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               <FormItem>
                 <Label className="text-sm font-medium">Phone Number</Label>
                 <FormControl>
-                  <Input placeholder="+1 (555) 123-4567" {...field} className="mt-1 w-full" />
+                  <Input placeholder="+1 (555) 123-4567" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -130,7 +151,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
               <FormItem>
                 <Label className="text-sm font-medium">Address</Label>
                 <FormControl>
-                  <Input placeholder="123 Business Ave, City, Country" {...field} className="mt-1 w-full" />
+                  <Input placeholder="123 Business Ave, City, Country" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -151,6 +172,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
                     }}
                     placeholder="Select sectors..."
                     className="mt-1"
+                    disabled={isSubmitting}
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -165,26 +187,37 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ form, onSubmit, onBack }) => 
             <FormItem>
               <Label className="text-sm font-medium">Company Bio</Label>
               <FormControl>
-                <Textarea placeholder="Tell us about your company" {...field} className="mt-1 w-full" />
+                <Textarea placeholder="Tell us about your company" {...field} className="mt-1 w-full" disabled={isSubmitting} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
-        <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            className="w-full sm:w-auto"
-          >
-            Back
-          </Button>
+        <div className="flex justify-between">
+          {showStepIndicator && onBack && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onBack}
+              className="w-full sm:w-auto"
+              disabled={isSubmitting}
+            >
+              Back
+            </Button>
+          )}
           <Button
             type="submit"
             className="w-full sm:w-auto"
+            disabled={isSubmitting}
           >
-            Next
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              isEditMode ? 'Update Company Profile' : (showStepIndicator ? 'Next' : 'Submit')
+            )}
           </Button>
         </div>
       </form>

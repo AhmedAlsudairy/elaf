@@ -1,3 +1,4 @@
+import { getUserProfile } from "@/actions/supabase/get-user-profile";
 import { createServerClient } from "@supabase/ssr";
 import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
@@ -60,7 +61,7 @@ export async function middleware(request: NextRequest) {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
   // Check if the user is logged in
   const { data: { user } } = await supabase.auth.getUser();
-  console.log(user?.user_metadata)
+  
   console.log("User authentication status:", user ? "Logged in" : "Not logged in");
 
   const locale = request.nextUrl.pathname.split('/')[1];
@@ -73,13 +74,26 @@ export async function middleware(request: NextRequest) {
   console.log("Is private route:", isPrivateRoute);
   console.log("Is public route:", isPublicRoute);
 
-  if (!user && isPrivateRoute) {
-    console.log("Redirecting to login");
+  
+
+  if (user) {
+    const userProfile = await getUserProfile(supabase, user.id);
+    
+    if (!userProfile && path !== '/profile/startingprofile') {
+      const profileCreationUrl = new URL(`/${isValidLocale ? locale + '/' : ''}profile/startingprofile`, request.url);
+      return NextResponse.redirect(profileCreationUrl);
+    }
+
+    if (userProfile && path === '/profile/startingprofile') {
+      // Redirect to home or another appropriate page if user has a profile but tries to access starting profile
+      const homeUrl = new URL(`/${isValidLocale ? locale + '/' : ''}`, request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+  } else if (isPrivateRoute) {
     const loginUrl = new URL(`/${isValidLocale ? locale + '/' : ''}login`, request.url);
     loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
-
   // Allow access to public routes regardless of authentication status
 
 

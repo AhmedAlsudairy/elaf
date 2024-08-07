@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,6 @@ import StepIndicator from "./components/StepIndicator";
 import CompanyForm from "./components/company-profile-form";
 import { useReusableToast } from "@/components/common/success-toast";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { submitFinalForm } from "@/actions/supabase/profile-form-submit";
 
@@ -39,7 +38,6 @@ const MultiStepRegistrationForm: React.FC = () => {
     company: null,
   });
   const showToast = useReusableToast();
-  const router = useRouter();
 
   const userProfileForm = useForm<UserProfileFormData>({
     resolver: zodResolver(userProfileSchema),
@@ -75,7 +73,7 @@ const MultiStepRegistrationForm: React.FC = () => {
       }
     };
     fetchUserDetails();
-  }, [userProfileForm, showToast]);
+  }, []);
 
   const handleNextStep = (data: UserProfileFormData | CompanyFormData) => {
     if (step === 1) {

@@ -61,8 +61,7 @@ export async function submitFinalForm(
     return {
       success: true,
       message: 'Registration completed successfully',
-      userId: data?.user_id,
-      companyId: data?.company_profile_id
+      
     }
   } catch (error) {
     console.error('Unexpected error during registration:', error)

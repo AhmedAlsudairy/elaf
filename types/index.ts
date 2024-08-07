@@ -44,3 +44,12 @@ export interface FeatureCardProps {
     onSignOut: () => void;
 
   }
+
+  export interface AuthButtonProps {
+    isLoading: boolean;
+    isAuthenticated: boolean;
+    userProfile: any; // Replace 'any' with a more specific type if available
+    companyProfile: any; // Replace 'any' with a more specific type if available
+    onSignOut: () => void;
+    isMobile?: boolean;
+  }

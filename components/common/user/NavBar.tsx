@@ -15,6 +15,7 @@ import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profi
 import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
 import { ProfileMenu } from './navs/user-menu';
 import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
+import { AuthButton } from './navs/handle-auth-button';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -85,30 +86,13 @@ export const Header = () => {
       </nav>
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
         <LocalSwitcher />
-        {isLoading ? (
-          <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
-            <span className="animate-spin">⌛</span>
-          </Button>
-        ) : isAuthenticated ? (
-          <ProfileMenu 
-            userProfile={userProfile} 
-            companyProfile={companyProfile} 
-            isMobile={false} 
-            onMenuItemClick={() => {}}
-            onSignOut={handleSignOut}
-          />
-        ) : (
-          <Button
-            asChild
-            variant="outline"
-            className="text-primary border-primary hover:bg-primary hover:text-white font-balooBhaijaan"
-          >
-            <Link href='/login'>
-              {t('signin')}
-            </Link>
-          </Button>
-        )}
-      </div>
+        <AuthButton
+          isLoading={isLoading}
+          isAuthenticated={isAuthenticated}
+          userProfile={userProfile}
+          companyProfile={companyProfile}
+          onSignOut={handleSignOut}/>
+            </div>
       <div className="md:hidden flex items-center">
         <Button
           variant="ghost"
@@ -134,29 +118,14 @@ export const Header = () => {
           ))}
           <div className="px-4 py-2 space-y-2">
             <LocalSwitcher />
-            {isLoading ? (
-              <Button variant="outline" className="w-full">
-                <span className="animate-spin mr-2">⌛</span> {t('loading')}
-              </Button>
-            ) : isAuthenticated ? (
-              <ProfileMenu 
-                userProfile={userProfile} 
-                companyProfile={companyProfile} 
-                isMobile={true} 
-                onMenuItemClick={() => setIsMenuOpen(false)}
-                onSignOut={handleSignOut}
-              />
-            ) : (
-              <Button
-                variant="outline"
-                className="text-primary border-primary w-full hover:bg-primary hover:text-white"
-                asChild
-              >
-                <Link href='/login'>
-                  {t('signin')}
-                </Link>
-              </Button>
-            )}
+            <AuthButton
+              isLoading={isLoading}
+              isAuthenticated={isAuthenticated}
+              userProfile={userProfile}
+              companyProfile={companyProfile}
+              onSignOut={handleSignOut}
+              isMobile={true}
+            />
           </div>
         </div>
       )}

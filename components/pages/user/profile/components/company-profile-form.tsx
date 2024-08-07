@@ -83,7 +83,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
                   value={field.value ? [field.value] : []}
                   onChange={handleProfileImageChange}
                   onRemove={handleProfileImageRemove}
-                  bucketName="company"
+                  bucketName="profile"
                   disabled={isSubmitting}
                 />
               </FormControl>

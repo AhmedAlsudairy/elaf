@@ -1,6 +1,5 @@
 "use server";
 import { createClient } from "@/lib/utils/supabase/server";
-import supabaseServer from "@/lib/utils/supabase/supabase-call-server";
 
 export async function getCurrentCompanyProfile() {
   const supabase = createClient();
@@ -12,16 +11,16 @@ export async function getCurrentCompanyProfile() {
   const { data, error } = await supabase
     .from("company_profiles")
     .select("*")
-    .eq("id", user?.id)
+    .eq("user_id", user?.id)
     .single();
 
   if (error) {
-    console.error("Error fetching user profile:", error);
+    console.error("Error fetching company profile:", error);
     return null;
   }
 
   if (!data) {
-    console.log("User profile not found");
+    console.log("Company profile not found");
     return null;
   }
 

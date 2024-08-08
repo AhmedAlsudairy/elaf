@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { userProfileSchema } from '@/schema';
 import { updateUserProfile } from '@/actions/supabase/update-user-form';
 import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profile';
-import UserProfileForm from '@/components/pages/user/profile/components/user-profile-form';
+import UserProfileForm from '@/components/pages/user/profile/forms/components/user-profile-form';
 import { z } from 'zod';
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;

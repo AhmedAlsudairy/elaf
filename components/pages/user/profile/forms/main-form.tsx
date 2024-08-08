@@ -12,13 +12,14 @@ import {
 } from "@/components/ui/card";
 import { getUserDetails } from "@/actions/supabase/get-user-details";
 import { companySchema, userProfileSchema } from "@/schema";
-import UserProfileForm from "./components/user-profile-form";
-import StepIndicator from "./components/StepIndicator";
-import CompanyForm from "./components/company-profile-form";
+
 import { useReusableToast } from "@/components/common/success-toast";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { submitFinalForm } from "@/actions/supabase/profile-form-submit";
+import StepIndicator from "./components/StepIndicator";
+import UserProfileForm from "./components/user-profile-form";
+import CompanyForm from "./components/company-profile-form";
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
 type CompanyFormData = z.infer<typeof companySchema>;

@@ -105,6 +105,19 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               </FormItem>
             )}
           />
+            <FormField
+            control={form.control}
+            name="company_email"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="text-sm font-medium">Company email</Label>
+                <FormControl>
+                  <Input placeholder="example@email.com" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="company_number"

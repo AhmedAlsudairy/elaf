@@ -12,7 +12,7 @@ const  Posts = async() => {
     return (
 
         <div>
-            Enter
+            will be infeature
         </div>
 
 

@@ -53,3 +53,64 @@ export interface FeatureCardProps {
     onSignOut: () => void;
     isMobile?: boolean;
   }
+
+  
+  
+  interface CustomField {
+    title: string;
+    description: string;
+    pdfUrl: string;
+  }
+  
+  export interface CompanyProfileCardProps {
+    profile: CompanyProfile;
+    setProfile: React.Dispatch<React.SetStateAction<CompanyProfile>>;
+    customFields: CustomField[];
+    setCustomFields: React.Dispatch<React.SetStateAction<CustomField[]>>;
+    isCurrentUser: boolean;
+  }
+  
+  export interface ProfileHeaderProps {
+    profile: {
+      company_title: string;
+      bio: string;
+      profile_image: string;
+    };
+    isCurrentUser: boolean;
+    isEditing: boolean;
+    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+    onSave: () => void;
+  }
+  export interface CustomSection {
+    id: string;
+    title: string;
+    description: string;
+    pdfUrl: string;
+  }
+  
+  export interface CustomSectionProps {
+    section: CustomSection;
+    onUpdate: (updatedSection: CustomSection) => void;
+    onRemove: (id: string) => void;
+    isEditing: boolean;
+  }
+
+  
+  export interface SectionTab {
+  id: string;
+  tab_name: string;
+  title: string;
+}
+
+export interface SidebarProps {
+  sections: SectionTab[];
+  onTabChange: (tabName: string) => void;
+}
+
+export interface ProfileInfoProps {
+  profile: CompanyProfile;
+  setProfile: React.Dispatch<React.SetStateAction<CompanyProfile>>;
+  customSections: CustomSection[];
+  setCustomSections: React.Dispatch<React.SetStateAction<CustomSection[]>>;
+  isEditing: boolean;
+}

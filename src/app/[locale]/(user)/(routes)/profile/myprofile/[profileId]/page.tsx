@@ -1,4 +1,4 @@
-import EditUserProfilePage from "@/components/pages/user/profile/edit-user-profile-form";
+import EditUserProfilePage from "@/components/pages/user/profile/forms/edit-user-profile-form";
 
 const page = () => {
     return (

@@ -12,7 +12,7 @@ const  Posts = async() => {
     return (
 
         <div>
-            will be infeature
+            will be in feature
         </div>
 
 

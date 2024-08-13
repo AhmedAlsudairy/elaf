@@ -1,17 +1,22 @@
-'use client'
-
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Menu } from "lucide-react";
 import { AddSectionDialog } from './coustom-section-dialog';
-import { SidebarProps } from '@/types';
+import { SectionTab } from '@/types';
 
+interface SidebarProps {
+  sections: SectionTab[];
+  activeTab: string;
+}
 
-export function Sidebar({ sections, onTabChange }: SidebarProps) {
+export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [activeTab, setActiveTab] = useState('info');
+  const pathname = usePathname();
+  const { companyId } = useParams();
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -20,43 +25,41 @@ export function Sidebar({ sections, onTabChange }: SidebarProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleTabClick = (tabName: string) => {
-    setActiveTab(tabName);
-    onTabChange(tabName);
-  };
-
   const SidebarContent = () => (
     <div className="space-y-2 py-4">
-      <Button
-        variant={activeTab === 'info' ? 'default' : 'ghost'}
-        className="w-full justify-start"
-        onClick={() => handleTabClick('info')}
-      >
-        Info
-      </Button>
-      <Button
-        variant={activeTab === 'tenders' ? 'default' : 'ghost'}
-        className="w-full justify-start"
-        onClick={() => handleTabClick('tenders')}
-      >
-        Tenders
-      </Button>
-      <Button
-        variant={activeTab === 'requests' ? 'default' : 'ghost'}
-        className="w-full justify-start"
-        onClick={() => handleTabClick('requests')}
-      >
-        Requests
-      </Button>
-      {sections.map((section) => (
+      <Link href={`/profile/companyprofile/${companyId}`} passHref>
         <Button
-          key={section.id}
-          variant={activeTab === section.tab_name ? 'default' : 'ghost'}
+          variant={activeTab === '' ? 'default' : 'ghost'}
           className="w-full justify-start"
-          onClick={() => handleTabClick(section.tab_name)}
         >
-          {section.title}
+          Info
         </Button>
+      </Link>
+      <Link href={`/profile/companyprofile/${companyId}/tenders`} passHref>
+        <Button
+          variant={activeTab === 'tenders' ? 'default' : 'ghost'}
+          className="w-full justify-start"
+        >
+          Tenders
+        </Button>
+      </Link>
+      <Link href={`/profile/companyprofile/${companyId}/requests`} passHref>
+        <Button
+          variant={activeTab === 'requests' ? 'default' : 'ghost'}
+          className="w-full justify-start"
+        >
+          Requests
+        </Button>
+      </Link>
+      {sections.map((section) => (
+        <Link key={section.id} href={`/profile/companyprofile/${companyId}/${section.id}`} passHref>
+          <Button
+            variant={activeTab === section.id ? 'default' : 'ghost'}
+            className="w-full justify-start"
+          >
+            {section.title}
+          </Button>
+        </Link>
       ))}
       <AddSectionDialog />
     </div>
@@ -84,4 +87,4 @@ export function Sidebar({ sections, onTabChange }: SidebarProps) {
       <SidebarContent />
     </div>
   );
-}
+};

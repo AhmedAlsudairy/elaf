@@ -73,7 +73,7 @@ export function AddSectionDialog() {
               onChange={(url) => setFileUrl(url)}
               onRemove={() => setFileUrl('')}
               value={fileUrl ? [fileUrl] : []}
-              bucketName="custom-fields"
+              bucketName="profile"
             />
           </div>
           <DialogFooter>

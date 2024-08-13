@@ -1,5 +1,3 @@
-"use client"
-
 import React from 'react';
 import Link from "next/link";
 import Image from "next/image";
@@ -26,7 +24,10 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
 
   const menuItems = [
     { label: 'myProfile', href: '/profile/myprofile' },
-    { label: companyProfile ? 'profile/myCompany' : 'newCompany', href: companyProfile ? '/my-company' : '/new-company' },
+    { 
+      label: companyProfile ? 'profile/myCompany' : 'newCompany', 
+      href: companyProfile ? `/profile/companyprofile/${companyProfile.company_profile_id}` : '/new-company' 
+    },
     { label: 'logout', action: handleSignOut }
   ];
 

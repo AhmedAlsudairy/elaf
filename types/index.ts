@@ -73,8 +73,8 @@ export interface FeatureCardProps {
   export interface ProfileHeaderProps {
     profile: {
       company_title: string;
-      bio: string;
-      profile_image: string;
+      bio?: string;
+      profile_image?: string;
     };
     isCurrentUser: boolean;
     isEditing: boolean;
@@ -104,7 +104,7 @@ export interface FeatureCardProps {
 
 export interface SidebarProps {
   sections: SectionTab[];
-  onTabChange: (tabName: string) => void;
+  activeTab: string;
 }
 
 export interface ProfileInfoProps {
@@ -113,4 +113,12 @@ export interface ProfileInfoProps {
   customSections: CustomSection[];
   setCustomSections: React.Dispatch<React.SetStateAction<CustomSection[]>>;
   isEditing: boolean;
+}
+
+export  interface ProfileContentProps {
+  profile: CompanyProfile;
+  setProfile: React.Dispatch<React.SetStateAction<CompanyProfile>>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  activeTab: string;
 }

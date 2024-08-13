@@ -29,7 +29,7 @@ export async function addSection(formData: FormData) {
   
     // Insert new section into the database
     const { data, error } = await supabase
-      .from('company_profile_sections')
+      .from('custom_sections')
       .insert({
         company_profile_id: companyProfile.id,
         title,

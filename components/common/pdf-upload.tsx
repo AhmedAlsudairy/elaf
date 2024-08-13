@@ -1,4 +1,3 @@
-'use client'
 import React, { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileUp, Trash } from "lucide-react";
@@ -60,10 +59,10 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
   return (
     <div>
       <div className="mb-4 flex flex-col gap-2">
-        {value.map((url) => (
+        {value.filter(url => typeof url === 'string' && url.trim() !== '').map((url) => (
           <div key={url} className="flex items-center justify-between p-2 bg-gray-100 rounded">
             <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-              {url.split('/').pop()}
+              {url.split('/').pop() || 'Uploaded PDF'}
             </a>
             <Button
               type="button"

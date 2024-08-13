@@ -15,7 +15,7 @@ export function ProfileHeader({ profile, isCurrentUser, isEditing, setIsEditing,
         </Avatar>
         <div>
           <CardTitle>{profile.company_title || 'Company Profile'}</CardTitle>
-          <CardDescription>{profile.bio}</CardDescription>
+          {profile.bio && <CardDescription>{profile.bio}</CardDescription>}
         </div>
       </div>
       {isCurrentUser && !isEditing && (
@@ -31,3 +31,4 @@ export function ProfileHeader({ profile, isCurrentUser, isEditing, setIsEditing,
     </div>
   );
 }
+

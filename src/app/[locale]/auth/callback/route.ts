@@ -1,6 +1,6 @@
 //app/auth/callback
 
-import { upsertUserDetails } from '@/actions/supabase/add-user-db'
+// import { upsertUserDetails } from '@/actions/supabase/add-user-db'
 import { getUserDetails } from '@/actions/supabase/get-user-details'
 import { createClient } from '@/lib/utils/supabase/server'
 import { NextResponse } from 'next/server'

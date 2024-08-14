@@ -9,6 +9,8 @@ import { SectorEnum } from "@/constant/text";
 const stepOneSchema = z.object({
   title: z.string().min(1, "Title is required"),
   summary: z.string(),
+  Tender_sectors: z.array(z.nativeEnum(SectorEnum)),
+
   end_date: z.date({
     required_error: "A date is required",
   }),
@@ -45,7 +47,7 @@ export async function updateTenderStepOne(tenderId: string, formData: StepOneDat
       .update({
         title: validatedData.title,
         summary: validatedData.summary,
-        Tender_sectors: z.array(z.nativeEnum(SectorEnum)),
+        Tender_sectors: validatedData.Tender_sectors,
         end_date: validatedData.end_date.toISOString(),
         terms: validatedData.terms,
         scope_of_works: validatedData.scope_of_works,

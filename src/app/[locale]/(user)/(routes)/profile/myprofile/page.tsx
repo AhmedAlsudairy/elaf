@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { User, Phone, MapPin, Briefcase, Mail, Edit } from 'lucide-react';
 import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profile';
+import type { UserProfile } from '@/types';
 
-const UserProfile = () => {
-  const [user, setUser] = useState(null);
+const UserProfile = ({}) => {
+  const [user, setUser] = useState<UserProfile|null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,7 +45,6 @@ const UserProfile = () => {
                   alt={user.name} 
                   onError={(e) => {
                     console.error('Error loading image:', e);
-                    e.target.src = '/api/placeholder/400/400';
                   }}
                 />
               ) : (

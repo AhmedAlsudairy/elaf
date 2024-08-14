@@ -3,6 +3,7 @@ import * as z from "zod";
 
 
 export const userProfileSchema = z.object({
+  id: z.string().uuid().optional(),
     name: z.string().min(2, { message: "Name must be at least 2 characters." }),
     email: z.string().email({ message: "Please enter a valid email address." }),
     bio: z.string().optional(),
@@ -32,7 +33,7 @@ export const userProfileSchema = z.object({
 export const TenderSchema = z.object({
   title: z.string().min(1, "Title is required"),
   summary: z.string().min(1, "Summary is required"),
-  Tender_sectors: z.array(z.nativeEnum(SectorEnum)),
+  Tender_sectors: z.array(z.nativeEnum(SectorEnum)).min(1, "At least one sector is required"),
   pdf_url: z.string().url("Invalid URL"),
   end_date: z.date({
     required_error: "End date is required",

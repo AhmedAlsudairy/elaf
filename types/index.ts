@@ -78,23 +78,26 @@ export interface FeatureCardProps {
     };
     isCurrentUser: boolean;
     isEditing: boolean;
+    isLoading?: boolean;
+
     setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
     onSave: () => void;
   }
   export interface CustomSection {
-    id: string;
+    id?: string;
     title: string;
     description: string;
-    pdfUrl: string;
+    file_url: string;
+    tab_name?: string;
+    company_profile_id?: string;
   }
   
   export interface CustomSectionProps {
     section: CustomSection;
     onUpdate: (updatedSection: CustomSection) => void;
-    onRemove: (id: string) => void;
+    onRemove?: (id: string) => void;
     isEditing: boolean;
   }
-
   
   export interface SectionTab {
   id: string;

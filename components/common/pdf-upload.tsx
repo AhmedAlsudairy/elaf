@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { FileUp, Trash } from "lucide-react";
+import { FileUp, Trash, Upload } from "lucide-react";
 import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
 import { Input } from '@/components/ui/input';
 
@@ -10,6 +10,7 @@ interface PDFUploadProps {
   onRemove: (value: string) => void;
   value: string[];
   bucketName: string;
+  generatedPdfBlob?: Blob | null;
 }
 
 const PDFUpload: React.FC<PDFUploadProps> = ({
@@ -18,10 +19,11 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
   onRemove,
   value,
   bucketName,
+  generatedPdfBlob,
 }) => {
   const [uploading, setUploading] = useState(false);
 
-  const uploadPDF = useCallback(async (file: File) => {
+  const uploadPDF = useCallback(async (file: File | Blob) => {
     try {
       setUploading(true);
 
@@ -56,6 +58,12 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
     }
   }, [uploadPDF]);
 
+  const handleGeneratedPdfUpload = useCallback(() => {
+    if (generatedPdfBlob) {
+      uploadPDF(generatedPdfBlob);
+    }
+  }, [generatedPdfBlob, uploadPDF]);
+
   return (
     <div>
       <div className="mb-4 flex flex-col gap-2">
@@ -75,7 +83,7 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
           </div>
         ))}
       </div>
-      <div>
+      <div className="flex gap-2">
         <Input
           type="file"
           id="pdfUpload"
@@ -93,6 +101,17 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
           <FileUp className="h-4 w-4 mr-2" />
           {uploading ? 'Uploading...' : 'Upload a PDF'}
         </Button>
+        {generatedPdfBlob && (
+          <Button
+            type="button"
+            disabled={disabled || uploading}
+            variant="secondary"
+            onClick={handleGeneratedPdfUpload}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {uploading ? 'Uploading...' : 'Upload Generated PDF'}
+          </Button>
+        )}
       </div>
     </div>
   );

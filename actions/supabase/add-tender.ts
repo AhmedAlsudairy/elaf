@@ -14,6 +14,7 @@ const stepOneSchema = z.object({
   }),
   terms: z.string(),
   scope_of_works: z.string(),
+  Tender_sectors: z.array(z.nativeEnum(SectorEnum)),
 });
 
 type StepOneData = z.infer<typeof stepOneSchema>;
@@ -44,7 +45,7 @@ export async function addTenderStepOne(formData: StepOneData) {
         company_profile_id: companyProfile.id,
         title: validatedData.title,
         summary: validatedData.summary,
-        Tender_sectors: z.array(z.nativeEnum(SectorEnum)),
+        Tender_sectors: validatedData.Tender_sectors,
         end_date: validatedData.end_date.toISOString(),
         terms: validatedData.terms,
         scope_of_works: validatedData.scope_of_works,
@@ -53,15 +54,18 @@ export async function addTenderStepOne(formData: StepOneData) {
       .single();
 
     if (error) {
-      throw new Error("Error adding new tender");
+      console.error("Supabase error details:", error);
+      throw new Error(`Error adding new tender: ${error.message}`);
     }
 
     revalidatePath('/tenders'); // Adjust this path as needed
     return data;
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Zod validation error:", error.errors);
       throw new Error("Invalid form data: " + JSON.stringify(error.errors));
     }
+    console.error("Unexpected error:", error);
     throw error;
   }
 }

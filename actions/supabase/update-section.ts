@@ -1,9 +1,9 @@
 'use server'
-import { createClient } from "@/lib/utils/supabase/client";
-import { Section } from "./get-sections";
 import { revalidatePath } from "next/cache";
+import { CustomSection } from "@/types";
+import { createClient } from "@/lib/utils/supabase/server";
 
-export async function updateSection(section: Section) {
+export async function updateSection(section:CustomSection ) {
     const supabase = createClient();
   
     const { data, error } = await supabase
@@ -11,7 +11,7 @@ export async function updateSection(section: Section) {
       .update({
         title: section.title,
         description: section.description,
-        pdf_url: section.file_url,
+        file_url: section.file_url,
         tab_name: section.tab_name
       })
       .eq('id', section.id)

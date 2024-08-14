@@ -14,15 +14,12 @@
     "newCompany": "New Company",
     "myAccount": "My Account",
     "loading": "Loading..."
-
   },
   "LocalSwitcher": {
     "selectLanguage": "Select the language",
     "english": "English",
     "arabic": "Arabic"
   },
-
-  
   "Hero": {
     "title": "Elevate Your Business with Elaf",
     "description": "Elaf is a powerful tender platform that empowers companies to streamline their procurement processes, connect with suppliers, and grow their business.",
@@ -73,6 +70,11 @@
     "privacy": "Privacy",
     "terms": "Terms of Use",
     "contact": "Contact"
+  },
+  "ProfileMenu": {
+    "myProfile": "My Profile",
+    "myCompany": "My Company",
+    "newCompany": "New Company",
+    "logout": "Logout"
   }
 }
-

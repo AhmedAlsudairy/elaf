@@ -13,7 +13,8 @@ import { TenderFormStep1 } from './components/tender-step-one'
 import { TenderFormStep2 } from './components/tender-step-two'
 import { fetchTenderData } from '@/actions/supabase/get-tender'
 import { updateTenderStepOne } from '@/actions/supabase/update-tender-step-one'
-
+import { SectorEnum } from "@/constant/text"
+import { updateTenderStepTwo } from '@/actions/supabase/add-tender-step-two'
 
 type FormValues = z.infer<typeof TenderSchema>;
 
@@ -21,6 +22,7 @@ export function TenderForm() {
   const [step, setStep] = useState(1);
   const [companyLogo, setCompanyLogo] = useState('');
   const [tenderId, setTenderId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const showToast = useReusableToast();
 
   const form = useForm<FormValues>({
@@ -33,7 +35,8 @@ export function TenderForm() {
       terms: "",
       scope_of_works: "",
       pdf_choice: 'upload',
-      custom_fields: [{ title: '', description: '' }]
+      custom_fields: [{ title: '', description: '' }],
+      Tender_sectors: [] as SectorEnum[],
     },
   })
 
@@ -48,17 +51,16 @@ export function TenderForm() {
   }, []);
 
   async function handleNextStep() {
-    const isValid = await form.trigger(['title', 'summary', 'end_date', 'terms', 'scope_of_works']);
+    setIsLoading(true);
+    const isValid = await form.trigger(['title', 'summary', 'end_date', 'terms', 'scope_of_works', 'Tender_sectors']);
     if (isValid) {
       try {
         const stepOneData = form.getValues();
         let result;
         if (tenderId) {
-          // Update existing tender
           result = await updateTenderStepOne(tenderId, stepOneData);
           showToast('success', 'Tender updated successfully');
         } else {
-          // Create new tender
           result = await addTenderStepOne(stepOneData);
           showToast('success', 'New tender created successfully');
         }
@@ -67,27 +69,38 @@ export function TenderForm() {
       } catch (error) {
         console.error('Error handling tender step one:', error);
         showToast('error', 'Error processing tender data');
+      } finally {
+        setIsLoading(false);
       }
     } else {
       const errors = form.formState.errors;
       const errorMessages = Object.values(errors).map(error => error.message);
       showToast('error', errorMessages.join(', '));
+      setIsLoading(false);
     }
   }
 
   async function onSubmit(values: FormValues) {
     if (step === 2) {
+      setIsLoading(true);
       try {
-        // Here you would handle the final submission, including the PDF choice and custom fields
-        console.log('Final submission:', { ...values, tender_id: tenderId });
+        if (!tenderId) {
+          throw new Error("Tender ID is missing");
+        }
+        const result = await updateTenderStepTwo({
+          pdf_url: values.pdf_url,
+          tender_id: tenderId
+        });
+        console.log('Final submission:', result);
         showToast('success', 'Tender submitted successfully');
-        // Implement the logic to save the final tender data
+        // You might want to redirect the user or reset the form here
       } catch (error) {
         console.error('Error submitting tender:', error);
         showToast('error', 'Error submitting tender');
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }
+    }}
 
   useEffect(() => {
     if (tenderId) {
@@ -106,12 +119,12 @@ export function TenderForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {step === 1 
-            ? <TenderFormStep1 form={form} /> 
+            ? <TenderFormStep1 form={form} isLoading={isLoading} /> 
             : <TenderFormStep2 form={form} companyLogo={companyLogo} tenderId={tenderId} />
           }
           <div className="flex justify-between mt-6">
             {step === 2 && (
-              <Button type="button" onClick={() => setStep(1)} variant="outline">
+              <Button type="button" onClick={() => setStep(1)} variant="outline" disabled={isLoading}>
                 Back
               </Button>
             )}
@@ -125,8 +138,9 @@ export function TenderForm() {
                 }
               }}
               className="ml-auto"
+              disabled={isLoading}
             >
-              {step === 1 ? "Next" : "Submit"}
+              {isLoading ? "Processing..." : (step === 1 ? "Next" : "Submit")}
             </Button>
           </div>
         </form>

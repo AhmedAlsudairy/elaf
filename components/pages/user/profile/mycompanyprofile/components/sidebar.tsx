@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Menu } from "lucide-react";
 import { AddSectionDialog } from './coustom-section-dialog';
 import { SectionTab } from '@/types';
-
+import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
 interface SidebarProps {
   sections: SectionTab[];
   activeTab: string;
@@ -17,6 +17,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const { companyId } = useParams();
+  const { isOwner, isLoading } = useIsOwnerOfCompany(companyId as string);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -43,14 +44,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
           Tenders
         </Button>
       </Link>
-      <Link href={`/profile/companyprofile/${companyId}/requests`} passHref>
-        <Button
-          variant={activeTab === 'requests' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-        >
-          Requests
-        </Button>
-      </Link>
+      {!isLoading && isOwner && (
+        <Link href={`/profile/companyprofile/${companyId}/requests`} passHref>
+          <Button
+            variant={activeTab === 'requests' ? 'default' : 'ghost'}
+            className="w-full justify-start"
+          >
+            Requests
+          </Button>
+        </Link>
+      )}
       {sections.map((section) => (
         <Link key={section.id} href={`/profile/companyprofile/${companyId}/${section.id}`} passHref>
           <Button
@@ -61,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
           </Button>
         </Link>
       ))}
-      <AddSectionDialog />
+      {!isLoading && isOwner && <AddSectionDialog />}
     </div>
   );
 

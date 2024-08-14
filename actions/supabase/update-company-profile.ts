@@ -1,5 +1,5 @@
 'use server'
-import { createClient } from "@/lib/utils/supabase/client";
+import { createClient } from "@/lib/utils/supabase/server";
 import { CompanyProfile } from "@/types";
 import { revalidatePath } from "next/cache";
 
@@ -16,7 +16,8 @@ export async function updateProfile(profile: CompanyProfile) {
         phone_number: profile.phone_number,
         address: profile.address,
         bio: profile.bio,
-        profile_image: profile.profile_image
+        profile_image: profile.profile_image,
+        sectors: profile.sectors,
       })
       .eq('id', profile.id)
       .select()

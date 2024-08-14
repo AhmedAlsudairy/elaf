@@ -7,7 +7,7 @@ export enum SectorEnum {
     Education = 'Education',
     Manufacturing = 'Manufacturing',
     Retail = 'Retail',
-    RealEstate = 'Real Estate',
+    RealEstate = 'RealEstate',
     Transportation = 'Transportation',
     Energy = 'Energy',
     Entertainment = 'Entertainment',

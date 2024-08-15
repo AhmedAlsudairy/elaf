@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { ClipLoader } from 'react-spinners';
 
@@ -6,36 +6,9 @@ import { Button } from "@/components/ui/button";
 import { getTenders } from '@/actions/supabase/get-tenders';
 import ComprehensiveTenderSearch from './tender-search';
 import TenderCard from './tender-card';
-import { SectorEnum, TenderStatus } from '@/constant/text';
+import { SearchParams, SearchResult, Tender } from '@/types';
 
 const ITEMS_PER_PAGE = 10;
-
-interface SearchParams {
-  query: string;
-  sector: SectorEnum | null;
-  status: TenderStatus | null;
-}
-
-interface Tender {
-  id?: string;
-  company_profile_id: string;
-  tender_id?: string;
-  company_title: string;
-  profile_image: string;
-  tender_sectors: SectorEnum[];
-  created_at?: string;
-  title: string;
-  summary: string;
-  status: TenderStatus;
-  description: string;
-  deadline?: string;
-  budget?: number;
-}
-
-interface SearchResult {
-  success?: Tender[];
-  error?: string;
-}
 
 const TenderInfiniteScrollList: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
@@ -53,7 +26,8 @@ const TenderInfiniteScrollList: React.FC = () => {
       status: searchParams.status || undefined
     };
 
-    return getTenders(params);
+    const result = await getTenders(params);
+    return result;
   };
 
   const {
@@ -64,23 +38,35 @@ const TenderInfiniteScrollList: React.FC = () => {
     status,
     refetch,
     isLoading,
+    error
   } = useInfiniteQuery({
     queryKey: ['tenders', searchParams],
     queryFn: fetchTenders,
     getNextPageParam: (lastPage, pages) => {
-      if (!lastPage.success || lastPage.success.length < ITEMS_PER_PAGE) return undefined;
+      if (lastPage.success.length < ITEMS_PER_PAGE) return undefined;
       return pages.length * ITEMS_PER_PAGE;
     },
     initialPageParam: 0,
   });
 
+  useEffect(() => {
+    if (status === 'error') {
+      console.error('Error fetching tenders:', error);
+    }
+  }, [status, error]);
+
   const handleSearch = async (newSearchParams: SearchParams): Promise<SearchResult> => {
     setSearchParams(newSearchParams);
-    const result = await refetch();
-    return result.data?.pages[0] || { error: "Failed to fetch results" };
+    try {
+      const result = await refetch();
+      return result.data?.pages[0] || { success: [] };
+    } catch (error) {
+      console.error('Error during search:', error);
+      return { success: [] };
+    }
   };
 
-  const noTendersFound = data?.pages[0]?.success?.length === 0;
+  const noTendersFound = data?.pages[0]?.success.length === 0;
 
   return (
     <div className="space-y-6">
@@ -90,8 +76,6 @@ const TenderInfiniteScrollList: React.FC = () => {
         <div className="flex justify-center items-center h-64">
           <ClipLoader color="#3B82F6" size={50} />
         </div>
-      ) : status === 'error' ? (
-        <div className="text-center text-red-500">Error fetching tenders</div>
       ) : noTendersFound ? (
         <div className="text-center text-gray-500">No tenders found</div>
       ) : (
@@ -99,19 +83,20 @@ const TenderInfiniteScrollList: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {data?.pages.map((page, i) => (
               <React.Fragment key={i}>
-                {page.success?.map((tender: Tender) => (
+                {page.success.map((tender: Tender) => (
                   <TenderCard
                     key={tender.id}
                     companyId={tender.company_profile_id}
-                    tenderId={tender.tender_id || ''}
+                    tenderId={tender.tender_id}
                     companyTitle={tender.company_title}
                     profileImage={tender.profile_image}
                     sectors={tender.tender_sectors}
-                    startingDate={tender.created_at || ''}
+                    startingDate={tender.created_at}
+                    endDate={tender.end_date}
                     tenderTitle={tender.title}
                     summary={tender.summary}
                     status={tender.status}
-
+                    address={tender.address}
                   />
                 ))}
               </React.Fragment>

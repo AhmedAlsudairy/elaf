@@ -1,3 +1,4 @@
+import { SectorEnum, TenderStatus } from "@/constant/text";
 import { companySchema, userProfileSchema } from "@/schema";
 import { LucideIcon } from "lucide-react";
 import { z } from "zod";
@@ -124,4 +125,31 @@ export  interface ProfileContentProps {
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   activeTab: string;
+}
+
+
+export interface SearchParams {
+  query: string;
+  sector: SectorEnum | null;
+  status: TenderStatus | null;
+}
+
+export interface Tender {
+  id: string;
+  tender_id: string;
+  company_profile_id: string;
+  company_title: string;
+  profile_image: string;
+  tender_sectors: SectorEnum[];
+  created_at: string;
+  end_date: string;
+  title: string;
+  summary: string;
+  status: TenderStatus;
+  address: string;
+}
+
+export interface SearchResult {
+  success: Tender[];
+  error?: string;
 }

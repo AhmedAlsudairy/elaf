@@ -1,6 +1,8 @@
+import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format, differenceInDays } from 'date-fns';
 
 interface TenderCardProps {
   companyId: string;
@@ -9,9 +11,11 @@ interface TenderCardProps {
   profileImage: string;
   sectors: string[];
   startingDate: string;
+  endDate: string;
   tenderTitle: string;
   summary: string;
-  status: 'open' | 'closed' | 'awarded'; // Add this new prop
+  status: 'open' | 'closed' | 'awarded';
+  address: string;
 }
 
 const TenderCard: React.FC<TenderCardProps> = ({
@@ -21,22 +25,44 @@ const TenderCard: React.FC<TenderCardProps> = ({
   profileImage,
   sectors,
   startingDate,
+  endDate,
   tenderTitle,
   summary,
-  status // Add this new prop
+  status,
+  address
 }) => {
-  // Function to determine badge color based on status
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, 'dd MMM yy');
+  };
+
+  const getDaysRemaining = () => {
+    const today = new Date();
+    const end = new Date(endDate);
+    const daysRemaining = differenceInDays(end, today);
+    return daysRemaining > 0 ? daysRemaining : 0;
+  };
+
   const getStatusBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'open':
-        return 'bg-orange-500 hover:bg-orange-600';
+        return 'bg-green-500 hover:bg-green-600';
       case 'closed':
         return 'bg-red-500 hover:bg-red-600';
       case 'awarded':
-        return 'bg-green-500 hover:bg-green-600';
+        return 'bg-blue-500 hover:bg-blue-600';
       default:
         return 'bg-gray-500 hover:bg-gray-600';
     }
+  };
+
+  const getStatusBadgeContent = () => {
+    const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+    if (status === 'open') {
+      const daysRemaining = getDaysRemaining();
+      return `${statusText} • ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} left`;
+    }
+    return statusText;
   };
 
   return (
@@ -53,7 +79,7 @@ const TenderCard: React.FC<TenderCardProps> = ({
           </div>
         </div>
         <Badge className={`${getStatusBadgeColor(status)} text-white`}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {getStatusBadgeContent()}
         </Badge>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -64,7 +90,9 @@ const TenderCard: React.FC<TenderCardProps> = ({
             <Badge key={index} variant="secondary">{sector}</Badge>
           ))}
         </div>
-        <p className="text-sm text-gray-500">Starting Date: {startingDate}</p>
+        <p className="text-sm text-gray-500">Start Date: {formatDate(startingDate)}</p>
+        <p className="text-sm text-gray-500">End Date: {formatDate(endDate)}</p>
+        <p className="text-sm text-gray-500 mt-2">Address: {address}</p>
       </CardContent>
       <CardFooter className="text-sm text-gray-500">
         Tender ID: {tenderId}

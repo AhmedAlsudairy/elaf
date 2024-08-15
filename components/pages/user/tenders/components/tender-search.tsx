@@ -5,36 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SectorEnum, TenderStatus } from '@/constant/text';
 import { ClipLoader } from 'react-spinners';
 import debounce from 'lodash/debounce';
+import { SearchParams, SearchResult } from '@/types';
 
-interface SearchParams {
-    query: string;
-    sector: SectorEnum | null;
-    status: TenderStatus | null;
-  }
-  
-  interface Tender {
-    id?: string;
-    company_profile_id: string;
-    tender_id?: string;
-    company_profiles?: {
-      company_title: string;
-      profile_image: string;
-    };
-    tender_sectors: SectorEnum[];
-    created_at?: string;
-    title: string;
-    summary: string;
-    status: TenderStatus;
-    description: string;
-    deadline?: string;
-    budget?: number;
-  }
-  
-  interface SearchResult {
-    success?: Tender[];
-    error?: string;
-  }
-  
+
   interface ComprehensiveTenderSearchProps {
     onSearch: (searchParams: SearchParams) => Promise<SearchResult>;
     isLoading: boolean;

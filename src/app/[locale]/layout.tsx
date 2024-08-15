@@ -7,6 +7,8 @@ import {getLangDir} from 'rtl-detect';
 import { Header } from "@/components/common/user/NavBar";
 import { Footer } from "@/components/common/user/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { ReactQueryClientProvider } from "@/providers/query-providers";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -31,9 +33,13 @@ export default async function RootLayout({
   const direction = getLangDir(locale);
 
 
+
   return (
+    <ReactQueryClientProvider>
+
     <html lang={locale} dir={direction}>
       <body className={inter.className}>
+
       <NextIntlClientProvider messages={messages}>
         <Header/>
         {children}
@@ -41,9 +47,12 @@ export default async function RootLayout({
 
         <Footer/>
          <Toaster />
+
         </NextIntlClientProvider>
   
         </body>
     </html>
+    </ReactQueryClientProvider>
+
   );
 }

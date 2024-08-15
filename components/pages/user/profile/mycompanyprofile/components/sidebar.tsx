@@ -9,6 +9,7 @@ import { Menu } from "lucide-react";
 import { AddSectionDialog } from './coustom-section-dialog';
 import { SectionTab } from '@/types';
 import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
+
 interface SidebarProps {
   sections: SectionTab[];
   activeTab: string;
@@ -29,41 +30,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
 
   const SidebarContent = () => (
     <div className="space-y-2 py-4">
-      <Link href={`/profile/companyprofile/${companyId}`} passHref>
-        <Button
-          variant={activeTab === '' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-        >
+      <Button
+        variant={activeTab === '' ? 'default' : 'ghost'}
+        className="w-full justify-start"
+        asChild
+      >
+        <Link href={`/profile/companyprofile/${companyId}`}>
           Info
-        </Button>
-      </Link>
-      <Link href={`/profile/companyprofile/${companyId}/tenders`} passHref>
-        <Button
-          variant={activeTab === 'tenders' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-        >
-          Tenders
-        </Button>
-      </Link>
-      {!isLoading && isOwner && (
-        <Link href={`/profile/companyprofile/${companyId}/requests`} passHref>
-          <Button
-            variant={activeTab === 'requests' ? 'default' : 'ghost'}
-            className="w-full justify-start"
-          >
-            Requests
-          </Button>
         </Link>
+      </Button>
+      <Button
+        variant={activeTab === 'tenders' ? 'default' : 'ghost'}
+        className="w-full justify-start"
+        asChild
+      >
+        <Link href={`/profile/companyprofile/${companyId}/tenders`}>
+          Tenders
+        </Link>
+      </Button>
+      {!isLoading && isOwner && (
+        <Button
+          variant={activeTab === 'requests' ? 'default' : 'ghost'}
+          className="w-full justify-start"
+          asChild
+        >
+          <Link href={`/profile/companyprofile/${companyId}/requests`}>
+            Requests
+          </Link>
+        </Button>
       )}
       {sections.map((section) => (
-        <Link key={section.id} href={`/profile/companyprofile/${companyId}/${section.id}`} passHref>
-          <Button
-            variant={activeTab === section.id ? 'default' : 'ghost'}
-            className="w-full justify-start"
-          >
+        <Button
+          key={section.id}
+          variant={activeTab === section.id ? 'default' : 'ghost'}
+          className="w-full justify-start"
+          asChild
+        >
+          <Link href={`/profile/companyprofile/${companyId}/${section.id}`}>
             {section.title}
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       ))}
       {!isLoading && isOwner && <AddSectionDialog />}
     </div>

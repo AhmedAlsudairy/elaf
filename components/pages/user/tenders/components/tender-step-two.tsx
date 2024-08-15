@@ -147,6 +147,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
   const [previewPDF, setPreviewPDF] = useState(false);
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState<Blob | null>(null);
 
+  console.log(companyLogo)
   useEffect(() => {
     const fields = form.getValues('custom_fields');
     if (fields && fields.length === 0) {

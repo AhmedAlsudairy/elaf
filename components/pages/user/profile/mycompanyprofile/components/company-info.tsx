@@ -113,7 +113,7 @@ export function ProfileInfo({ profile, setProfile, isEditing }: ProfileInfoProps
           disabled={!isEditing}
           onChange={handleImageChange}
           onRemove={handleImageRemove}
-          bucketName="profile-images"
+          bucketName="profile"
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

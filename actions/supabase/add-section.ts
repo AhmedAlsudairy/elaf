@@ -31,7 +31,7 @@ export async function addSection(formData: FormData) {
     const { data, error } = await supabase
       .from('custom_sections')
       .insert({
-        company_profile_id: companyProfile.id,
+        company_profile_id: companyProfile.company_profile_id,
         title,
         description,
         file_url: fileUrl,

@@ -42,7 +42,7 @@ export async function addTenderStepOne(formData: StepOneData) {
     const { data, error } = await supabase
       .from('tenders')
       .upsert({
-        company_profile_id: companyProfile.id,
+        company_profile_id: companyProfile.company_profile_id,
         title: validatedData.title,
         summary: validatedData.summary,
         Tender_sectors: validatedData.Tender_sectors,

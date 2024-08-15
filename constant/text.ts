@@ -13,3 +13,9 @@ export enum SectorEnum {
     Entertainment = 'Entertainment',
 }
 
+export enum TenderStatus {
+    Open = 'open',
+    Closed = 'closed',
+    Awarded = 'awarded',
+  }
+  

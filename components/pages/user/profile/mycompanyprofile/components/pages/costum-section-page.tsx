@@ -13,6 +13,7 @@ import { updateSection } from '@/actions/supabase/update-section';
 import { deleteSection } from '@/actions/supabase/delete-section';
 import { ProfileHeader } from '../profile-header';
 import { CustomSection } from '../custom-section';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function CustomSectionPage() {
   const params = useParams();
@@ -24,22 +25,33 @@ export function CustomSectionPage() {
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [section, setSection] = useState<CustomSectionType | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { isOwner } = useIsOwnerOfCompany(companyId);
 
   useEffect(() => {
     async function fetchData() {
-      const profileData = await getCompanyProfileById(companyId);
-      setProfile(profileData);
-
-      const sectionData = await getSectionById(sectionId);
-      if (sectionData) {
+      try {
+        const [profileData, sectionData] = await Promise.all([
+          getCompanyProfileById(companyId),
+          getSectionById(sectionId)
+        ]);
+        setProfile(profileData);
         setSection(sectionData as CustomSectionType);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load data. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchData();
-  }, [companyId, sectionId]);
+  }, [companyId, sectionId, toast]);
 
   const handleUpdate = (updatedSection: CustomSectionType) => {
     setSection(updatedSection);
@@ -47,7 +59,7 @@ export function CustomSectionPage() {
 
   const handleSave = async () => {
     if (!section) return;
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       await updateSection(section);
       setIsEditing(false);
@@ -64,13 +76,13 @@ export function CustomSectionPage() {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!section || !section.id) return;
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       await deleteSection(section.id);
       toast({
@@ -87,12 +99,25 @@ export function CustomSectionPage() {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-full" />
+        <div className="flex justify-end space-x-2">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
+
   if (!profile || !section) {
-    return <div>Loading...</div>;
+    return <div>Failed to load data. Please try again.</div>;
   }
 
   return (
@@ -102,14 +127,14 @@ export function CustomSectionPage() {
         isEditing={isEditing}
         setIsEditing={setIsEditing}
         onSave={handleSave}
-        isLoading={isLoading}
+        isLoading={isSaving}
       />
       {isOwner && (
         <div className="flex justify-end space-x-2">
           <Button 
             variant="outline" 
             onClick={() => setIsEditing(!isEditing)}
-            disabled={isLoading}
+            disabled={isSaving}
           >
             {isEditing ? <Eye className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
             {isEditing ? "Preview" : "Edit"}
@@ -117,7 +142,7 @@ export function CustomSectionPage() {
           <Button 
             variant="destructive" 
             onClick={handleDelete}
-            disabled={isLoading}
+            disabled={isSaving}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete

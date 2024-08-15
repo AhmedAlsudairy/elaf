@@ -4,6 +4,7 @@ import { getCompanyProfileById } from "@/actions/supabase/gett-company-profile-b
 import { ProfileContent } from "@/components/pages/user/profile/mycompanyprofile/components/pages/company-content";
 import { CompanyProfile } from "@/types";
 import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CompanyProfilePageProps {
   companyId: string;
@@ -29,7 +30,18 @@ export const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ companyI
   }, [companyId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-[250px]" />
+        <Skeleton className="h-4 w-[300px]" />
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-32 w-full" />
+        <div className="flex space-x-4">
+          <Skeleton className="h-10 w-[120px]" />
+          <Skeleton className="h-10 w-[120px]" />
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {

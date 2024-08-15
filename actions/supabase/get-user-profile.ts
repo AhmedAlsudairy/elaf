@@ -7,7 +7,7 @@ export const getUserProfile = async (supabase:SupabaseClient,userId: string) => 
   const { data, error } = await supabase
     .from('user_profiles')
     .select('*')
-    .eq('user_Id', userId)
+    .eq('user_id', userId)
     .single()
 
   if (error) {

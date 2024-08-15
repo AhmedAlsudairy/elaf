@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, differenceInDays } from 'date-fns';
-
+//this is tender card component
 interface TenderCardProps {
   companyId: string;
   tenderId: string;

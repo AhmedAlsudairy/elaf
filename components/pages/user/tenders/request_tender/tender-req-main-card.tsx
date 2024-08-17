@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, FileText, Calendar } from "lucide-react";
+import Image from "next/image";
 
 export interface TenderRequest {
   id: string;
@@ -46,10 +47,12 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
             {request.company_profile.profile_image ? (
-              <img
+              <Image
                 src={request.company_profile.profile_image}
                 alt={request.company_profile.company_title}
-                className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                width={48}
+                height={48}
+                className=" rounded-full object-cover border-2 border-gray-200"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">

@@ -1,4 +1,4 @@
-import { SingleTenderClientComponent } from "../components/tender-single-page";
+import SingleTenderClientComponent from "../components/tender-single-page";
 
 interface Company {
   company_profile_id: string;
@@ -28,9 +28,12 @@ interface SingleTenderPageProps {
   company: Company;
 }
 
-export const SingleTenderPage: React.FC<SingleTenderPageProps> = ({ tender, company }) => {
+ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({ tender, company }) => {
   return (
     <SingleTenderClientComponent tender={tender} company={company} />
   );
 };
 
+SingleTenderPage.displayName = 'SingleTenderPage';
+
+export default SingleTenderPage;

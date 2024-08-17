@@ -1,6 +1,6 @@
 
 import { fetchTenderData } from '@/actions/supabase/get-tender';
-import { SingleTenderPage } from '@/components/pages/user/tenders/request_tender/tender-single-page-client';
+import SingleTenderPage from '@/components/pages/user/tenders/request_tender/tender-single-page-client';
 
 interface PageProps {
   params: { tenderId?: string };

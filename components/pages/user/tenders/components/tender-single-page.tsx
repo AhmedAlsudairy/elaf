@@ -50,7 +50,7 @@ interface SingleTenderClientComponentProps {
   company: Company;
 }
 
-export const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = ({ tender, company }) => {
+const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = ({ tender, company }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showScopeOfWork, setShowScopeOfWork] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -298,3 +298,6 @@ export const SingleTenderClientComponent: React.FC<SingleTenderClientComponentPr
   );
 };
 
+SingleTenderClientComponent.displayName = 'SingleTenderClientComponent';
+
+export default SingleTenderClientComponent;

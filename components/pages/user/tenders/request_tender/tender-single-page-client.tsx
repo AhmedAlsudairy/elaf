@@ -28,10 +28,9 @@ interface SingleTenderPageProps {
   company: Company;
 }
 
-const SingleTenderPage: React.FC<SingleTenderPageProps> = ({ tender, company }) => {
+export const SingleTenderPage: React.FC<SingleTenderPageProps> = ({ tender, company }) => {
   return (
     <SingleTenderClientComponent tender={tender} company={company} />
   );
 };
 
-export default SingleTenderPage;

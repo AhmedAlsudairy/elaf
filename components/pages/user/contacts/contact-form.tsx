@@ -9,7 +9,7 @@ export const ContactForm = () => (
       <div className="flex flex-col items-start justify-center space-y-4">
         <h2 className="text-2xl font-bold">Get in Touch</h2>
         <p className="text-muted-foreground">
-          Have a question or need assistance? Fill out the form below and we'll
+          Have a question or need assistance? Fill out the form below and we will
           get back to you as soon as possible.
         </p>
         <form className="w-full space-y-4">

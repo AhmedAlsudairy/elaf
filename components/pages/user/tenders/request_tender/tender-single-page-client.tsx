@@ -1,5 +1,4 @@
-'use server '
-import SingleTenderClientComponent from "../components/tender-single-page";
+import { SingleTenderClientComponent } from "../components/tender-single-page";
 
 interface Company {
   company_profile_id: string;

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import React, { useState, useCallback, useMemo } from "react";
+import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,51 +54,41 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showScopeOfWork, setShowScopeOfWork] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [companyProfile, setCompanyProfile] = useState<Company | null>(null);
   const { toast } = useToast();
-  const { isOwner, isLoading } = useIsOwnerOfCompany(company.company_profile_id);
   const queryClient = useQueryClient();
-  const [requestSummaries, setRequestSummaries] = useState<RequestSummary[]>([]);
-  const [hasMoreSummaries, setHasMoreSummaries] = useState(true);
-  const [page, setPage] = useState(0);
-  const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
 
-  const loadMoreSummaries = useCallback(async () => {
-    if (isOwner && !isLoadingSummaries) {
-      setIsLoadingSummaries(true);
-      try {
-        const result = await getRequestSummaries(tender.tender_id, page);
-        if (result.success && result.data) {
-          setRequestSummaries(prev => [...prev, ...result.data]);
-          setPage(prev => prev + 1);
-          setHasMoreSummaries(result.data.length > 0);
-          setSummaryError(null);
-        } else {
-          setSummaryError(result.error || 'Failed to load summaries');
-        }
-      } catch (error) {
-        console.error("Error loading summaries:", error);
-        setSummaryError('An unexpected error occurred');
-      } finally {
-        setIsLoadingSummaries(false);
+  const { isOwner, isLoading: isLoadingOwnership } = useIsOwnerOfCompany(company.company_profile_id);
+
+  const { data: companyProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['companyProfile'],
+    queryFn: getCurrentCompanyProfile,
+  });
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: ['requestSummaries', tender.tender_id],
+    queryFn: async ({ pageParam = 0 }) => {
+      const result = await getRequestSummaries(tender.tender_id, pageParam as number);
+      return result;
+    },
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.success && lastPage.data && lastPage.data.length > 0) {
+        return pages.length;
       }
-    }
-  }, [isOwner, tender.tender_id, page, isLoadingSummaries]);
+      return undefined;
+    },
+    initialPageParam: 0,
+    enabled: isOwner,
+  });
 
-  useEffect(() => {
-    if (isOwner) {
-      loadMoreSummaries();
-    }
-  }, [isOwner, loadMoreSummaries]);
-
-  useEffect(() => {
-    const fetchCompanyProfile = async () => {
-      const profile = await getCurrentCompanyProfile();
-      setCompanyProfile(profile);
-    };
-    fetchCompanyProfile();
-  }, []);
+  const requestSummaries = useMemo(() => {
+    return data?.pages.flatMap(page => page.data || []) || [];
+  }, [data]);
 
   const handleTenderRequestSubmit = useCallback(async (formData: any, pdfBlob?: Blob) => {
     try {
@@ -109,6 +99,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
           description: "Your tender request has been submitted.",
         });
         setIsDialogOpen(false);
+        queryClient.invalidateQueries({ queryKey: ['requestSummaries', tender.tender_id] });
       } else {
         toast({
           title: "Error",
@@ -124,7 +115,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
         variant: "destructive",
       });
     }
-  }, [tender.tender_id, toast]);
+  }, [tender.tender_id, toast, queryClient]);
 
   const handleAcceptRequest = useCallback(async (requestId: string) => {
     console.log(`Accepting request ${requestId}`);
@@ -132,7 +123,8 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
       title: "Request Accepted",
       description: `Tender request ${requestId} has been accepted.`,
     });
-  }, [toast]);
+    queryClient.invalidateQueries({ queryKey: ['requestSummaries', tender.tender_id] });
+  }, [toast, queryClient, tender.tender_id]);
 
   const formatDate = useCallback((dateString: string | null): string => {
     if (!dateString) return "Not specified";
@@ -154,7 +146,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
     );
   }, []);
 
-  if (isLoading) {
+  if (isLoadingOwnership || isLoadingProfile) {
     return <div>Loading...</div>;
   }
 
@@ -292,10 +284,10 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
           {isOwner ? (
             <RequestSummaryCard
               requestSummaries={requestSummaries}
-              hasMore={hasMoreSummaries}
-              loadMore={loadMoreSummaries}
-              isLoading={isLoadingSummaries}
-              error={summaryError}
+              hasMore={!!hasNextPage}
+              loadMore={() => fetchNextPage()}
+              isLoading={isFetchingNextPage}
+              error={status === 'error' ? 'Failed to load summaries' : null}
             />
           ) : (
             <CompanyCard company={company} />

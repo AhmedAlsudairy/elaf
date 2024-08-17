@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Clock } from "lucide-react"
 import { cn } from '@/lib/utils/shadcn/utils'
 import { TenderFormValues } from '@/schema'
 import { SectorEnum } from "@/constant/text"
@@ -56,7 +56,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
         name="end_date"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>End Date and Time</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -69,24 +69,50 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
                     disabled={isLoading}
                   >
                     {field.value ? (
-                      format(field.value, "PPP")
+                      format(field.value, "PPP HH:mm")
                     ) : (
-                      <span>Pick a date</span>
+                      <span>Pick a date and time</span>
                     )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    <div className="ml-auto flex items-center">
+                      <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                      <Clock className="h-4 w-4 opacity-50" />
+                    </div>
                   </Button>
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={field.value}
-                  onSelect={field.onChange}
-                  disabled={(date) =>
-                    date < new Date() || date < new Date("1900-01-01")
-                  }
-                  initialFocus
-                />
+                <div className="p-4 space-y-4">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={(date) => {
+                      if (date) {
+                        const currentDate = field.value || new Date();
+                        date.setHours(currentDate.getHours());
+                        date.setMinutes(currentDate.getMinutes());
+                        field.onChange(date);
+                      }
+                    }}
+                    disabled={(date) =>
+                      date < new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                  <div className="flex items-center justify-center">
+                    <Input
+                      type="time"
+                      value={field.value ? format(field.value, "HH:mm") : ""}
+                      onChange={(e) => {
+                        const [hours, minutes] = e.target.value.split(':');
+                        const newDate = new Date(field.value || new Date());
+                        newDate.setHours(parseInt(hours));
+                        newDate.setMinutes(parseInt(minutes));
+                        field.onChange(newDate);
+                      }}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
               </PopoverContent>
             </Popover>
             <FormMessage />
@@ -145,7 +171,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
       <div className="col-span-1 md:col-span-2">
         <FormField
           control={form.control}
-          name="Tender_sectors"
+          name="tender_sectors"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Sectors</FormLabel>

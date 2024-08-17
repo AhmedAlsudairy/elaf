@@ -26,7 +26,7 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
     { label: 'myProfile', href: '/profile/myprofile' },
     { 
       label: companyProfile ? 'myCompany' : 'newCompany', 
-      href: companyProfile ? `/profile/companyprofile/${companyProfile.company_profile_id}` : '/new-company' 
+      href: companyProfile ? `/profile/companyprofile/${companyProfile.company_profile_id}` : '/profile/companyprofile/new' 
     },
     { label: 'logout', action: handleSignOut }
   ];

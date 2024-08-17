@@ -1,9 +1,9 @@
-import React from 'react';
+import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, differenceInDays } from 'date-fns';
-//this is tender card component
+
 interface TenderCardProps {
   companyId: string;
   tenderId: string;
@@ -72,40 +72,42 @@ const TenderCard: React.FC<TenderCardProps> = ({
   };
 
   return (
-    <Card className="w-full h-full flex flex-col">
-      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0">
-        <div className="flex items-center space-x-4">
-          <Avatar className="w-12 h-12 flex-shrink-0">
-            <AvatarImage src={profileImage} alt={companyTitle} />
-            <AvatarFallback>{companyTitle.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="text-lg font-semibold line-clamp-1">{companyTitle}</h3>
-            <p className="text-sm text-gray-500">Company ID: {companyId}</p>
+    <Link href={`/tenders/${tenderId}`} className="block w-full h-full">
+      <Card className="w-full h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0">
+          <Link href={`/profile/companyprofile/${companyId}`} className="flex items-center space-x-4">
+            <Avatar className="w-12 h-12 flex-shrink-0">
+              <AvatarImage src={profileImage} alt={companyTitle} />
+              <AvatarFallback>{companyTitle.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-lg font-semibold line-clamp-1">{companyTitle}</h3>
+              <p className="text-sm text-gray-500">Company ID: {companyId}</p>
+            </div>
+          </Link>
+          <Badge className={`${getStatusBadgeColor(status)} text-white mt-2 sm:mt-0`}>
+            {getStatusBadgeContent()}
+          </Badge>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          <h4 className="text-xl font-bold mb-2 line-clamp-2">{tenderTitle}</h4>
+          <p className="text-sm text-gray-600 mb-4 line-clamp-3">{summary}</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {sectors.map((sector, index) => (
+              <Badge key={index} variant="secondary" className="text-xs">{sector}</Badge>
+            ))}
           </div>
-        </div>
-        <Badge className={`${getStatusBadgeColor(status)} text-white mt-2 sm:mt-0`}>
-          {getStatusBadgeContent()}
-        </Badge>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        <h4 className="text-xl font-bold mb-2 line-clamp-2">{tenderTitle}</h4>
-        <p className="text-sm text-gray-600 mb-4 line-clamp-3">{summary}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {sectors.map((sector, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">{sector}</Badge>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <p className="text-sm text-gray-500">Start: {formatDate(startingDate)}</p>
-          <p className="text-sm text-gray-500">End: {formatDate(endDate)}</p>
-        </div>
-        <p className="text-sm text-gray-500 mt-2 line-clamp-1">Address: {address}</p>
-      </CardContent>
-      <CardFooter className="text-xs text-gray-500">
-        Tender ID: {tenderId}
-      </CardFooter>
-    </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <p className="text-sm text-gray-500">Start: {formatDate(startingDate)}</p>
+            <p className="text-sm text-gray-500">End: {formatDate(endDate)}</p>
+          </div>
+          <p className="text-sm text-gray-500 mt-2 line-clamp-1">Address: {address}</p>
+        </CardContent>
+        <CardFooter className="text-xs text-gray-500">
+          Tender ID: {tenderId}
+        </CardFooter>
+      </Card>
+    </Link>
   );
 };
 

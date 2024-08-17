@@ -153,3 +153,4 @@ export interface SearchResult {
   success: Tender[];
   error?: string;
 }
+

@@ -36,7 +36,7 @@ export function TenderForm() {
       scope_of_works: "",
       pdf_choice: 'upload',
       custom_fields: [{ title: '', description: '' }],
-      Tender_sectors: [] as SectorEnum[],
+      tender_sectors: [] as SectorEnum[],
     },
   })
 
@@ -52,7 +52,7 @@ export function TenderForm() {
 
   async function handleNextStep() {
     setIsLoading(true);
-    const isValid = await form.trigger(['title', 'summary', 'end_date', 'terms', 'scope_of_works', 'Tender_sectors']);
+    const isValid = await form.trigger(['title', 'summary', 'end_date', 'terms', 'scope_of_works', 'tender_sectors']);
     if (isValid) {
       try {
         const stepOneData = form.getValues();
@@ -102,16 +102,30 @@ export function TenderForm() {
       }
     }}
 
-  useEffect(() => {
-    if (tenderId) {
-      fetchTenderData(tenderId).then(data => {
-        form.reset(data);
-      }).catch(error => {
-        console.error('Error fetching tender data:', error);
-        showToast('error', 'Error fetching tender data');
-      });
-    }
-  }, [tenderId, form]);
+
+    useEffect(() => {
+      if (tenderId) {
+        fetchTenderData(tenderId).then(data => {
+          if (data && data.tender) {
+            const formattedData: Partial<FormValues> = {
+              title: data.tender.title || "",
+              summary: data.tender.summary || "",
+              pdf_url: data.tender.pdf_url || "",
+              end_date: data.tender.end_date ? new Date(data.tender.end_date) : new Date(),
+              terms: data.tender.terms || "",
+              scope_of_works: data.tender.scope_of_works || "",
+              tender_sectors: data.tender.tender_sectors as SectorEnum[] || [],
+              pdf_choice: 'upload', // Assuming a default value
+              custom_fields: [{ title: '', description: '' }], // Assuming a default value
+            };
+            form.reset(formattedData);
+          }
+        }).catch(error => {
+          console.error('Error fetching tender data:', error);
+          showToast('error', 'Error fetching tender data');
+        });
+      }
+    }, [tenderId]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-8">

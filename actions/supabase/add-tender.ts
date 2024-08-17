@@ -14,7 +14,7 @@ const stepOneSchema = z.object({
   }),
   terms: z.string(),
   scope_of_works: z.string(),
-  Tender_sectors: z.array(z.nativeEnum(SectorEnum)),
+  tender_sectors: z.array(z.nativeEnum(SectorEnum)),
 });
 
 type StepOneData = z.infer<typeof stepOneSchema>;
@@ -45,7 +45,7 @@ export async function addTenderStepOne(formData: StepOneData) {
         company_profile_id: companyProfile.company_profile_id,
         title: validatedData.title,
         summary: validatedData.summary,
-        Tender_sectors: validatedData.Tender_sectors,
+        tender_sectors: validatedData.tender_sectors,
         end_date: validatedData.end_date.toISOString(),
         terms: validatedData.terms,
         scope_of_works: validatedData.scope_of_works,

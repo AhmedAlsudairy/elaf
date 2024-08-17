@@ -33,7 +33,7 @@ export const userProfileSchema = z.object({
 export const TenderSchema = z.object({
   title: z.string().min(1, "Title is required"),
   summary: z.string().min(1, "Summary is required"),
-  Tender_sectors: z.array(z.nativeEnum(SectorEnum)).min(1, "At least one sector is required"),
+  tender_sectors: z.array(z.nativeEnum(SectorEnum)).min(1, "At least one sector is required"),
   pdf_url: z.string().url("Invalid URL"),
   end_date: z.date({
     required_error: "End date is required",

@@ -19,7 +19,7 @@ export async function updateProfile(profile: CompanyProfile) {
         profile_image: profile.profile_image,
         sectors: profile.sectors,
       })
-      .eq('id', profile.id)
+      .eq('company_profile_id', profile.company_profile_id)
       .select()
       .single();
   

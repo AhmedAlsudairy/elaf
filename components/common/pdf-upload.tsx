@@ -30,7 +30,7 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
       const fileName = `${Math.random()}.pdf`;
       const filePath = `${fileName}`;
 
-      let { error: uploadError, data } = await supabaseClient.storage
+      let { error: uploadError } = await supabaseClient.storage
         .from(bucketName)
         .upload(filePath, file);
 
@@ -65,11 +65,11 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
   }, [generatedPdfBlob, uploadPDF]);
 
   return (
-    <div>
-      <div className="mb-4 flex flex-col gap-2">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2">
         {value.filter(url => typeof url === 'string' && url.trim() !== '').map((url) => (
           <div key={url} className="flex items-center justify-between p-2 bg-gray-100 rounded">
-            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline truncate max-w-[70%]">
               {url.split('/').pop() || 'Uploaded PDF'}
             </a>
             <Button
@@ -83,7 +83,7 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Input
           type="file"
           id="pdfUpload"
@@ -97,6 +97,7 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
           disabled={disabled || uploading}
           variant="secondary"
           onClick={() => document.getElementById('pdfUpload')?.click()}
+          className="w-full sm:w-auto mb-2 mr-2"
         >
           <FileUp className="h-4 w-4 mr-2" />
           {uploading ? 'Uploading...' : 'Upload a PDF'}
@@ -107,6 +108,7 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
             disabled={disabled || uploading}
             variant="secondary"
             onClick={handleGeneratedPdfUpload}
+            className="w-full sm:w-auto mb-2"
           >
             <Upload className="h-4 w-4 mr-2" />
             {uploading ? 'Uploading...' : 'Upload Generated PDF'}

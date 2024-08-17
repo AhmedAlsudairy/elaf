@@ -16,6 +16,10 @@ interface PDFData {
     title: string;
     content: string[];
   }>;
+  // New fields for tender request
+  bid_price?: number;
+  company_name?: string;
+  is_tender_request?: boolean;
 }
 
 // Define prop types for the component
@@ -130,6 +134,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#888888',
   },
+  bidPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#007bff',
+    marginBottom: 10,
+  },
 });
 
 const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }) => {
@@ -165,6 +175,9 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
           <Image style={styles.logo} src={companyLogo} />
         </View>
         <Text style={styles.metaData}>Created At: {format(new Date(), 'PPP')}</Text>
+        {data.company_name && (
+          <Text style={styles.metaData}>Company: {data.company_name}</Text>
+        )}
       </View>
     </View>
   );
@@ -175,52 +188,62 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
         <Header />
         <Text style={styles.title}>{data.title}</Text>
 
+        {data.is_tender_request && data.bid_price !== undefined && (
+          <View style={styles.section}>
+            <Text style={styles.bidPrice}>Bid Price: ${data.bid_price.toFixed(2)}</Text>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.fieldTitle}>Summary:</Text>
           <Text style={styles.fieldContent}>{data.summary}</Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.fieldTitle}>End Date:</Text>
-          <Text style={styles.fieldContent}>{format(data.end_date, 'PPP')}</Text>
-        </View>
+        {!data.is_tender_request && (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.fieldTitle}>End Date:</Text>
+              <Text style={styles.fieldContent}>{format(data.end_date, 'PPP')}</Text>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.fieldTitle}>Terms:</Text>
-          <Text style={styles.fieldContent}>{data.terms}</Text>
-        </View>
+            <View style={styles.section}>
+              <Text style={styles.fieldTitle}>Terms:</Text>
+              <Text style={styles.fieldContent}>{data.terms}</Text>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.fieldTitle}>Scope of Works:</Text>
-          <View style={styles.scopeOfWorks}>
-            {renderScopeOfWorks(data.scope_of_works)}
-          </View>
-        </View>
+            <View style={styles.section}>
+              <Text style={styles.fieldTitle}>Scope of Works:</Text>
+              <View style={styles.scopeOfWorks}>
+                {renderScopeOfWorks(data.scope_of_works)}
+              </View>
+            </View>
 
-        {data.content_sections.map((section, index) => (
-          <View key={index} style={styles.section}>
-            <Text style={styles.fieldTitle}>{section.title}</Text>
-            {section.type === 'paragraph' ? (
-              section.content.map((paragraph, pIndex) => (
-                <Text key={pIndex} style={styles.paragraph}>{paragraph}</Text>
-              ))
-            ) : (
-              section.content.map((item, lIndex) => (
-                <View key={lIndex} style={styles.listItem}>
-                  <Text style={styles.bullet}>• </Text>
-                  <Text style={styles.fieldContent}>{item}</Text>
-                </View>
-              ))
-            )}
-          </View>
-        ))}
+            {data.content_sections.map((section, index) => (
+              <View key={index} style={styles.section}>
+                <Text style={styles.fieldTitle}>{section.title}</Text>
+                {section.type === 'paragraph' ? (
+                  section.content.map((paragraph, pIndex) => (
+                    <Text key={pIndex} style={styles.paragraph}>{paragraph}</Text>
+                  ))
+                ) : (
+                  section.content.map((item, lIndex) => (
+                    <View key={lIndex} style={styles.listItem}>
+                      <Text style={styles.bullet}>• </Text>
+                      <Text style={styles.fieldContent}>{item}</Text>
+                    </View>
+                  ))
+                )}
+              </View>
+            ))}
 
-        {data.custom_fields.map((field, index) => (
-          <View key={index} style={styles.section}>
-            <Text style={styles.fieldTitle}>{field.title}:</Text>
-            <Text style={styles.fieldContent}>{field.description}</Text>
-          </View>
-        ))}
+            {data.custom_fields.map((field, index) => (
+              <View key={index} style={styles.section}>
+                <Text style={styles.fieldTitle}>{field.title}:</Text>
+                <Text style={styles.fieldContent}>{field.description}</Text>
+              </View>
+            ))}
+          </>
+        )}
 
         <Text 
           style={styles.pageNumber} 

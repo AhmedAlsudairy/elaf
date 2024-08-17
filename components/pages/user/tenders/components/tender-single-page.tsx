@@ -298,6 +298,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   );
 };
 
+
 SingleTenderClientComponent.displayName = 'SingleTenderClientComponent';
 
 export default SingleTenderClientComponent;

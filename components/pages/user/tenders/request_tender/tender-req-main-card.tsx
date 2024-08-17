@@ -1,7 +1,9 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ExternalLink, FileText, Calendar } from "lucide-react";
 
 export interface TenderRequest {
   id: string;
@@ -39,46 +41,71 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   };
 
   return (
-    <Card className="mb-4">
-      <CardHeader>
+    <Card className="mb-4 hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>{request.company_profile.company_title}</CardTitle>
-            <p className="text-sm text-gray-500">
-              ID: {request.company_profile_id}
+          <div className="flex items-center space-x-4">
+            {request.company_profile.profile_image ? (
+              <img
+                src={request.company_profile.profile_image}
+                alt={request.company_profile.company_title}
+                className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-xl font-bold text-gray-500">
+                  {request.company_profile.company_title.charAt(0)}
+                </span>
+              </div>
+            )}
+            <div>
+              <Link 
+                href={`/profile/companyprofile/${request.company_profile_id}`}
+                className="hover:underline"
+              >
+                <CardTitle className="flex items-center">
+                  {request.company_profile.company_title}
+                  <ExternalLink className="ml-2 w-4 h-4" />
+                </CardTitle>
+              </Link>
+              <p className="text-sm text-gray-500">
+                ID: {request.company_profile_id}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-semibold text-lg text-green-600">
+              ${request.bid_price.toFixed(2)}
+            </p>
+            <p className="text-sm text-gray-500 flex items-center justify-end">
+              <Calendar className="w-4 h-4 mr-1" />
+              {formatDate(request.created_at)}
             </p>
           </div>
-          {request.company_profile.profile_image && (
-            <img
-              src={request.company_profile.profile_image}
-              alt={request.company_profile.company_title}
-              className="w-12 h-12 rounded-full"
-            />
-          )}
         </div>
       </CardHeader>
       <CardContent>
-        <h3 className="font-semibold">{request.title}</h3>
-        <p className="text-sm text-gray-600 mb-2">{request.summary}</p>
-        <p className="font-semibold">
-          Price: ${request.bid_price.toFixed(2)}
-        </p>
-        <p className="text-sm text-gray-500">
-          Submitted: {formatDate(request.created_at)}
-        </p>
-        {request.pdf_url && (
-          <a
-            href={request.pdf_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline block mb-2"
+        <h3 className="font-semibold text-lg mb-2">{request.title}</h3>
+        <p className="text-sm text-gray-600 mb-4">{request.summary}</p>
+        <div className="flex justify-between items-center">
+          {request.pdf_url && (
+            <a
+              href={request.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline flex items-center"
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              View PDF
+            </a>
+          )}
+          <Button 
+            onClick={() => onAccept(request.id)} 
+            className="bg-green-500 hover:bg-green-600 text-white"
           >
-            View PDF
-          </a>
-        )}
-        <Button onClick={() => onAccept(request.id)} className="mt-2">
-          Accept
-        </Button>
+            Accept Request
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

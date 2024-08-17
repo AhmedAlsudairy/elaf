@@ -1,15 +1,6 @@
 'use server'
 import { createClient } from "@/lib/utils/supabase/server";
 
-interface DatabaseRequestSummary {
-  id: string;
-  bid_price: number;
-  pdf_url: string | null;
-  company_profiles: {
-    company_title: string;
-  }[];
-}
-
 export interface RequestSummary {
   id: string;
   company_title: string;
@@ -17,7 +8,7 @@ export interface RequestSummary {
   pdf_url: string | null;
 }
 
-export async function getRequestSummaries(tenderId: string, page: number, pageSize: number = 10): Promise<RequestSummary[]> {
+export async function getRequestSummaries(tenderId: string, page: number, pageSize: number = 10): Promise<{ success: boolean; data: RequestSummary[]; error: string | null }> {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -34,15 +25,20 @@ export async function getRequestSummaries(tenderId: string, page: number, pageSi
 
   if (error) {
     console.error("Error fetching request summaries:", error);
-    return [];
+    return { success: false, data: [], error: error.message };
   }
 
-  console.log("Fetched request summaries:", data);
+  try {
+    const summaries: RequestSummary[] = (data || []).map((item: any) => ({
+      id: item.id,
+      company_title: item.company_profiles?.company_title || 'Unknown Company',
+      bid_price: item.bid_price,
+      pdf_url: item.pdf_url
+    }));
 
-  return (data as DatabaseRequestSummary[]).map(item => ({
-    id: item.id,
-    company_title: item.company_profiles[0]?.company_title || 'Unknown Company',
-    bid_price: item.bid_price,
-    pdf_url: item.pdf_url
-  }));
+    return { success: true, data: summaries, error: null };
+  } catch (err) {
+    console.error("Error processing request summaries:", err);
+    return { success: false, data: [], error: 'Failed to process request summaries' };
+  }
 }

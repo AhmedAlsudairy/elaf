@@ -1,7 +1,6 @@
 
-import React from 'react';
-import SingleTenderPage from '@/components/pages/user/tenders/components/tender-single-page';
 import { fetchTenderData } from '@/actions/supabase/get-tender';
+import SingleTenderPage from '@/components/pages/user/tenders/request_tender/tender-single-page-client';
 
 interface PageProps {
   params: { tenderId?: string };
@@ -22,7 +21,7 @@ export default async function TenderPage({ params }: PageProps) {
     }
 
     return (
-      <SingleTenderPage 
+      < SingleTenderPage
         tender={tender}
         company={company}
       />

@@ -1,25 +1,14 @@
-"use client";
-import React, { useState, useEffect, useCallback } from "react";
+'use client'
+
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  Calendar,
-  FileText,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Calendar, FileText, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import TenderInfo from "./tender-info";
 import TenderContent from "./tender-content";
 import CompanyCard from "./company-card";
@@ -31,7 +20,7 @@ import CompanyOwnerTenderDetails from "./price-summary";
 import TenderRequestList from "../request_tender/tender-req-list-main";
 import { format } from "date-fns";
 import RequestSummaryCard from "../request_tender/request-summary-card";
-import { getRequestSummaries } from "@/actions/supabase/get-request-summary";
+import { getRequestSummaries, RequestSummary } from "@/actions/supabase/get-request-summary";
 
 interface Company {
   company_profile_id: string;
@@ -56,61 +45,46 @@ interface Tender {
   minimum_price?: number;
 }
 
-interface SingleTenderPageProps {
+interface SingleTenderClientComponentProps {
   tender: Tender;
   company: Company;
 }
 
-interface RequestSummary {
-  id: string;
-  company_title: string;
-  bid_price: number;
-  pdf_url: string | null;
-}
-
-const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
-  tender,
-  company,
-}) => {
+const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = ({ tender, company }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showScopeOfWork, setShowScopeOfWork] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [companyProfile, setCompanyProfile] = useState<Company | null>(null);
   const { toast } = useToast();
-  const { isOwner, isLoading } = useIsOwnerOfCompany(
-    company.company_profile_id
-  );
+  const { isOwner, isLoading } = useIsOwnerOfCompany(company.company_profile_id);
   const queryClient = useQueryClient();
-  const [requestSummaries, setRequestSummaries] = useState<RequestSummary[]>(
-    []
-  );
+  const [requestSummaries, setRequestSummaries] = useState<RequestSummary[]>([]);
   const [hasMoreSummaries, setHasMoreSummaries] = useState(true);
   const [page, setPage] = useState(0);
   const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const loadMoreSummaries = useCallback(async () => {
     if (isOwner && !isLoadingSummaries) {
       setIsLoadingSummaries(true);
       try {
-        const newSummaries = await getRequestSummaries(tender.tender_id, page);
-        if (newSummaries.length > 0) {
-          setRequestSummaries((prev) => [...prev, ...newSummaries]);
-          setPage((prev) => prev + 1);
+        const result = await getRequestSummaries(tender.tender_id, page);
+        if (result.success && result.data) {
+          setRequestSummaries(prev => [...prev, ...result.data]);
+          setPage(prev => prev + 1);
+          setHasMoreSummaries(result.data.length > 0);
+          setSummaryError(null);
         } else {
-          setHasMoreSummaries(false);
+          setSummaryError(result.error || 'Failed to load summaries');
         }
       } catch (error) {
         console.error("Error loading summaries:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load request summaries. Please try again.",
-          variant: "destructive",
-        });
+        setSummaryError('An unexpected error occurred');
       } finally {
         setIsLoadingSummaries(false);
       }
     }
-  }, [isOwner, tender.tender_id, page, isLoadingSummaries, toast]);
+  }, [isOwner, tender.tender_id, page, isLoadingSummaries]);
 
   useEffect(() => {
     if (isOwner) {
@@ -124,9 +98,9 @@ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
       setCompanyProfile(profile);
     };
     fetchCompanyProfile();
-  }, [company]);
+  }, []);
 
-  const handleTenderRequestSubmit = async (formData: any, pdfBlob?: Blob) => {
+  const handleTenderRequestSubmit = useCallback(async (formData: any, pdfBlob?: Blob) => {
     try {
       const result = await addTenderRequest(tender.tender_id, formData);
       if (result.success) {
@@ -135,15 +109,10 @@ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
           description: "Your tender request has been submitted.",
         });
         setIsDialogOpen(false);
-        queryClient.invalidateQueries({
-          queryKey: ["tenderRequests", tender.tender_id],
-        });
       } else {
         toast({
           title: "Error",
-          description:
-            result.error ||
-            "Failed to submit tender request. Please try again.",
+          description: result.error || "Failed to submit tender request. Please try again.",
           variant: "destructive",
         });
       }
@@ -155,49 +124,39 @@ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [tender.tender_id, toast]);
 
-  const handleAcceptRequest = async (requestId: string) => {
+  const handleAcceptRequest = useCallback(async (requestId: string) => {
     console.log(`Accepting request ${requestId}`);
-    // Implement the actual API call to accept the request here
     toast({
       title: "Request Accepted",
       description: `Tender request ${requestId} has been accepted.`,
     });
-    queryClient.invalidateQueries({
-      queryKey: ["tenderRequests", tender.tender_id],
-    });
-  };
+  }, [toast]);
 
-  const formatDate = (dateString: string | null): string => {
+  const formatDate = useCallback((dateString: string | null): string => {
     if (!dateString) return "Not specified";
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? "Invalid date" : format(date, "PPP");
-  };
+  }, []);
+
+  const ToggleButton = useMemo(() => {
+    return ({ isShown, onClick, title }: { isShown: boolean; onClick: () => void; title: string }) => (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onClick}
+        className="mb-2 flex items-center"
+      >
+        {isShown ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
+        {isShown ? `Hide ${title}` : `Show ${title}`}
+      </Button>
+    );
+  }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
-  const ToggleButton: React.FC<{
-    isShown: boolean;
-    onClick: () => void;
-    title: string;
-  }> = ({ isShown, onClick, title }) => (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={onClick}
-      className="mb-2 flex items-center"
-    >
-      {isShown ? (
-        <ChevronUp className="mr-2 h-4 w-4" />
-      ) : (
-        <ChevronDown className="mr-2 h-4 w-4" />
-      )}
-      {isShown ? `Hide ${title}` : `Show ${title}`}
-    </Button>
-  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -209,9 +168,7 @@ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
                 <CardTitle className="text-2xl font-bold">
                   {tender.title || "Untitled Tender"}
                 </CardTitle>
-                <Badge
-                  variant={tender.status === "open" ? "default" : "destructive"}
-                >
+                <Badge variant={tender.status === "open" ? "default" : "destructive"}>
                   {tender.status || "Unknown"}
                 </Badge>
               </div>
@@ -331,13 +288,14 @@ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
             </Card>
           )}
         </div>
-        <div>
+        <div className="h-[calc(100vh-2rem)]">
           {isOwner ? (
             <RequestSummaryCard
               requestSummaries={requestSummaries}
               hasMore={hasMoreSummaries}
               loadMore={loadMoreSummaries}
               isLoading={isLoadingSummaries}
+              error={summaryError}
             />
           ) : (
             <CompanyCard company={company} />
@@ -348,4 +306,4 @@ const SingleTenderPage: React.FC<SingleTenderPageProps> = ({
   );
 };
 
-export default SingleTenderPage;
+export default SingleTenderClientComponent;

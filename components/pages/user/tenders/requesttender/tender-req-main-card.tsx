@@ -2,9 +2,16 @@ import React from "react";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, Calendar } from "lucide-react";
+import { ExternalLink, FileText, Calendar, DollarSign } from "lucide-react";
 import Image from "next/image";
+
+enum TenderRequestStatusEnum {
+  Pending = 'pending',
+  Accepted = 'accepted',
+  Rejected = 'rejected'
+}
 
 export interface TenderRequest {
   id: string;
@@ -14,7 +21,7 @@ export interface TenderRequest {
   title: string;
   summary: string;
   pdf_url?: string;
-  status: string;
+  status: TenderRequestStatusEnum;
   created_at: string;
   updated_at: string;
   company_profile: {
@@ -26,11 +33,15 @@ export interface TenderRequest {
 export interface TenderRequestCardProps {
   request: TenderRequest;
   onAccept: (id: string) => void;
+  isAccepted: boolean;
+  showAcceptButton: boolean;
 }
 
 const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   request,
   onAccept,
+  isAccepted,
+  showAcceptButton,
 }) => {
   const formatDate = (dateString: string) => {
     try {
@@ -41,8 +52,19 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
     }
   };
 
+  const getStatusBadge = (status: TenderRequestStatusEnum) => {
+    switch (status) {
+      case TenderRequestStatusEnum.Pending:
+        return <Badge variant="default">Pending</Badge>;
+      case TenderRequestStatusEnum.Accepted:
+        return <Badge variant="secondary">Accepted</Badge>;
+      case TenderRequestStatusEnum.Rejected:
+        return <Badge variant="destructive">Rejected</Badge>;
+    }
+  };
+
   return (
-    <Card className="mb-4 hover:shadow-lg transition-shadow duration-300">
+    <Card className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${isAccepted ? 'border-green-500 border-2' : ''}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
@@ -52,7 +74,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
                 alt={request.company_profile.company_title}
                 width={48}
                 height={48}
-                className=" rounded-full object-cover border-2 border-gray-200"
+                className="rounded-full object-cover border-2 border-gray-200"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
@@ -63,7 +85,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
             )}
             <div>
               <Link 
-                href={`/profile/companyprofile/${request.company_profile_id}`}
+                href={`/profile/companyprofiles/${request.company_profile_id}`}
                 className="hover:underline"
               >
                 <CardTitle className="flex items-center">
@@ -77,8 +99,9 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
             </div>
           </div>
           <div className="text-right">
-            <p className="font-semibold text-lg text-green-600">
-              ${request.bid_price.toFixed(2)}
+            <p className="font-semibold text-lg text-green-600 flex items-center justify-end">
+              <DollarSign className="w-5 h-5 mr-1" />
+              {request.bid_price.toFixed(2)}
             </p>
             <p className="text-sm text-gray-500 flex items-center justify-end">
               <Calendar className="w-4 h-4 mr-1" />
@@ -102,12 +125,17 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               View PDF
             </a>
           )}
-          <Button 
-            onClick={() => onAccept(request.id)} 
-            className="bg-green-500 hover:bg-green-600 text-white"
-          >
-            Accept Request
-          </Button>
+          <div className="flex items-center space-x-2">
+            {getStatusBadge(request.status)}
+            {showAcceptButton && request.status === TenderRequestStatusEnum.Pending && (
+              <Button 
+                onClick={() => onAccept(request.id)} 
+                className="bg-green-500 hover:bg-green-600 text-white"
+              >
+                Accept Request
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

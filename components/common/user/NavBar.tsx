@@ -63,7 +63,7 @@ export const Header = () => {
     router.push('/');
   };
 
-  const navItems = ["posts", "tenders", "companies", "contact"];
+  const navItems = [ "tenders", "profile/companyprofiles", "contact"];
   const isRTL = direction === 'rtl';
 
   return (

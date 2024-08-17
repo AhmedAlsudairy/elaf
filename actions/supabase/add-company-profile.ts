@@ -51,7 +51,7 @@ export async function addCompany(formData: FormData) {
   }
 
   // Revalidate the specific company profile path
-  revalidatePath(`/profile/companyprofile/${data.company_profile_id}`);
+  revalidatePath(`/profile/companyprofiles/${data.company_profile_id}`);
 
   // Also revalidate the dashboard path
   

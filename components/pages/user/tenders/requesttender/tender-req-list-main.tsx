@@ -7,12 +7,13 @@ import TenderRequestCard, { TenderRequest } from './tender-req-main-card';
 interface TenderRequestListProps {
   tenderId: string;
   onAccept: (id: string) => void;
+  acceptedRequestId?: string | null;
 }
 
 type SortOrder = 'newest' | 'oldest';
 type PriceSort = 'none' | 'lowest' | 'highest';
 
-const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccept }) => {
+const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccept, acceptedRequestId }) => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priceSort, setPriceSort] = useState<PriceSort>('none');
 
@@ -41,8 +42,17 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
       sorted.sort((a, b) => b.bid_price - a.bid_price);
     }
 
+    // Move accepted request to the top
+    if (acceptedRequestId) {
+      const acceptedIndex = sorted.findIndex(request => request.id === acceptedRequestId);
+      if (acceptedIndex !== -1) {
+        const [acceptedRequest] = sorted.splice(acceptedIndex, 1);
+        sorted.unshift(acceptedRequest);
+      }
+    }
+
     return sorted;
-  }, [data, sortOrder, priceSort]);
+  }, [data, sortOrder, priceSort, acceptedRequestId]);
 
   if (status === 'pending') return <div>Loading...</div>;
   if (status === 'error') return <div>Error: {(error as Error).message}</div>;
@@ -91,6 +101,8 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
               key={request.id} 
               request={request} 
               onAccept={onAccept}
+              isAccepted={request.id === acceptedRequestId}
+              showAcceptButton={!acceptedRequestId || request.id === acceptedRequestId}
             />
           ))
         )}

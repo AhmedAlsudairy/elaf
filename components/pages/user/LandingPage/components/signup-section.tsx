@@ -23,11 +23,16 @@ export default function SignUpSection() {
           <Button 
             type="submit" 
             className="font-balooBhaijaan w-full sm:w-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
+            asChild
           >
-            {t('ctaButton')}
+            <Link href='/signup'>
+            
+              {t('ctaButton')}
+            </Link>
+          
           </Button>
         </div>
-        <Terms linkText={t('termsLink')} linkHref="#">
+        <Terms linkText={t('termsLink')} linkHref="/terms">
           {t('termsText')}
         </Terms>
       </div>

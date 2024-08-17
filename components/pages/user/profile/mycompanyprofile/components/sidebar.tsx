@@ -35,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
         className="w-full justify-start"
         asChild
       >
-        <Link href={`/profile/companyprofile/${companyId}`}>
+        <Link href={`/profile/companyprofiles/${companyId}`}>
           Info
         </Link>
       </Button>
@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
         className="w-full justify-start"
         asChild
       >
-        <Link href={`/profile/companyprofile/${companyId}/tenders`}>
+        <Link href={`/profile/companyprofiles/${companyId}/tenders`}>
           Tenders
         </Link>
       </Button>
@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
           className="w-full justify-start"
           asChild
         >
-          <Link href={`/profile/companyprofile/${companyId}/requests`}>
+          <Link href={`/profile/companyprofiles/${companyId}/requests`}>
             Requests
           </Link>
         </Button>
@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
           className="w-full justify-start"
           asChild
         >
-          <Link href={`/profile/companyprofile/${companyId}/${section.id}`}>
+          <Link href={`/profile/companyprofiles/${companyId}/${section.id}`}>
             {section.title}
           </Link>
         </Button>

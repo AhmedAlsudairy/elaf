@@ -6,6 +6,7 @@ export interface RequestSummary {
   company_title: string;
   bid_price: number;
   pdf_url: string | null;
+  created_at?: string;
 }
 
 export async function getRequestSummaries(tenderId: string, page: number, pageSize: number = 10): Promise<{ success: boolean; data: RequestSummary[]; error: string | null }> {
@@ -33,7 +34,8 @@ export async function getRequestSummaries(tenderId: string, page: number, pageSi
       id: item.id,
       company_title: item.company_profiles?.company_title || 'Unknown Company',
       bid_price: item.bid_price,
-      pdf_url: item.pdf_url
+      pdf_url: item.pdf_url,
+      created_at: item.created_at
     }));
 
     return { success: true, data: summaries, error: null };

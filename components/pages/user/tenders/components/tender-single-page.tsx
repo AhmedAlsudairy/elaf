@@ -1,7 +1,6 @@
 /* eslint-disable react/display-name */
 
 'use client'
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +22,26 @@ import { getRequestSummaries, RequestSummary } from "@/actions/supabase/get-requ
 import RequestSummaryCard from "../requesttender/request-summary-card";
 import TenderRequestList from "../requesttender/tender-req-list-main";
 import TenderRequestForm from "../requesttender/request-tender-form";
+import { acceptTenderRequest } from "@/actions/supabase/accept-tender-request";
+
+enum SectorEnum {
+  Technology = 'Technology',
+  Finance = 'Finance',
+  Healthcare = 'Healthcare',
+  Education = 'Education',
+  Manufacturing = 'Manufacturing',
+  Retail = 'Retail',
+  RealEstate = 'RealEstate',
+  Transportation = 'Transportation',
+  Energy = 'Energy',
+  Entertainment = 'Entertainment'
+}
+
+enum TenderStatusEnum {
+  Open = 'open',
+  Closed = 'closed',
+  Awarded = 'awarded'
+}
 
 interface Company {
   company_profile_id: string;
@@ -37,10 +56,10 @@ interface Tender {
   summary: string;
   pdf_url: string;
   end_date: string | null;
-  status: "open" | "closed";
+  status: TenderStatusEnum;
   terms: string;
   scope_of_works: string;
-  tender_sectors: string[];
+  tender_sectors: SectorEnum[];
   created_at: string | null;
   average_price?: number;
   maximum_price?: number;
@@ -65,6 +84,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   const [page, setPage] = useState(0);
   const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [acceptedRequest, setAcceptedRequest] = useState<RequestSummary | null>(null);
 
   const loadMoreSummaries = useCallback(async () => {
     if (isOwner && !isLoadingSummaries) {
@@ -129,12 +149,34 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   }, [tender.tender_id, toast]);
 
   const handleAcceptRequest = useCallback(async (requestId: string) => {
-    console.log(`Accepting request ${requestId}`);
-    toast({
-      title: "Request Accepted",
-      description: `Tender request ${requestId} has been accepted.`,
-    });
-  }, [toast]);
+    try {
+      const result = await acceptTenderRequest(requestId, tender.tender_id);
+      if (result.success) {
+        toast({
+          title: "Request Accepted",
+          description: `Tender request ${requestId} has been accepted.`,
+        });
+        await loadMoreSummaries();
+        const accepted = requestSummaries.find(summary => summary.id === requestId);
+        if (accepted) {
+          setAcceptedRequest(accepted);
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to accept tender request. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [tender.tender_id, toast, requestSummaries, loadMoreSummaries]);
 
   const formatDate = useCallback((dateString: string | null): string => {
     if (!dateString) return "Not specified";
@@ -156,6 +198,21 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
     );
   }, []);
 
+  const isTenderClosed = tender.status === TenderStatusEnum.Closed || tender.status === TenderStatusEnum.Awarded || !!acceptedRequest;
+
+  const getBadgeVariant = (status: TenderStatusEnum): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case TenderStatusEnum.Open:
+        return "default";
+      case TenderStatusEnum.Closed:
+        return "secondary";
+      case TenderStatusEnum.Awarded:
+        return "outline";
+      default:
+        return "default";
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -170,12 +227,20 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                 <CardTitle className="text-2xl font-bold">
                   {tender.title || "Untitled Tender"}
                 </CardTitle>
-                <Badge variant={tender.status === "open" ? "default" : "destructive"}>
-                  {tender.status || "Unknown"}
+                <Badge variant={getBadgeVariant(tender.status)}>
+                  {tender.status}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
+              {acceptedRequest && (
+                <div className="mb-4 p-4 bg-green-100 rounded-md">
+                  <h3 className="text-lg font-semibold text-green-800">Accepted Request</h3>
+                  <p>Company: {acceptedRequest.company_title}</p>
+                  <p>Bid Price: ${acceptedRequest.bid_price.toFixed(2)}</p>
+                </div>
+              )}
+
               <h3 className="text-xl font-semibold mb-2">Summary</h3>
               <p className="text-gray-600 mb-4">
                 {tender.summary || "No summary available"}
@@ -231,16 +296,15 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
               )}
 
               <div className="flex flex-wrap gap-2 mt-4">
-                {tender.tender_sectors &&
-                  tender.tender_sectors.map((sector, index) => (
-                    <Badge
-                      key={index}
-                      className="px-3 py-1 text-sm"
-                      variant="outline"
-                    >
-                      {sector}
-                    </Badge>
-                  ))}
+                {tender.tender_sectors.map((sector, index) => (
+                  <Badge
+                    key={index}
+                    className="px-3 py-1 text-sm"
+                    variant="outline"
+                  >
+                    {sector}
+                  </Badge>
+                ))}
               </div>
 
               {isOwner ? (
@@ -248,30 +312,32 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                   <CompanyOwnerTenderDetails tender={tender} />
                 </div>
               ) : (
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="mt-4 w-full sm:w-auto">
-                      Submit Tender Request
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px] p-0 flex flex-col">
-                    <DialogHeader className="p-6 bg-gray-100 shrink-0">
-                      <DialogTitle className="text-xl sm:text-2xl">
+                !isTenderClosed && (
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="mt-4 w-full sm:w-auto">
                         Submit Tender Request
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto">
-                      {companyProfile && (
-                        <TenderRequestForm
-                          onSubmit={handleTenderRequestSubmit}
-                          tenderId={tender.tender_id}
-                          companyProfile={companyProfile}
-                          tenderTitle={tender.title}
-                        />
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px] p-0 flex flex-col">
+                      <DialogHeader className="p-6 bg-gray-100 shrink-0">
+                        <DialogTitle className="text-xl sm:text-2xl">
+                          Submit Tender Request
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="flex-1 overflow-y-auto">
+                        {companyProfile && (
+                          <TenderRequestForm
+                            onSubmit={handleTenderRequestSubmit}
+                            tenderId={tender.tender_id}
+                            companyProfile={companyProfile}
+                            tenderTitle={tender.title}
+                          />
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )
               )}
             </CardContent>
           </Card>
@@ -285,6 +351,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                 <TenderRequestList
                   tenderId={tender.tender_id}
                   onAccept={handleAcceptRequest}
+                  acceptedRequestId={acceptedRequest?.id}
                 />
               </CardContent>
             </Card>

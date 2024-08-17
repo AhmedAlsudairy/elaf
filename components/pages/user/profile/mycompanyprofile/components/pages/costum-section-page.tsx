@@ -90,7 +90,7 @@ export function CustomSectionPage() {
         description: "The section has been deleted successfully.",
         variant: "default",
       });
-      router.push(`/profile/companyprofile/${companyId}`);
+      router.push(`/profile/companyprofiles/${companyId}`);
     } catch (error) {
       console.error('Failed to delete section:', error);
       toast({

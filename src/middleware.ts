@@ -1,3 +1,4 @@
+import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
 import { getUserProfile } from "@/actions/supabase/get-user-profile";
 import { createServerClient } from "@supabase/ssr";
 import createMiddleware from "next-intl/middleware";
@@ -13,7 +14,8 @@ const intlMiddleware = createMiddleware({
 
 // Define public and private routes
 const publicRoutes = ['/login', '/register','tenders' ];
-const privateRoutes = [ '/profile', '/settings'];
+const privateRoutes = ['/settings', '/tenders/', '/profile/companyprofiles/'];
+
 const isStaticAsset = (path: string) => {
   return /\.(svg|png|jpg|jpeg|gif|webp|ttf|woff|woff2)$/i.test(path);
 };
@@ -60,8 +62,8 @@ export async function middleware(request: NextRequest) {
     // This will refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
   // Check if the user is logged in
+
   const { data: { user } } = await supabase.auth.getUser();
-  
   console.log("User authentication status:", user ? "Logged in" : "Not logged in");
 
   const locale = request.nextUrl.pathname.split('/')[1];
@@ -74,18 +76,22 @@ export async function middleware(request: NextRequest) {
   console.log("Is private route:", isPrivateRoute);
   console.log("Is public route:", isPublicRoute);
 
-  
-
   if (user) {
     const userProfile = await getUserProfile(supabase, user.id);
-    
+    const companyProfile = await getCurrentCompanyProfile();
+
     if (!userProfile && path !== '/profile/startingprofile') {
       const profileCreationUrl = new URL(`/${isValidLocale ? locale + '/' : ''}profile/startingprofile`, request.url);
       return NextResponse.redirect(profileCreationUrl);
     }
 
     if (userProfile && path === '/profile/startingprofile') {
-      // Redirect to home or another appropriate page if user has a profile but tries to access starting profile
+      const homeUrl = new URL(`/${isValidLocale ? locale + '/' : ''}`, request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+
+    // Check if the user has a company profile
+    if (companyProfile && path === '/login') {
       const homeUrl = new URL(`/${isValidLocale ? locale + '/' : ''}`, request.url);
       return NextResponse.redirect(homeUrl);
     }
@@ -94,6 +100,8 @@ export async function middleware(request: NextRequest) {
     loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
+
+
   // Allow access to public routes regardless of authentication status
 
 

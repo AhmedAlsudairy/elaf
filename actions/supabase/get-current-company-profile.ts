@@ -7,7 +7,6 @@ export async function getCurrentCompanyProfile() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   const { data, error } = await supabase
     .from("company_profiles")
     .select("*")

@@ -75,7 +75,7 @@ const TenderCard: React.FC<TenderCardProps> = ({
     <Link href={`/tenders/${tenderId}`} className="block w-full h-full">
       <Card className="w-full h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0">
-          <Link href={`/profile/companyprofile/${companyId}`} className="flex items-center space-x-4">
+          <Link href={`/profile/companyprofiles/${companyId}`} className="flex items-center space-x-4">
             <Avatar className="w-12 h-12 flex-shrink-0">
               <AvatarImage src={profileImage} alt={companyTitle} />
               <AvatarFallback>{companyTitle.substring(0, 2).toUpperCase()}</AvatarFallback>

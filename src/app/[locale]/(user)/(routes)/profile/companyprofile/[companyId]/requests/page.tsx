@@ -4,7 +4,7 @@ import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { getTenderRequestsByCompanyProfileId } from '@/actions/supabase/get-tender-request-by-company-id';
-import TenderRequestCard from '@/components/pages/user/tenders/request_tender/request-tender-card';
+import TenderRequestCard from '@/components/pages/user/tenders/requesttender/request-tender-card';
 import { Loader2 } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 9; // Adjust this number as needed

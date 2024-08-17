@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/utils/supabase/server";
 import { revalidatePath } from 'next/cache';
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
-import { TenderRequestFormValues } from "@/components/pages/user/tenders/request_tender/request-tender-form";
+import { TenderRequestFormValues } from "@/components/pages/user/tenders/requesttender/request-tender-form";
 
 export async function addTenderRequest(tender_Id: string, formData: TenderRequestFormValues) {
   const supabase = createClient();

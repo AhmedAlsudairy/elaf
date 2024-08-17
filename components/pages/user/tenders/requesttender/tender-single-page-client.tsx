@@ -34,6 +34,5 @@ interface SingleTenderPageProps {
   );
 };
 
-SingleTenderPage.displayName = 'SingleTenderPage';
 
 export default SingleTenderPage;

@@ -1,6 +1,6 @@
-'use client'
+/* eslint-disable react/display-name */
 
-import React, { useState, useCallback, useMemo } from "react";
+'use client'
 import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,14 +13,15 @@ import TenderInfo from "./tender-info";
 import TenderContent from "./tender-content";
 import CompanyCard from "./company-card";
 import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
-import TenderRequestForm from "../request_tender/request-tender-form";
+import TenderRequestForm from "../requesttender/request-tender-form";
 import { addTenderRequest } from "@/actions/supabase/add-tender-request";
 import { useIsOwnerOfCompany } from "@/hooks/check-current-user";
 import CompanyOwnerTenderDetails from "./price-summary";
-import TenderRequestList from "../request_tender/tender-req-list-main";
+import TenderRequestList from "../requesttender/tender-req-list-main";
 import { format } from "date-fns";
-import RequestSummaryCard from "../request_tender/request-summary-card";
+import RequestSummaryCard from "../requesttender/request-summary-card";
 import { getRequestSummaries, RequestSummary } from "@/actions/supabase/get-request-summary";
+import { useCallback, useMemo, useState } from "react";
 
 interface Company {
   company_profile_id: string;
@@ -49,7 +50,7 @@ interface SingleTenderClientComponentProps {
   tender: Tender;
   company: Company;
 }
-const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = ({ tender, company }) => {
+const SingleTenderClientComponent = ({ tender, company }:SingleTenderClientComponentProps) => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showScopeOfWork, setShowScopeOfWork] = useState(false);
@@ -299,5 +300,6 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
 };
 
 
+SingleTenderClientComponent.displayName = 'SingleTenderClientComponent';
 
 export default SingleTenderClientComponent;

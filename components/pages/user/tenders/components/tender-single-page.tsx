@@ -316,13 +316,13 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                       <Button className="mt-4 w-full sm:w-auto">
-                        Submit Tender Request
+                        Submit pid Tender Notice
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px] p-0 flex flex-col">
                       <DialogHeader className="p-6 bg-gray-100 shrink-0">
                         <DialogTitle className="text-xl sm:text-2xl">
-                          Submit Tender Request
+                          Submit pid Tender Notice
                         </DialogTitle>
                       </DialogHeader>
                       <div className="flex-1 overflow-y-auto">
@@ -345,7 +345,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
           {isOwner && (
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Tender Requests</CardTitle>
+                <CardTitle>pid Tender Notice</CardTitle>
               </CardHeader>
               <CardContent>
                 <TenderRequestList

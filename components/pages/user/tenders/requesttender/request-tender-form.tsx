@@ -277,7 +277,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                           onChange={(url) => field.onChange(url)}
                           onRemove={() => field.onChange("")}
                           value={field.value ? [field.value] : []}
-                          bucketName="tender-requests"
+                          bucketName="profile"
                           generatedPdfBlob={generatedPdfBlob}
                         />
                       </FormControl>

@@ -1,8 +1,7 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from "next/link";
-import Image from "next/image";
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { getLangDir } from 'rtl-detect';
@@ -25,46 +24,59 @@ export const Header = () => {
   const [isLoading, setIsLoading] = useState(true);
   const t = useTranslations('Navbar');
   const locale = useLocale();
-  const direction = getLangDir(locale);
+  const direction = useMemo(() => getLangDir(locale), [locale]);
   const pathName = usePathname();
   const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        setIsAuthenticated(!!user);
-        if (user) {
-          const [userData, companyData] = await Promise.all([
-            getCurrentUserProfile(),
-            getCurrentCompanyProfile()
-          ]);
-          setUserProfile(userData);
-          setCompanyProfile(companyData);
-        }
-      } catch (error) {
-        console.error('Error fetching profiles:', error);
-      } finally {
-        setIsLoading(false);
+  const checkAuth = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      setIsAuthenticated(!!user);
+      if (user) {
+        const [userData, companyData] = await Promise.all([
+          getCurrentUserProfile(),
+          getCurrentCompanyProfile()
+        ]);
+        setUserProfile(userData);
+        setCompanyProfile(companyData);
       }
-    };
-
-    checkAuth();
+    } catch (error) {
+      console.error('Error fetching profiles:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
-  const handleSignOut = async () => {
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen(prev => !prev);
+  }, []);
+
+  const handleSignOut = useCallback(async () => {
     setIsAuthenticated(false);
     setUserProfile(null);
     setCompanyProfile(null);
     router.push('/');
-  };
+  }, [router]);
 
-  const navItems = [ "tenders", "profile/companyprofiles", "contact"];
+  const navItems = useMemo(() => ["tenders", "profile/companyprofiles", "contact"], []);
   const isRTL = direction === 'rtl';
+
+  const renderNavItems = useCallback((isMobile = false) => 
+    navItems.map((item) => (
+      <Link
+        key={item}
+        href={`/${locale}/${item}`}
+        className={`${isMobile ? 'block' : ''} text-lg md:text-base lg:text-lg font-medium px-4 py-2 ${pathName?.includes(item) ? 'bg-primary text-white rounded-md' : ''}`}
+        prefetch={false}
+        onClick={isMobile ? () => setIsMenuOpen(false) : undefined}
+      >
+        {t(item)}
+      </Link>
+    )), [navItems, locale, pathName, t]);
 
   return (
     <header className={`px-4 lg:px-6 h-14 flex items-center justify-between font-balooBhaijaan`} dir={direction}>
@@ -73,16 +85,7 @@ export const Header = () => {
         <span className="sr-only">Elaf</span>
       </Link>
       <nav className={`hidden md:flex flex-row items-center font-balooBhaijaan`}>
-        {navItems.map((item) => (
-          <Link
-            key={item}
-            href={`/${locale}/${item}`}
-            className={`text-lg md:text-base lg:text-lg font-medium px-4 py-2 ${pathName?.includes(item) ? 'bg-primary text-white rounded-md' : ''}`}
-            prefetch={false}
-          >
-            {t(item)}
-          </Link>
-        ))}
+        {renderNavItems()}
       </nav>
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
         <LocalSwitcher />
@@ -91,8 +94,9 @@ export const Header = () => {
           isAuthenticated={isAuthenticated}
           userProfile={userProfile}
           companyProfile={companyProfile}
-          onSignOut={handleSignOut}/>
-            </div>
+          onSignOut={handleSignOut}
+        />
+      </div>
       <div className="md:hidden flex items-center">
         <Button
           variant="ghost"
@@ -105,17 +109,7 @@ export const Header = () => {
       </div>
       {isMenuOpen && (
         <div className="absolute top-14 left-0 right-0 bg-white py-4 shadow-md md:hidden font-balooBhaijaan">
-          {navItems.map((item) => (
-            <Link
-              key={item}
-              href={`/${locale}/${item}`}
-              className={`block text-lg font-medium px-4 py-2 ${pathName?.includes(item) ? 'bg-primary text-white rounded-md' : ''}`}
-              prefetch={false}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {t(item)}
-            </Link>
-          ))}
+          {renderNavItems(true)}
           <div className="px-4 py-2 space-y-2">
             <LocalSwitcher />
             <AuthButton

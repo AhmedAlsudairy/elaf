@@ -71,10 +71,6 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Avatar>
-            <AvatarImage 
-              src={userProfile?.profile_image} 
-              alt={userProfile?.name || "User avatar"}
-            />
             <AvatarFallback>
               {getInitials(userProfile?.name ||  'User')}
             </AvatarFallback>

@@ -72,11 +72,11 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
         <Button variant="ghost" size="icon" className="rounded-full">
           <Avatar>
             <AvatarImage 
-              src={userProfile?.profile_image || companyProfile?.profile_image} 
-              alt={userProfile?.name || companyProfile?.company_title || "User avatar"}
+              src={userProfile?.profile_image} 
+              alt={userProfile?.name || "User avatar"}
             />
             <AvatarFallback>
-              {getInitials(userProfile?.name || companyProfile?.company_title || 'User')}
+              {getInitials(userProfile?.name ||  'User')}
             </AvatarFallback>
           </Avatar>
         </Button>

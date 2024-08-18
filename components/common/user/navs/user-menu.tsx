@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from "next/link";
-import Image from "next/image";
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { UserMenuProps } from '@/types';
 import { SignOut } from '@/actions/supabase/signout';
 
@@ -30,6 +30,15 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
     },
     { label: 'logout', action: handleSignOut }
   ];
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   if (isMobile) {
     return menuItems.map((item, index) => (
@@ -60,14 +69,16 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
-          <Image 
-            src={userProfile?.profile_image || companyProfile?.profile_image || "/placeholder-user.jpg"} 
-            width={36} 
-            height={36} 
-            alt={userProfile?.name || companyProfile?.company_title || "User avatar"} 
-            className="overflow-hidden rounded-full" 
-          />
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <Avatar>
+            <AvatarImage 
+              src={userProfile?.profile_image || companyProfile?.profile_image} 
+              alt={userProfile?.name || companyProfile?.company_title || "User avatar"}
+            />
+            <AvatarFallback>
+              {getInitials(userProfile?.name || companyProfile?.company_title || 'User')}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

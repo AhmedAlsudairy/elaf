@@ -10,18 +10,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import LocalSwitcher from '../local-switcher';
 import { ELAF_LOGO_URL, MenuIcon, XIcon } from '@/constant/svg';
 
-import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profile';
-import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
-import { ProfileMenu } from './navs/user-menu';
-import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
 import { AuthButton } from './navs/handle-auth-button';
+import { checkAuthAndProfiles } from '@/actions/supabase/check-auth-and-profile';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [companyProfile, setCompanyProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    userProfile: null,
+    companyProfile: null,
+    isLoading: true
+  });
   const t = useTranslations('Navbar');
   const locale = useLocale();
   const direction = useMemo(() => getLangDir(locale), [locale]);
@@ -30,20 +29,16 @@ export const Header = () => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      setIsAuthenticated(!!user);
-      if (user) {
-        const [userData, companyData] = await Promise.all([
-          getCurrentUserProfile(),
-          getCurrentCompanyProfile()
-        ]);
-        setUserProfile(userData);
-        setCompanyProfile(companyData);
-      }
+      const result = await checkAuthAndProfiles();
+      setAuthState({
+        isAuthenticated: result.isAuthenticated,
+        userProfile: result.userProfile,
+        companyProfile: result.companyProfile,
+        isLoading: false
+      });
     } catch (error) {
-      console.error('Error fetching profiles:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error checking auth and profiles:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
 
@@ -56,9 +51,12 @@ export const Header = () => {
   }, []);
 
   const handleSignOut = useCallback(async () => {
-    setIsAuthenticated(false);
-    setUserProfile(null);
-    setCompanyProfile(null);
+    setAuthState({
+      isAuthenticated: false,
+      userProfile: null,
+      companyProfile: null,
+      isLoading: false
+    });
     router.push('/');
   }, [router]);
 
@@ -90,10 +88,10 @@ export const Header = () => {
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
         <LocalSwitcher />
         <AuthButton
-          isLoading={isLoading}
-          isAuthenticated={isAuthenticated}
-          userProfile={userProfile}
-          companyProfile={companyProfile}
+          isLoading={authState.isLoading}
+          isAuthenticated={authState.isAuthenticated}
+          userProfile={authState.userProfile}
+          companyProfile={authState.companyProfile}
           onSignOut={handleSignOut}
         />
       </div>
@@ -113,10 +111,10 @@ export const Header = () => {
           <div className="px-4 py-2 space-y-2">
             <LocalSwitcher />
             <AuthButton
-              isLoading={isLoading}
-              isAuthenticated={isAuthenticated}
-              userProfile={userProfile}
-              companyProfile={companyProfile}
+              isLoading={authState.isLoading}
+              isAuthenticated={authState.isAuthenticated}
+              userProfile={authState.userProfile}
+              companyProfile={authState.companyProfile}
               onSignOut={handleSignOut}
               isMobile={true}
             />

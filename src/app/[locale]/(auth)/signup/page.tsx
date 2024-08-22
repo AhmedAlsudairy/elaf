@@ -4,10 +4,10 @@ import Login from "../login/page";
 const page = () => {
   return (
     <>
-      <form action={Login}>
+     
         {" "}
         <SignupPage />
-      </form>
+      
     </>
   );
 };

@@ -51,24 +51,24 @@ export function AddSectionDialog() {
           <Plus className="mr-2 h-4 w-4" /> Add Section
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New Section</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl">Add New Section</DialogTitle>
+          <DialogDescription className="text-base">
             Create a new section for your company profile. Add a title, description, and upload a PDF file.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" name="title" required />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="title" className="text-base">Title</Label>
+            <Input id="title" name="title" required className="h-12 text-base" />
           </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" name="description" required />
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-base">Description</Label>
+            <Textarea id="description" name="description" required className="min-h-[100px] text-base" />
           </div>
-          <div>
-            <Label htmlFor="file">PDF File</Label>
+          <div className="space-y-2">
+            <Label htmlFor="file" className="text-base">PDF File</Label>
             <PDFUpload
               onChange={(url) => setFileUrl(url)}
               onRemove={() => setFileUrl('')}
@@ -77,7 +77,7 @@ export function AddSectionDialog() {
             />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isLoading || !fileUrl}>
+            <Button type="submit" disabled={isLoading || !fileUrl} className="w-full h-12 text-base">
               {isLoading ? 'Adding...' : 'Add Section'}
             </Button>
           </DialogFooter>

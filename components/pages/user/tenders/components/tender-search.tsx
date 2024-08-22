@@ -7,11 +7,10 @@ import { ClipLoader } from 'react-spinners';
 import debounce from 'lodash/debounce';
 import { SearchParams, SearchResult } from '@/types';
 
-
-  interface ComprehensiveTenderSearchProps {
-    onSearch: (searchParams: SearchParams) => Promise<SearchResult>;
-    isLoading: boolean;
-  }
+interface ComprehensiveTenderSearchProps {
+  onSearch: (searchParams: SearchParams) => Promise<SearchResult>;
+  isLoading: boolean;
+}
 
 const ComprehensiveTenderSearch: React.FC<ComprehensiveTenderSearchProps> = ({ onSearch, isLoading }) => {
   const [query, setQuery] = useState("");
@@ -85,7 +84,7 @@ const ComprehensiveTenderSearch: React.FC<ComprehensiveTenderSearchProps> = ({ o
   return (
     <div className="space-y-4">
       <div className="sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="sm:col-span-2 md:col-span-4">
+        <div className="sm:col-span-2 md:col-span-4 mb-4 sm:mb-0">
           <Input
             type="text"
             placeholder="Enter search query"
@@ -95,36 +94,40 @@ const ComprehensiveTenderSearch: React.FC<ComprehensiveTenderSearchProps> = ({ o
           />
         </div>
         
-        <div className="sm:col-span-1 md:col-span-1">
-          <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select sector" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sectors</SelectItem>
-              {Object.values(SectorEnum).map((sector) => (
-                <SelectItem key={sector} value={sector}>
-                  {sector}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="sm:col-span-1 md:col-span-1 mb-4 sm:mb-0">
+          <div className="relative" style={{ zIndex: 30 }}>
+            <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select sector" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sectors</SelectItem>
+                {Object.values(SectorEnum).map((sector) => (
+                  <SelectItem key={sector} value={sector}>
+                    {sector}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
-        <div className="sm:col-span-1 md:col-span-1">
-          <Select value={selectedStatus || 'all'} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {Object.values(TenderStatus).map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="sm:col-span-1 md:col-span-1 mb-4 sm:mb-0">
+          <div className="relative" style={{ zIndex: 20 }}>
+            <Select value={selectedStatus || 'all'} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {Object.values(TenderStatus).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         <div className="sm:col-span-2 md:col-span-2">

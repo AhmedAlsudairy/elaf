@@ -190,7 +190,7 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
 
         {data.is_tender_request && data.bid_price !== undefined && (
           <View style={styles.section}>
-            <Text style={styles.bidPrice}>Bid Price: ${data.bid_price.toFixed(2)}</Text>
+            <Text style={styles.bidPrice}>Bid Price: R.O{data.bid_price.toFixed(2)}</Text>
           </View>
         )}
 

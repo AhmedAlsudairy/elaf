@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Menu } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { AddSectionDialog } from "./coustom-section-dialog";
 import { SectionTab } from "@/types";
 import { useIsOwnerOfCompany } from "@/hooks/check-current-user";
@@ -28,18 +26,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const SidebarContent = () => (
-    <div className="space-y-2 py-4">
+  const SidebarContent = ({ isMobileView }: { isMobileView: boolean }) => (
+    <>
       <Button
         variant={activeTab === "" ? "default" : "ghost"}
-        className="w-full justify-start"
+        className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
         asChild
       >
         <Link href={`/profile/companyprofiles/${companyId}`}>Info</Link>
       </Button>
       <Button
         variant={activeTab === "tenders" ? "default" : "ghost"}
-        className="w-full justify-start"
+        className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
         asChild
       >
         <Link href={`/profile/companyprofiles/${companyId}/tenders`}>
@@ -49,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
       {!isLoading && isOwner && (
         <Button
           variant={activeTab === "requests" ? "default" : "ghost"}
-          className="w-full justify-start"
+          className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
           asChild
         >
           <Link href={`/profile/companyprofiles/${companyId}/requests`}>
@@ -61,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
         <Button
           key={section.id}
           variant={activeTab === section.id ? "default" : "ghost"}
-          className="w-full justify-start"
+          className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
           asChild
         >
           <Link href={`/profile/companyprofiles/${companyId}/${section.id}`}>
@@ -70,33 +68,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
         </Button>
       ))}
       {!isLoading && isOwner && <AddSectionDialog />}
-    </div>
+    </>
   );
 
   if (isMobile) {
     return (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="fixed top-4 left-4 z-50 md:hidden"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64">
-          <ScrollArea className="h-full">
-            <SidebarContent />
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
+      <div className="sticky top-14 z-50 bg-background border-b">
+        <ScrollArea className="w-full h-14">
+          <div className="flex p-2 gap-2">
+            <SidebarContent isMobileView={true} />
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
     );
   }
 
   return (
     <div className="w-64 mr-4 h-fit">
-      <SidebarContent />
+      <div className="space-y-2 py-4">
+        <SidebarContent isMobileView={false} />
+      </div>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 
 export const SignOut=async () => {
 supabaseServer.auth.signOut()
-revalidatePath("/")
+revalidatePath("/",'layout')
 
 redirect("/")
 

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import Auth from "../components/auth";
 import { ELAF_LOGO_URL } from "@/constant/svg";
@@ -9,28 +9,36 @@ import { OauthSignin } from "@/actions/supabase/oauth-signin";
 import { useReusableToast } from "@/components/common/success-toast";
 import { login } from "@/actions/supabase/auth-with-creditial";
 
-
 const LoginPage = () => {
    const [isLoading, setIsLoading] = useState(false);
    const [isSignedIn, setIsSignedIn] = useState(false);
+   const [redirecting, setRedirecting] = useState(false);
    const showToast = useReusableToast();
    const router = useRouter();
+
+   const redirectToProfile = useCallback(() => {
+     setRedirecting(true);
+       router.push('/profile/myprofile');
+ // Wait for 2 seconds before redirecting
+   }, [router, showToast]);
 
    useEffect(() => {
      const checkLoginStatus = async () => {
        const loggedIn = await IsLoggedIn();
        setIsSignedIn(loggedIn);
+       if (loggedIn) {
+         redirectToProfile();
+       }
      };
      checkLoginStatus();
-   }, []);
+   }, [redirectToProfile]);
 
   const handleAuth = async () => {
     setIsLoading(true);
     try {
       await OauthSignin();
-      setIsSignedIn(await IsLoggedIn());
-      showToast('success', 'Logged in successfully');
-      router.push('/'); // Redirect to home page after successful login
+      setIsSignedIn(true);
+      redirectToProfile();
     } catch (error) {
       showToast('error', 'OAuth sign-in failed');
     } finally {
@@ -65,8 +73,7 @@ const LoginPage = () => {
       }
 
       setIsSignedIn(true);
-      showToast('success', 'Logged in successfully');
-      router.push('/'); // Redirect to home page after successful login
+      redirectToProfile();
       return {};
     } catch (error) {
       console.error('Login error:', error);
@@ -76,6 +83,14 @@ const LoginPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (redirecting) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-xl font-semibold">Login successful. Redirecting to your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <Auth

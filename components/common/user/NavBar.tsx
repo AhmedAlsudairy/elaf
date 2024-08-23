@@ -1,5 +1,4 @@
-"use client"
-
+'use client'
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
@@ -44,6 +43,10 @@ export const Header = () => {
 
   useEffect(() => {
     checkAuth();
+
+    const intervalId = setInterval(checkAuth, 5000); // Check every 5 seconds
+
+    return () => clearInterval(intervalId); // Clean up on component unmount
   }, [checkAuth]);
 
   const toggleMenu = useCallback(() => {

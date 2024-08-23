@@ -1,5 +1,4 @@
 'use server'
-
 import { createClient } from "@/lib/utils/supabase/server";
 import { SearchParams, SearchResult, Tender } from "@/types";
 import { SectorEnum, TenderStatus } from "@/constant/text";
@@ -54,9 +53,13 @@ export async function fetchTenders(
     });
     console.log("Validated params:", validatedParams);
 
+    // Sanitize the search input
+    const sanitizedSearch = validatedParams.query ? 
+      validatedParams.query.replace(/[^a-zA-Z0-9\s]/g, '') : '';
+
     const { data, error } = await supabase.rpc('fetch_company_tenders', {
       p_company_profile_id: companyProfileId,
-      p_search: validatedParams.query || validatedParams.sector || '',
+      p_search: sanitizedSearch,
       p_page: validatedParams.page,
       p_page_size: validatedParams.pageSize
     });
@@ -69,8 +72,17 @@ export async function fetchTenders(
     console.log(`Query returned ${data?.length || 0} results.`);
 
     let filteredData = (data as RawTender[]) || [];
+    
+    // Apply sector and status filtering in JavaScript
+    if (validatedParams.sector) {
+      filteredData = filteredData.filter((tender: RawTender) => 
+        tender.tender_sectors.includes(validatedParams.sector as SectorEnum)
+      );
+    }
     if (validatedParams.status) {
-      filteredData = filteredData.filter((tender: RawTender) => tender.status === validatedParams.status);
+      filteredData = filteredData.filter((tender: RawTender) => 
+        tender.status === validatedParams.status
+      );
     }
 
     const formattedTenders: Tender[] = filteredData.map((tender: RawTender) => ({

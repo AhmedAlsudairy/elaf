@@ -196,7 +196,7 @@ const UserProfile = () => {
               {companyProfile ? "My Company" : "Create New Company Profile"}
             </Button>
             
-            <Button
+            {/* <Button
               onClick={handleSignOut}
               className="w-full flex items-center justify-center gap-2"
               variant="destructive"
@@ -208,7 +208,7 @@ const UserProfile = () => {
                 <LogOut className="w-5 h-5" />
               )}
               Sign Out
-            </Button>
+            </Button> */}
           </div>
         </CardContent>
       </Card>

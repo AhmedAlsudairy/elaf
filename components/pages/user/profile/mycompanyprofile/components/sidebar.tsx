@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
 
   if (isMobile) {
     return (
-      <div className="sticky top-14 z-50 bg-background border-b">
+      <div className="sticky top-14 z-30 bg-background border-b">
         <ScrollArea className="w-full h-14">
           <div className="flex p-2 gap-2">
             <SidebarContent isMobileView={true} />

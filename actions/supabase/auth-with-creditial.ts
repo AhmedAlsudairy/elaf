@@ -87,6 +87,7 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
+  redirect('/profile/myprofile')
   return { success: true }
 }
 

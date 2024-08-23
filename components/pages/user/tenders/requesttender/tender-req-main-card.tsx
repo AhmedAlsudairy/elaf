@@ -66,7 +66,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   return (
     <Card className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${isAccepted ? 'border-green-500 border-2' : ''}`}>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <div className="flex items-center space-x-4">
             {request.company_profile.profile_image ? (
               <Image
@@ -89,8 +89,8 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
                 className="hover:underline"
               >
                 <CardTitle className="flex items-center">
-                  {request.company_profile.company_title}
-                  <ExternalLink className="ml-2 w-4 h-4" />
+                  <span className="truncate max-w-[200px]">{request.company_profile.company_title}</span>
+                  <ExternalLink className="ml-2 w-4 h-4 flex-shrink-0" />
                 </CardTitle>
               </Link>
               <p className="text-sm text-gray-500">
@@ -98,12 +98,12 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="font-semibold text-lg text-green-600 flex items-center justify-end">
+          <div className="text-left sm:text-right">
+            <p className="font-semibold text-lg text-green-600 flex items-center sm:justify-end">
               <DollarSign className="w-5 h-5 mr-1" />
               {request.bid_price.toFixed(2)}
             </p>
-            <p className="text-sm text-gray-500 flex items-center justify-end">
+            <p className="text-sm text-gray-500 flex items-center sm:justify-end">
               <Calendar className="w-4 h-4 mr-1" />
               {formatDate(request.created_at)}
             </p>
@@ -113,7 +113,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
       <CardContent>
         <h3 className="font-semibold text-lg mb-2">{request.title}</h3>
         <p className="text-sm text-gray-600 mb-4">{request.summary}</p>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           {request.pdf_url && (
             <a
               href={request.pdf_url}
@@ -125,12 +125,12 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               View PDF
             </a>
           )}
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             {getStatusBadge(request.status)}
             {showAcceptButton && request.status === TenderRequestStatusEnum.Pending && (
               <Button 
                 onClick={() => onAccept(request.id)} 
-                className="bg-green-500 hover:bg-green-600 text-white"
+                className="bg-green-500 hover:bg-green-600 text-white mt-2 sm:mt-0"
               >
                 Accept Request
               </Button>

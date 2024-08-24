@@ -12,12 +12,12 @@ import { login } from "@/actions/supabase/auth-with-creditial";
 const LoginPage = () => {
    const [isLoading, setIsLoading] = useState(true); // Start with loading true
    const [isSignedIn, setIsSignedIn] = useState(false);
-  //  const [redirecting, setRedirecting] = useState(false);
+   const [redirecting, setRedirecting] = useState(false);
    const showToast = useReusableToast();
    const router = useRouter();
 
    const redirectToProfile = useCallback(() => {
-    //  setRedirecting(true);
+     setRedirecting(true);
      router.push('/profile/myprofile');
    }, [router]);
 
@@ -81,13 +81,13 @@ const LoginPage = () => {
     }
   };
 
-  // if (redirecting) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-  //       <p className="text-xl font-semibold">Login successful. Redirecting to your profile...</p>
-  //     </div>
-  //   );
-  // }
+  if (redirecting) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-xl font-semibold">Login successful. Redirecting to your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <Auth

@@ -112,7 +112,7 @@ export const Header = () => {
         <div className="absolute top-14 left-0 right-0 bg-white py-4 shadow-md md:hidden font-balooBhaijaan z-50">
           {renderNavItems(true)}
           <div className="px-4 py-2 space-y-2">
-            <LocalSwitcher />
+            {/* <LocalSwitcher /> */}
             <AuthButton
               isLoading={authState.isLoading}
               isAuthenticated={authState.isAuthenticated}

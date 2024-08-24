@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import { TenderSchema } from '@/schema'
@@ -19,10 +20,12 @@ import { updateTenderStepTwo } from '@/actions/supabase/add-tender-step-two'
 type FormValues = z.infer<typeof TenderSchema>;
 
 export function TenderForm() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [companyLogo, setCompanyLogo] = useState('');
   const [tenderId, setTenderId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [companyProfile, setCompanyProfile] = useState<any>(null);
   const showToast = useReusableToast();
 
   const form = useForm<FormValues>({
@@ -45,6 +48,7 @@ export function TenderForm() {
       const profile = await getCurrentCompanyProfile();
       if (profile && profile.profile_image) {
         setCompanyLogo(profile.profile_image);
+        setCompanyProfile(profile);
       }
     }
     fetchCompanyProfile();
@@ -91,41 +95,46 @@ export function TenderForm() {
           pdf_url: values.pdf_url,
           tender_id: tenderId
         });
+
         console.log('Final submission:', result);
         showToast('success', 'Tender submitted successfully');
-        // You might want to redirect the user or reset the form here
+        if (companyProfile && companyProfile.company_profile_id) {
+          router.push(`/profile/companyprofiles/${companyProfile.company_profile_id}/tenders`);
+        } else {
+          showToast('error', 'Company profile information is missing');
+        }
       } catch (error) {
         console.error('Error submitting tender:', error);
         showToast('error', 'Error submitting tender');
       } finally {
         setIsLoading(false);
       }
-    }}
+    }
+  }
 
-
-    useEffect(() => {
-      if (tenderId) {
-        fetchTenderData(tenderId).then(data => {
-          if (data && data.tender) {
-            const formattedData: Partial<FormValues> = {
-              title: data.tender.title || "",
-              summary: data.tender.summary || "",
-              pdf_url: data.tender.pdf_url || "",
-              end_date: data.tender.end_date ? new Date(data.tender.end_date) : new Date(),
-              terms: data.tender.terms || "",
-              scope_of_works: data.tender.scope_of_works || "",
-              tender_sectors: data.tender.tender_sectors as SectorEnum[] || [],
-              pdf_choice: 'upload', // Assuming a default value
-              custom_fields: [{ title: '', description: '' }], // Assuming a default value
-            };
-            form.reset(formattedData);
-          }
-        }).catch(error => {
-          console.error('Error fetching tender data:', error);
-          showToast('error', 'Error fetching tender data');
-        });
-      }
-    }, [tenderId]);
+  useEffect(() => {
+    if (tenderId) {
+      fetchTenderData(tenderId).then(data => {
+        if (data && data.tender) {
+          const formattedData: Partial<FormValues> = {
+            title: data.tender.title || "",
+            summary: data.tender.summary || "",
+            pdf_url: data.tender.pdf_url || "",
+            end_date: data.tender.end_date ? new Date(data.tender.end_date) : new Date(),
+            terms: data.tender.terms || "",
+            scope_of_works: data.tender.scope_of_works || "",
+            tender_sectors: data.tender.tender_sectors as SectorEnum[] || [],
+            pdf_choice: 'upload', // Assuming a default value
+            custom_fields: [{ title: '', description: '' }], // Assuming a default value
+          };
+          form.reset(formattedData);
+        }
+      }).catch(error => {
+        console.error('Error fetching tender data:', error);
+        showToast('error', 'Error fetching tender data');
+      });
+    }
+  }, [tenderId]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-8">
@@ -161,4 +170,4 @@ export function TenderForm() {
       </Form>
     </div>
   )
-}
+} 

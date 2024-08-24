@@ -6,7 +6,7 @@ import TenderRequestCard, { TenderRequest } from './tender-req-main-card';
 
 interface TenderRequestListProps {
   tenderId: string;
-  onAccept: (id: string) => void;
+  onAccept: (id: string) => Promise<void>;
   acceptedRequestId?: string | null;
 }
 
@@ -42,7 +42,6 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
       sorted.sort((a, b) => b.bid_price - a.bid_price);
     }
 
-    // Move accepted request to the top
     if (acceptedRequestId) {
       const acceptedIndex = sorted.findIndex(request => request.id === acceptedRequestId);
       if (acceptedIndex !== -1) {

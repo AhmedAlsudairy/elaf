@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,10 +17,13 @@ import { SignOut } from '@/actions/supabase/signout';
 
 export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemClick, onSignOut }: UserMenuProps) => {
   const t = useTranslations('Navbar');
+  const router = useRouter();
 
   const handleSignOut = async () => {
     await SignOut();
     onSignOut(); // This will update the state in the Header component
+    router.push('/'); // Redirect to home page
+    router.refresh(); // Revalidate the current path
   };
 
   const menuItems = [

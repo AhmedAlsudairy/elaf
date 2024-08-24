@@ -89,8 +89,20 @@ const UserProfile = () => {
 
   const handleSignOut = async () => {
     setIsNavigating(true);
-    await SignOut();
-    // The redirect is handled in the SignOut function, so we don't need to do it here
+    try {
+      await SignOut();
+      router.push('/'); // Redirect to home page
+      router.refresh(); // Revalidate the current path
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsNavigating(false);
+    }
   };
 
   if (loading) {
@@ -196,7 +208,7 @@ const UserProfile = () => {
               {companyProfile ? "My Company" : "Create New Company Profile"}
             </Button>
             
-            {/* <Button
+            <Button
               onClick={handleSignOut}
               className="w-full flex items-center justify-center gap-2"
               variant="destructive"
@@ -208,7 +220,7 @@ const UserProfile = () => {
                 <LogOut className="w-5 h-5" />
               )}
               Sign Out
-            </Button> */}
+            </Button>
           </div>
         </CardContent>
       </Card>

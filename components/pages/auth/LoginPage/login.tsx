@@ -10,7 +10,7 @@ import { useReusableToast } from "@/components/common/success-toast";
 import { login } from "@/actions/supabase/auth-with-creditial";
 
 const LoginPage = () => {
-   const [isLoading, setIsLoading] = useState(false);
+   const [isLoading, setIsLoading] = useState(true); // Start with loading true
    const [isSignedIn, setIsSignedIn] = useState(false);
    const [redirecting, setRedirecting] = useState(false);
    const showToast = useReusableToast();
@@ -18,49 +18,48 @@ const LoginPage = () => {
 
    const redirectToProfile = useCallback(() => {
      setRedirecting(true);
-       router.push('/profile/myprofile');
- // Wait for 2 seconds before redirecting
-   }, [router, showToast]);
+     router.push('/profile/myprofile');
+   }, [router]);
 
    useEffect(() => {
      const checkLoginStatus = async () => {
-       const loggedIn = await IsLoggedIn();
-       setIsSignedIn(loggedIn);
-       if (loggedIn) {
-         redirectToProfile();
+       setIsLoading(true);
+       try {
+         const loggedIn = await IsLoggedIn();
+         setIsSignedIn(loggedIn);
+         if (loggedIn) {
+           redirectToProfile();
+         }
+       } finally {
+         setIsLoading(false);
        }
      };
      checkLoginStatus();
    }, [redirectToProfile]);
 
   const handleAuth = async () => {
-    setIsLoading(true);
     try {
       await OauthSignin();
       setIsSignedIn(true);
       redirectToProfile();
     } catch (error) {
       showToast('error', 'OAuth sign-in failed');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleSignOut = async () => {
-    setIsLoading(true);
     try {
       await SignOut();
       setIsSignedIn(false);
       showToast('success', 'Signed out successfully');
+      router.push('/');
+      router.refresh(); // This will trigger a revalidation of the page
     } catch (error) {
       showToast('error', 'Sign-out failed');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleEmailAuth = async (data: { email: string; password: string }) => {
-    setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('email', data.email);
@@ -79,8 +78,6 @@ const LoginPage = () => {
       console.error('Login error:', error);
       showToast('error', 'An unexpected error occurred. Please try again.');
       return { error: 'An unexpected error occurred. Please try again.' };
-    } finally {
-      setIsLoading(false);
     }
   };
 

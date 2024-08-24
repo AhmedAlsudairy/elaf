@@ -45,7 +45,8 @@ const Auth: React.FC<AuthProps> = ({
 }) => {
   const isLogin = mode === "login";
   const [showForm, setShowForm] = useState(false);
-  const [formLoading, setFormLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [lastUsedEmail, setLastUsedEmail] = useState('');
 
@@ -68,15 +69,20 @@ const Auth: React.FC<AuthProps> = ({
   }
 
   const handleGoogleAuth = async () => {
-    if (isSignedIn) {
-      await signOutAction();
-    } else {
-      await googleAuthAction();
+    setGoogleLoading(true);
+    try {
+      if (isSignedIn) {
+        await signOutAction();
+      } else {
+        await googleAuthAction();
+      }
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
   const onSubmit = async (values: FormValues) => {
-    setFormLoading(true);
+    setEmailLoading(true);
     setEmailExists(false);
     setLastUsedEmail(values.email);
     try {
@@ -87,12 +93,12 @@ const Auth: React.FC<AuthProps> = ({
     } catch (error) {
       console.error('Authentication error:', error);
     } finally {
-      setFormLoading(false);
+      setEmailLoading(false);
     }
   };
 
   const handleResendConfirmation = async () => {
-    setFormLoading(true);
+    setEmailLoading(true);
     try {
       await resendConfirmationAction(lastUsedEmail);
       // Optionally, you can add a success message here
@@ -100,7 +106,7 @@ const Auth: React.FC<AuthProps> = ({
       console.error('Resend confirmation error:', error);
       // Optionally, you can add an error message here
     } finally {
-      setFormLoading(false);
+      setEmailLoading(false);
     }
   };
 
@@ -126,13 +132,13 @@ const Auth: React.FC<AuthProps> = ({
         <CardContent className="pt-6 pb-6">
           <Button 
             onClick={handleGoogleAuth}
-            disabled={isLoading}
+            disabled={googleLoading}
             className={`font-balooBhaijaan w-full h-10 text-md px-4 sm:px-6 mb-4 ${
               isSignedIn ? 'bg-red-500 hover:bg-red-600 text-white' : ''
             }`}
             variant={isSignedIn ? "destructive" : "default"}
           >
-            {isLoading ? (
+            {googleLoading ? (
               <ClipLoader color="#ffffff" size={20} />
             ) : (
               <>
@@ -194,8 +200,12 @@ const Auth: React.FC<AuthProps> = ({
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={formLoading}>
-                  {formLoading ? (isLogin ? 'Logging in...' : 'Signing up...') : (isLogin ? 'Login' : 'Sign Up')}
+                <Button type="submit" className="w-full" disabled={emailLoading}>
+                  {emailLoading ? (
+                    <ClipLoader color="#ffffff" size={20} />
+                  ) : (
+                    isLogin ? 'Login' : 'Sign Up'
+                  )}
                 </Button>
                 {isLogin && (
                   <div className="text-center mt-2">
@@ -211,8 +221,12 @@ const Auth: React.FC<AuthProps> = ({
             <div className="mt-4 p-4 border rounded-md shadow-sm">
               <p className="mb-2 text-center">Email already exists. Do you want to resend the confirmation email to {lastUsedEmail}?</p>
               <div className="flex justify-center">
-                <Button onClick={handleResendConfirmation} disabled={formLoading}>
-                  {formLoading ? 'Resending...' : 'Resend Confirmation Email'}
+                <Button onClick={handleResendConfirmation} disabled={emailLoading}>
+                  {emailLoading ? (
+                    <ClipLoader color="#ffffff" size={20} />
+                  ) : (
+                    'Resend Confirmation Email'
+                  )}
                 </Button>
               </div>
             </div>

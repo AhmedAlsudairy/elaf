@@ -89,7 +89,7 @@ export const Header = () => {
         {renderNavItems()}
       </nav>
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
-        <LocalSwitcher />
+        {/* <LocalSwitcher /> */}
         <AuthButton
           isLoading={authState.isLoading}
           isAuthenticated={authState.isAuthenticated}

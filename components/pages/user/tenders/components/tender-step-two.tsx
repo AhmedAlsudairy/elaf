@@ -93,7 +93,7 @@ const PDFUpload: React.FC<{
       <div className="mb-4 flex flex-col gap-2">
         {value.filter(url => typeof url === 'string' && url.trim() !== '').map((url) => (
           <div key={url} className="flex items-center justify-between p-2 bg-gray-100 rounded">
-            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline truncate max-w-[70%]">
               {url.split('/').pop() || 'Uploaded PDF'}
             </a>
             <Button
@@ -107,7 +107,7 @@ const PDFUpload: React.FC<{
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Input
           type="file"
           id="pdfUpload"
@@ -121,6 +121,7 @@ const PDFUpload: React.FC<{
           disabled={disabled || uploading}
           variant="secondary"
           onClick={() => document.getElementById('pdfUpload')?.click()}
+          className="w-full sm:w-auto"
         >
           <FileUp className="h-4 w-4 mr-2" />
           {uploading ? 'Uploading...' : 'Upload a PDF'}
@@ -131,6 +132,7 @@ const PDFUpload: React.FC<{
             disabled={disabled || uploading}
             variant="secondary"
             onClick={handleGeneratedPdfUpload}
+            className="w-full sm:w-auto"
           >
             <Upload className="h-4 w-4 mr-2" />
             {uploading ? 'Uploading...' : 'Upload Generated PDF'}
@@ -224,37 +226,39 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Content Sections</h3>
         {contentSections.map((section, index) => (
-          <div key={index} className="border p-4 rounded-md space-y-2">
-            <div className="flex items-center justify-between">
+          <div key={index} className="border p-4 rounded-md space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <Input
                 placeholder="Section Title"
                 value={section.title}
                 onChange={(e) => handleContentSectionChange(index, 'title', e.target.value)}
-                className="w-1/2"
+                className="w-full sm:w-1/2"
               />
-              <Select
-                value={section.type}
-                onValueChange={(value: 'paragraph' | 'list') => handleContentSectionChange(index, 'type', value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="paragraph">Paragraph</SelectItem>
-                  <SelectItem value="list">List</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => handleRemoveContentSection(index)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Select
+                  value={section.type}
+                  onValueChange={(value: 'paragraph' | 'list') => handleContentSectionChange(index, 'type', value)}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="paragraph">Paragraph</SelectItem>
+                    <SelectItem value="list">List</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleRemoveContentSection(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             {section.content.map((item, itemIndex) => (
-              <div key={itemIndex} className="flex items-center gap-2">
+              <div key={itemIndex} className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 {section.type === 'paragraph' ? (
                   <Textarea
                     placeholder="Enter paragraph text"
@@ -275,6 +279,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
                   variant="destructive"
                   size="icon"
                   onClick={() => handleRemoveContentItem(index, itemIndex)}
+                  className="mt-2 sm:mt-0"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -285,6 +290,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
               variant="outline"
               size="sm"
               onClick={() => handleAddContentItem(index)}
+              className="w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add {section.type === 'paragraph' ? 'Paragraph' : 'List Item'}
@@ -294,13 +300,14 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
         <Button
           type="button"
           onClick={handleAddContentSection}
+          className="w-full sm:w-auto"
         >
           Add Content Section
         </Button>
       </div>
 
-      <div className="flex justify-between">
-        <Button type="button" onClick={generatePDF}>
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <Button type="button" onClick={generatePDF} className="w-full sm:w-auto">
           Generate and Preview PDF
         </Button>
         <FormField
@@ -317,6 +324,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
                     }
                   }}
                   disabled={!field.value}
+                  className="w-full sm:w-auto"
                 >
                   Download Uploaded PDF
                 </Button>
@@ -327,28 +335,30 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
       </div>
     
       {previewPDF && generatedPdfBlob && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg w-full h-full max-w-4xl max-h-[90vh] overflow-auto">
-            <PDFViewer width="100%" height="600px">
-              <PDFDocument 
-                data={{
-                  ...form.getValues(),
-                  tender_id: tenderId || '',
-                  content_sections: contentSections
-                }} 
-                companyLogo={companyLogo}
-                elafLogo={ELAF_LOGO_PNG_URL}
-              />
-            </PDFViewer>
-            <div className="mt-4 flex justify-between">
-              <Button type="button" onClick={() => setPreviewPDF(false)}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full h-full max-w-4xl max-h-[90vh] overflow-auto flex flex-col">
+            <div className="flex-grow">
+              <PDFViewer width="100%" height="100%">
+                <PDFDocument 
+                  data={{
+                    ...form.getValues(),
+                    tender_id: tenderId || '',
+                    content_sections: contentSections
+                  }} 
+                  companyLogo={companyLogo}
+                  elafLogo={ELAF_LOGO_PNG_URL}
+                />
+              </PDFViewer>
+            </div>
+            <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 p-4">
+              <Button type="button" onClick={() => setPreviewPDF(false)} className="w-full sm:w-auto">
                 Close Preview
               </Button>
               <FormField
                 control={form.control}
                 name="pdf_url"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-full sm:w-auto">
                     <FormControl>
                       <PDFUpload
                         disabled={false}

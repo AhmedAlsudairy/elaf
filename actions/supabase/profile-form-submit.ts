@@ -35,6 +35,8 @@ export async function submitFinalForm(
       p_user_profile: validatedUserProfile,
       p_company: validatedCompany
     })
+    await supabase.auth.updateUser({ email: validatedUserProfile.email });
+
 
     console.log("here",data)
 

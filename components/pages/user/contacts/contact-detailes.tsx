@@ -20,7 +20,7 @@ export const ContactDetails = () => (
         </div>
         <div className="flex items-center space-x-4">
           <MailIcon className="h-6 w-6 text-muted-foreground" />
-          <p className="text-muted-foreground">info@elaftender.com</p>
+          <p className="text-muted-foreground">contact@elaaaf.com</p>
         </div>
       </div>
       <div className="flex items-center space-x-4">

@@ -1,6 +1,6 @@
 'use server'
 
-import { TenderRequest } from "@/components/pages/user/tenders/request_tender/tender-req-main-card";
+import { TenderRequest } from "@/components/pages/user/tenders/requesttender/tender-req-main-card";
 import { createClient } from "@/lib/utils/supabase/server";
 
 export async function getRequestsByTenderId(tenderId: string, page = 0, pageSize = 9): Promise<{ 

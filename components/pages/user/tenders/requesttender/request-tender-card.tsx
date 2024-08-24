@@ -28,31 +28,29 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   tenderStatus,
   endDate,
 }) => {
-  // Format the end date
   const formattedEndDate = typeof endDate === 'string' 
     ? format(new Date(endDate), 'PPP') 
     : format(endDate, 'PPP');
 
-  // Determine if the tender is expired
   const isExpired = new Date(endDate) < new Date();
 
   return (
     <Card className="w-full h-full flex flex-col">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold line-clamp-2">{title}</CardTitle>
-        <CardDescription className="text-sm text-gray-500 mt-1">
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg font-bold line-clamp-2">{title}</CardTitle>
+        <CardDescription className="text-xs text-gray-500 mt-1 truncate">
           Tender ID: {tenderId}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-sm mb-2 line-clamp-3">{summary}</p>
-        <div className="flex justify-between items-center mb-2">
-          <p className="font-semibold">Price: ${price.toFixed(2)}</p>
+      <CardContent className="flex-grow p-4">
+        <p className="text-xs mb-2 line-clamp-3">{summary}</p>
+        <div className="flex flex-wrap justify-between items-start gap-2 mb-2">
+          <p className="text-sm font-semibold">Price: ${price.toFixed(2)}</p>
           <div className={cn(
-            "flex items-center text-sm",
+            "flex items-center text-xs",
             isExpired ? "text-red-500" : "text-gray-500"
           )}>
-            <Calendar className="mr-1 h-4 w-4" />
+            <Calendar className="mr-1 h-3 w-3 flex-shrink-0" />
             <span>{isExpired ? "Expired: " : "Ends: "}{formattedEndDate}</span>
           </div>
         </div>
@@ -63,6 +61,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               tenderRequestStatus === 'rejected' ? 'destructive' :
               'secondary'
             }
+            className="text-xs"
           >
             {tenderRequestStatus}
           </Badge>
@@ -72,21 +71,22 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               tenderStatus === 'closed' ? 'secondary' :
               'outline'
             }
+            className="text-xs"
           >
             {tenderStatus}
           </Badge>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col sm:flex-row gap-2 mt-auto">
-        <Button variant="outline" asChild className="w-full sm:w-auto">
+      <CardFooter className="flex flex-wrap gap-2 p-4">
+        <Button variant="outline" asChild className="flex-1 min-w-[120px] text-xs">
           <Link href={pdfUrl} target="_blank" rel="noopener noreferrer">
-            <FileText className="mr-2 h-4 w-4" />
+            <FileText className="mr-2 h-3 w-3" />
             View PDF
           </Link>
         </Button>
-        <Button asChild className="w-full sm:w-auto">
+        <Button asChild className="flex-1 min-w-[120px] text-xs">
           <Link href={`/tenders/${tenderId}`}>
-            <ExternalLink className="mr-2 h-4 w-4" />
+            <ExternalLink className="mr-2 h-3 w-3" />
             View Tender
           </Link>
         </Button>

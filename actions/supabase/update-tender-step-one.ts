@@ -1,5 +1,4 @@
-'use server'
-
+"use server";
 import { createClient } from "@/lib/utils/supabase/server";
 import { revalidatePath } from 'next/cache';
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
@@ -10,7 +9,6 @@ const stepOneSchema = z.object({
   title: z.string().min(1, "Title is required"),
   summary: z.string(),
   tender_sectors: z.array(z.nativeEnum(SectorEnum)),
-
   end_date: z.date({
     required_error: "A date is required",
   }),
@@ -19,8 +17,6 @@ const stepOneSchema = z.object({
 });
 
 type StepOneData = z.infer<typeof stepOneSchema>;
-
-
 
 export async function updateTenderStepOne(tenderId: string, formData: StepOneData) {
   const supabase = createClient();
@@ -47,7 +43,7 @@ export async function updateTenderStepOne(tenderId: string, formData: StepOneDat
       .update({
         title: validatedData.title,
         summary: validatedData.summary,
-        Tender_sectors: validatedData.tender_sectors,
+        tender_sectors: validatedData.tender_sectors,
         end_date: validatedData.end_date.toISOString(),
         terms: validatedData.terms,
         scope_of_works: validatedData.scope_of_works,
@@ -57,15 +53,22 @@ export async function updateTenderStepOne(tenderId: string, formData: StepOneDat
       .single();
 
     if (error) {
-      throw new Error("Error updating tender");
+      console.error("Supabase error:", error);
+      throw new Error(`Error updating tender: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("No data returned after update");
     }
 
     revalidatePath('/tenders'); // Adjust this path as needed
     return data;
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Zod validation error:", error.errors);
       throw new Error("Invalid form data: " + JSON.stringify(error.errors));
     }
+    console.error("Unexpected error:", error);
     throw error;
   }
 }

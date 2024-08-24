@@ -1,8 +1,21 @@
 'use server'
 
 import { createClient } from "@/lib/utils/supabase/server";
-import { UserProfile } from "@/types";
 import { redirect } from 'next/navigation';
+
+interface UserProfile {
+  id?: string;
+  name: string;
+  email: string;
+  bio?: string;
+  phone_number?: string;
+  address?: string;
+  profile_image?: string;
+  role?: string;
+  company_that_worked_with?: string;
+  avatar_url?: string;
+  picture?: string;
+}
 
 export async function updateUserProfile(formData: UserProfile) {
   const supabase = createClient()
@@ -15,29 +28,24 @@ export async function updateUserProfile(formData: UserProfile) {
     throw new Error('User not authenticated');
   }
 
-  // Prepare the data to be upserted
-  const profileData = {
-    user_id: user.id,
-    name: formData.name,
+  // Update user data in auth.users
+  const { error: updateUserError } = await supabase.auth.updateUser({
     email: formData.email,
-    bio: formData.bio,
-    phone_number: formData.phone_number,
-    address: formData.address,
-    profile_image: formData.profile_image,
-    role: formData.role,
-    company_that_worked_with: formData.company_that_worked_with,
-    updated_at: new Date().toISOString(),
-  };
+    data: {
+      full_name: formData.name,
+      avatar_url: formData.profile_image,
+      picture: formData.picture,
+      bio: formData.bio,
+      phone_number: formData.phone_number,
+      address: formData.address,
+      role: formData.role,
+      company_that_worked_with: formData.company_that_worked_with
+    }
+  });
 
-  // Perform the upsert operation
-  const { error: upsertError } = await supabase
-    .from('user_profiles')
-    .upsert(profileData)
-    .eq('user_id', user.id);
-
-  if (upsertError) {
-    console.error('Failed to update profile:', upsertError);
-    throw new Error('Failed to update profile');
+  if (updateUserError) {
+    console.error('Failed to update user:', updateUserError);
+    throw new Error('Failed to update user');
   }
 
   // Redirect to the profile page

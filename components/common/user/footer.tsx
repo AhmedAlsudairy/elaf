@@ -12,13 +12,13 @@ export const Footer: React.FC = () => {
         {t('copyright', { year: currentYear })}
       </p>
       <nav className="flex gap-4 sm:gap-6 order-1 sm:order-2">
-        <Link href="#" className="text-xs hover:underline underline-offset-4">
+        <Link href="/privacy" className="text-xs hover:underline underline-offset-4">
           {t('privacy')}
         </Link>
-        <Link href="#" className="text-xs hover:underline underline-offset-4">
+        <Link href="terms" className="text-xs hover:underline underline-offset-4">
           {t('terms')}
         </Link>
-        <Link href="#" className="text-xs hover:underline underline-offset-4">
+        <Link href="contact" className="text-xs hover:underline underline-offset-4">
           {t('contact')}
         </Link>
       </nav>

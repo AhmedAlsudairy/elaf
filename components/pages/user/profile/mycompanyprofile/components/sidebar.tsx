@@ -1,14 +1,12 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Menu } from "lucide-react";
-import { AddSectionDialog } from './coustom-section-dialog';
-import { SectionTab } from '@/types';
-import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { AddSectionDialog } from "./coustom-section-dialog";
+import { SectionTab } from "@/types";
+import { useIsOwnerOfCompany } from "@/hooks/check-current-user";
 
 interface SidebarProps {
   sections: SectionTab[];
@@ -24,77 +22,73 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const SidebarContent = () => (
-    <div className="space-y-2 py-4">
+  const SidebarContent = ({ isMobileView }: { isMobileView: boolean }) => (
+    <>
       <Button
-        variant={activeTab === '' ? 'default' : 'ghost'}
-        className="w-full justify-start"
+        variant={activeTab === "" ? "default" : "ghost"}
+        className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
         asChild
       >
-        <Link href={`/profile/companyprofile/${companyId}`}>
-          Info
-        </Link>
+        <Link href={`/profile/companyprofiles/${companyId}`}>Info</Link>
       </Button>
       <Button
-        variant={activeTab === 'tenders' ? 'default' : 'ghost'}
-        className="w-full justify-start"
+        variant={activeTab === "tenders" ? "default" : "ghost"}
+        className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
         asChild
       >
-        <Link href={`/profile/companyprofile/${companyId}/tenders`}>
+        <Link href={`/profile/companyprofiles/${companyId}/tenders`}>
           Tenders
         </Link>
       </Button>
       {!isLoading && isOwner && (
         <Button
-          variant={activeTab === 'requests' ? 'default' : 'ghost'}
-          className="w-full justify-start"
+          variant={activeTab === "requests" ? "default" : "ghost"}
+          className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
           asChild
         >
-          <Link href={`/profile/companyprofile/${companyId}/requests`}>
-            Requests
+          <Link href={`/profile/companyprofiles/${companyId}/requests`}>
+            My Tenders
           </Link>
         </Button>
       )}
       {sections.map((section) => (
         <Button
           key={section.id}
-          variant={activeTab === section.id ? 'default' : 'ghost'}
-          className="w-full justify-start"
+          variant={activeTab === section.id ? "default" : "ghost"}
+          className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
           asChild
         >
-          <Link href={`/profile/companyprofile/${companyId}/${section.id}`}>
+          <Link href={`/profile/companyprofiles/${companyId}/${section.id}`}>
             {section.title}
           </Link>
         </Button>
       ))}
       {!isLoading && isOwner && <AddSectionDialog />}
-    </div>
+    </>
   );
 
   if (isMobile) {
     return (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="fixed top-4 left-4 z-50 md:hidden">
-            <Menu className="h-4 w-4" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64">
-          <ScrollArea className="h-full">
-            <SidebarContent />
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
+      <div className="sticky top-14 z-30 bg-background border-b">
+        <ScrollArea className="w-full h-14">
+          <div className="flex p-2 gap-2">
+            <SidebarContent isMobileView={true} />
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
     );
   }
 
   return (
     <div className="w-64 mr-4 h-fit">
-      <SidebarContent />
+      <div className="space-y-2 py-4">
+        <SidebarContent isMobileView={false} />
+      </div>
     </div>
   );
 };

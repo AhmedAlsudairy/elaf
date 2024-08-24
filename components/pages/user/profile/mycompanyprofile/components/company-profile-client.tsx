@@ -25,7 +25,7 @@ const CompanyProfileClient: React.FC<CompanyProfileClientProps> = ({ sections, c
 
     if (sections.some(section => section.id === lastSegment)) {
       activeTab = lastSegment;
-    } else if (secondLastSegment === 'companyprofile') {
+    } else if (secondLastSegment === 'companyprofiles') {
       // This is the main company profile page (previously "info")
       activeTab = '';
     }

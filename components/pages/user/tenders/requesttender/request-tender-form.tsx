@@ -1,4 +1,3 @@
-
 "use client"
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -38,7 +37,7 @@ type ContentSection = {
 };
 
 interface TenderRequestFormProps {
-  onSubmit: (data: TenderRequestFormValues, pdfBlob?: Blob) => void;
+  onSubmit: (data: TenderRequestFormValues, pdfBlob?: Blob) => Promise<void>;
   tenderId: string;
   companyProfile: {
     company_profile_id: string;
@@ -52,6 +51,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
   const [contentSections, setContentSections] = useState<ContentSection[]>([]);
   const [previewPDF, setPreviewPDF] = useState(false);
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState<Blob | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const methods = useForm<TenderRequestFormValues>({
     resolver: zodResolver(tenderRequestSchema),
@@ -64,29 +64,43 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
   });
 
   const handleSubmit = async (values: TenderRequestFormValues) => {
-    onSubmit(values, generatedPdfBlob || undefined);
+    setIsLoading(true);
+    try {
+      await onSubmit(values, generatedPdfBlob || undefined);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const generatePDF = async () => {
-    const blob = await pdf(
-      <PDFDocument 
-        data={{
-          ...methods.getValues(),
-          tender_id: tenderId,
-          content_sections: contentSections,
-          company_name: companyProfile.company_title,
-          is_tender_request: true,
-          custom_fields: [],
-          end_date: new Date(),
-          terms: '',
-          scope_of_works: '',
-        }}
-        companyLogo={companyProfile.profile_image}
-        elafLogo={ELAF_LOGO_PNG_URL}
-      />
-    ).toBlob();
-    setGeneratedPdfBlob(blob);
-    setPreviewPDF(true);
+    setIsLoading(true);
+    try {
+      const blob = await pdf(
+        <PDFDocument 
+          data={{
+            ...methods.getValues(),
+            tender_id: tenderId,
+            content_sections: contentSections,
+            company_name: companyProfile.company_title,
+            is_tender_request: true,
+            custom_fields: [],
+            end_date: new Date(),
+            terms: '',
+            scope_of_works: '',
+          }}
+          companyLogo={companyProfile.profile_image}
+          elafLogo={ELAF_LOGO_PNG_URL}
+        />
+      ).toBlob();
+      setGeneratedPdfBlob(blob);
+      setPreviewPDF(true);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAddContentSection = () => {
@@ -138,7 +152,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                     <FormItem>
                       <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <Input {...field} className="w-full" />
+                        <Input {...field} className="w-full" disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -160,6 +174,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                             field.onChange(value === '' ? 0 : parseFloat(value));
                           }} 
                           className="w-full" 
+                          disabled={isLoading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -175,7 +190,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                   <FormItem>
                     <FormLabel>Summary</FormLabel>
                     <FormControl>
-                      <Textarea {...field} className="w-full" />
+                      <Textarea {...field} className="w-full" disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -192,11 +207,13 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                         value={section.title}
                         onChange={(e) => handleContentSectionChange(index, 'title', e.target.value)}
                         className="w-full sm:w-1/2"
+                        disabled={isLoading}
                       />
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         <Select
                           value={section.type}
                           onValueChange={(value: 'paragraph' | 'list') => handleContentSectionChange(index, 'type', value)}
+                          disabled={isLoading}
                         >
                           <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Select type" />
@@ -211,6 +228,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                           variant="destructive"
                           size="icon"
                           onClick={() => handleRemoveContentSection(index)}
+                          disabled={isLoading}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -224,6 +242,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                             value={item}
                             onChange={(e) => handleContentItemChange(index, itemIndex, e.target.value)}
                             className="flex-grow"
+                            disabled={isLoading}
                           />
                         ) : (
                           <Input
@@ -231,6 +250,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                             value={item}
                             onChange={(e) => handleContentItemChange(index, itemIndex, e.target.value)}
                             className="flex-grow"
+                            disabled={isLoading}
                           />
                         )}
                         <Button
@@ -238,6 +258,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                           variant="destructive"
                           size="icon"
                           onClick={() => handleRemoveContentItem(index, itemIndex)}
+                          disabled={isLoading}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -249,6 +270,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                       size="sm"
                       onClick={() => handleAddContentItem(index)}
                       className="w-full sm:w-auto"
+                      disabled={isLoading}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add {section.type === 'paragraph' ? 'Paragraph' : 'List Item'}
@@ -259,6 +281,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                   type="button"
                   onClick={handleAddContentSection}
                   className="w-full sm:w-auto"
+                  disabled={isLoading}
                 >
                   Add Content Section
                 </Button>
@@ -273,11 +296,11 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                       <FormLabel>PDF Upload</FormLabel>
                       <FormControl>
                         <PDFUpload
-                          disabled={false}
+                          disabled={isLoading}
                           onChange={(url) => field.onChange(url)}
                           onRemove={() => field.onChange("")}
                           value={field.value ? [field.value] : []}
-                          bucketName="tender-requests"
+                          bucketName="profile"
                           generatedPdfBlob={generatedPdfBlob}
                         />
                       </FormControl>
@@ -286,8 +309,13 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                   )}
                 />
 
-                <Button type="button" onClick={generatePDF} className="w-full sm:w-auto">
-                  Generate and Preview PDF
+                <Button 
+                  type="button" 
+                  onClick={generatePDF} 
+                  className="w-full sm:w-auto"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Generating...' : 'Generate and Preview PDF'}
                 </Button>
               </div>
 
@@ -298,7 +326,9 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
             </div>
 
             <div className="shrink-0 p-4 bg-gray-50 border-t">
-              <Button type="submit" className="w-full">Submit Tender Request</Button>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Submitting...' : 'Submit Tender Request'}
+              </Button>
             </div>
           </form>
         </Form>
@@ -326,7 +356,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                 </PDFViewer>
               </div>
               <div className="mt-4 flex justify-between items-center gap-2 px-4 pb-4">
-                <Button type="button" onClick={() => setPreviewPDF(false)} className="w-auto">
+                <Button type="button" onClick={() => setPreviewPDF(false)} className="w-auto" disabled={isLoading}>
                   Close Preview
                 </Button>
                 <div className="flex-grow"></div>
@@ -337,7 +367,7 @@ export function TenderRequestForm({ onSubmit, tenderId, companyProfile, tenderTi
                     <FormItem className="w-auto">
                       <FormControl>
                         <PDFUpload
-                          disabled={false}
+                          disabled={isLoading}
                           onChange={(url) => field.onChange(url)}
                           onRemove={() => field.onChange("")}
                           value={field.value ? [field.value] : []}

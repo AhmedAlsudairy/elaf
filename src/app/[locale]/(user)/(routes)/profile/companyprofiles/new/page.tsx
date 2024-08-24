@@ -41,7 +41,7 @@ export default function AddCompanyPage() {
       });
       const result = await addCompany(formData);
       if (result.success && result.data) {
-        router.push(`/profile/companyprofile/${result.data.id}`);
+        router.push(`/profile/companyprofiles/${result.data.company_profile_id}`);
       } else {
         throw new Error('Failed to create company profile');
       }

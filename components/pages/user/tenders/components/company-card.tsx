@@ -42,7 +42,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => (
         />
       )}
       {company.company_profile_id && (
-        <Link href={`/profile/companyprofile/${company.company_profile_id}`} passHref>
+        <Link href={`/profile/companyprofiles/${company.company_profile_id}`} passHref>
           <Button className="w-full mt-4">View Full Profile</Button>
         </Link>
       )}

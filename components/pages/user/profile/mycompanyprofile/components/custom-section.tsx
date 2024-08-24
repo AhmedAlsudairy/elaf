@@ -42,7 +42,7 @@ export function CustomSection({ section, onUpdate, isEditing }: CustomSectionPro
                 onChange={(url) => handleChange('file_url', url)}
                 onRemove={() => handleChange('file_url', '')}
                 value={section.file_url ? [section.file_url] : []}
-                bucketName="custom-sections"
+                bucketName="profile"
               />
             </div>
           </div>

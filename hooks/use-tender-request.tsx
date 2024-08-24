@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getRequestsByTenderId } from "@/actions/supabase/get-tender-requests-by-tender-id";
-import { TenderRequest } from '@/components/pages/user/tenders/request_tender/tender-req-main-card';
+import { TenderRequest } from '@/components/pages/user/tenders/requesttender/tender-req-main-card';
 
 export const useTenderRequests = (tenderId: string) => {
   return useInfiniteQuery<{ data: TenderRequest[]; nextPage: number | null }>({

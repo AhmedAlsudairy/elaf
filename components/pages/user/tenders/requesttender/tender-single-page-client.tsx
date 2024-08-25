@@ -1,3 +1,4 @@
+import { currencyT } from "@/types";
 import SingleTenderClientComponent from "../components/tender-single-page";
 
 enum SectorEnum {
@@ -34,6 +35,7 @@ interface Tender {
   end_date: string | null;
   status: TenderStatusEnum;
   terms: string;
+  currency: currencyT;
   scope_of_works: string;
   tender_sectors: SectorEnum[];
   created_at: string | null;

@@ -230,7 +230,7 @@ export function TenderRequestForm({
                       </FormControl>
                       <FormMessage />
                       <p className="text-sm text-muted-foreground mt-1">
-                        The currency is automatically set to match the tender's currency.
+                        The currency is automatically set to match the tender&aposs currency.
                       </p>
                     </FormItem>
                   )}

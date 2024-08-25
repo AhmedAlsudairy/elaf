@@ -1,6 +1,6 @@
 'use server'
 import { createClient } from "@/lib/utils/supabase/server";
-import { SearchParams, SearchResult, Tender } from "@/types";
+import { currencyT, SearchParams, SearchResult, Tender } from "@/types";
 import { SectorEnum, TenderStatus } from "@/constant/text";
 import { z } from "zod";
 
@@ -30,6 +30,7 @@ interface RawTender {
   scope_of_works: string;
   isEnabled: boolean;
   tender_sectors: SectorEnum[];
+  currency:currencyT
   company_title: string;
   company_email: string;
   profile_image: string;
@@ -95,6 +96,7 @@ export async function fetchTenders(
       created_at: tender.created_at,
       end_date: tender.end_date,
       title: tender.title,
+      currency: tender.currency,
       summary: tender.summary,
       status: tender.status,
       address: tender.company_address

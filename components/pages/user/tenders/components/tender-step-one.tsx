@@ -23,13 +23,21 @@ import { TenderFormValues } from '@/schema'
 import { SectorEnum } from "@/constant/text"
 import { Button } from "@/components/ui/button"
 import { MultiSelect } from '../../profile/forms/components/multiselect'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 type TenderFormStep1Props = {
   form: UseFormReturn<TenderFormValues>
   isLoading: boolean
 }
-
+   const currencyOptions = [
+    { value: 'OMR', label: 'Omani Rial' },
+    { value: 'EGP', label: 'Egyptian Pound' },
+    { value: 'SAR', label: 'Saudi Riyal' },
+    { value: 'AED', label: 'UAE Dirham' },
+  ];
 export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
+
+
   const sectorOptions = Object.entries(SectorEnum).map(([key, value]) => ({
     id: key,
     name: value,
@@ -50,7 +58,32 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
           </FormItem>
         )}
       />
-      
+
+<FormField
+        control={form.control}
+        name="currency"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Currency</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {currencyOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+   
       <FormField
         control={form.control}
         name="end_date"

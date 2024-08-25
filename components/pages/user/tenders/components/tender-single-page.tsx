@@ -21,8 +21,9 @@ import { format } from "date-fns";
 import { getRequestSummaries, RequestSummary } from "@/actions/supabase/get-request-summary";
 import RequestSummaryCard from "../requesttender/request-summary-card";
 import TenderRequestList from "../requesttender/tender-req-list-main";
-import TenderRequestForm from "../requesttender/request-tender-form";
+import TenderRequestForm, { tenderRequestSchema } from "../requesttender/request-tender-form";
 import { acceptTenderRequest } from "@/actions/supabase/accept-tender-request";
+import { z } from "zod";
 
 enum SectorEnum {
   Technology = 'Technology',
@@ -61,6 +62,8 @@ interface Tender {
   scope_of_works: string;
   tender_sectors: SectorEnum[];
   created_at: string | null;
+  currency: z.infer<typeof tenderRequestSchema>['currency']; // Add this line
+
   average_price?: number;
   maximum_price?: number;
   minimum_price?: number;
@@ -237,7 +240,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                 <div className="mb-4 p-4 bg-green-100 rounded-md">
                   <h3 className="text-lg font-semibold text-green-800">Accepted Request</h3>
                   <p>Company: {acceptedRequest.company_title}</p>
-                  <p>Bid Price: ${acceptedRequest.bid_price.toFixed(2)}</p>
+                  <p>Bid Price:{tender.currency } {acceptedRequest.bid_price.toFixed(2)} </p>
                 </div>
               )}
 
@@ -332,6 +335,8 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                             tenderId={tender.tender_id}
                             companyProfile={companyProfile}
                             tenderTitle={tender.title}
+                            tenderCurrency={tender.currency} // Add this line
+
                           />
                         )}
                       </div>
@@ -352,6 +357,8 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                   tenderId={tender.tender_id}
                   onAccept={handleAcceptRequest}
                   acceptedRequestId={acceptedRequest?.id}
+                  tenderCurrency={tender.currency} // Add this line
+
                 />
               </CardContent>
             </Card>
@@ -361,6 +368,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
           {isOwner ? (
             <RequestSummaryCard
               requestSummaries={requestSummaries}
+              TenderCurrency={tender.currency} // Add this line
               hasMore={hasMoreSummaries}
               loadMore={loadMoreSummaries}
               isLoading={isLoadingSummaries}

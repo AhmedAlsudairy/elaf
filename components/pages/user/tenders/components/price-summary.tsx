@@ -5,6 +5,7 @@ interface Tender {
   average_price?: number | null;
   maximum_price?: number | null;
   minimum_price?: number | null;
+  currency: string; // Add this line
 }
 
 interface CompanyOwnerTenderDetailsProps {
@@ -13,7 +14,7 @@ interface CompanyOwnerTenderDetailsProps {
 
 const CompanyOwnerTenderDetails: React.FC<CompanyOwnerTenderDetailsProps> = ({ tender }) => {
   const formatPrice = (price?: number | null) => {
-    return price != null ? `R.O ${price.toFixed(2)}` : 'N/A';
+    return price != null ? `${tender.currency} ${price.toFixed(2)}` : 'N/A';
   };
 
   return (

@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, FileText, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils/shadcn/utils';
+import { currencyT } from '@/types';
 
 interface TenderRequestCardProps {
   title: string;
   summary: string;
   price: number;
+  currency: currencyT; // Add this line
   tenderId: string;
   pdfUrl: string;
   tenderRequestStatus: 'pending' | 'accepted' | 'rejected';
@@ -22,6 +24,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   title,
   summary,
   price,
+  currency,
   tenderId,
   pdfUrl,
   tenderRequestStatus,
@@ -45,7 +48,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
       <CardContent className="flex-grow p-4">
         <p className="text-xs mb-2 line-clamp-3">{summary}</p>
         <div className="flex flex-wrap justify-between items-start gap-2 mb-2">
-          <p className="text-sm font-semibold">Price: ${price.toFixed(2)}</p>
+          <p className="text-sm font-semibold">Price: {currency} {price.toFixed(2)}</p>
           <div className={cn(
             "flex items-center text-xs",
             isExpired ? "text-red-500" : "text-gray-500"

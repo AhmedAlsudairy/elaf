@@ -6,6 +6,7 @@ import { useInView } from 'react-intersection-observer';
 import { getTenderRequestsByCompanyProfileId } from '@/actions/supabase/get-tender-request-by-company-id';
 import { Loader2 } from 'lucide-react';
 import TenderRequestCard from '@/components/pages/user/tenders/requesttender/request-tender-card';
+import { currencyT } from '@/types';
 
 const ITEMS_PER_PAGE = 9; // Adjust this number as needed
 
@@ -14,6 +15,7 @@ interface TenderRequest {
   title: string;
   summary: string;
   bid_price: number;
+  currency: currencyT;
   pdf_url: string;
   status: 'pending' | 'accepted' | 'rejected';
   tender: {
@@ -80,6 +82,7 @@ const TenderRequestsPage = ({ params }: { params: { companyId: string } }) => {
                 title={tenderRequest.title}
                 summary={tenderRequest.summary}
                 price={tenderRequest.bid_price}
+                currency={tenderRequest.currency}
                 tenderId={tenderRequest.tender.tender_id}
                 pdfUrl={tenderRequest.pdf_url}
                 tenderRequestStatus={tenderRequest.status}

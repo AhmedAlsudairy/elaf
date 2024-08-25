@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from 'next/navigation';
 import Auth from "../components/auth";
 import { ELAF_LOGO_URL } from "@/constant/svg";
@@ -10,32 +10,32 @@ import { useReusableToast } from "@/components/common/success-toast";
 import { login } from "@/actions/supabase/auth-with-creditial";
 
 const LoginPage = () => {
-   const [isLoading, setIsLoading] = useState(true); // Start with loading true
-   const [isSignedIn, setIsSignedIn] = useState(false);
-   const [redirecting, setRedirecting] = useState(false);
-   const showToast = useReusableToast();
-   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const showToast = useReusableToast();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-   const redirectToProfile = useCallback(() => {
-     setRedirecting(true);
-     router.push('/profile/myprofile');
-   }, [router]);
+  const redirectToProfile = useCallback(() => {
+    startTransition(() => {
+      router.push('/profile/myprofile');
+    });
+  }, [router]);
 
-   useEffect(() => {
-     const checkLoginStatus = async () => {
-       setIsLoading(true);
-       try {
-         const loggedIn = await IsLoggedIn();
-         setIsSignedIn(loggedIn);
-         if (loggedIn) {
-           redirectToProfile();
-         }
-       } finally {
-         setIsLoading(false);
-       }
-     };
-     checkLoginStatus();
-   }, [redirectToProfile]);
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const loggedIn = await IsLoggedIn();
+        setIsSignedIn(loggedIn);
+        if (loggedIn) {
+          redirectToProfile();
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkLoginStatus();
+  }, [redirectToProfile]);
 
   const handleAuth = async () => {
     try {
@@ -52,8 +52,10 @@ const LoginPage = () => {
       await SignOut();
       setIsSignedIn(false);
       showToast('success', 'Signed out successfully');
-      router.push('/');
-      router.refresh(); // This will trigger a revalidation of the page
+      startTransition(() => {
+        router.push('/');
+        router.refresh();
+      });
     } catch (error) {
       showToast('error', 'Sign-out failed');
     }
@@ -81,10 +83,10 @@ const LoginPage = () => {
     }
   };
 
-  if (redirecting) {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-xl font-semibold">Login successful. Redirecting to your profile...</p>
+        <p className="text-xl font-semibold">Loading...</p>
       </div>
     );
   }

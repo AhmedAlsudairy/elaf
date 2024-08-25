@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, FileText, DollarSign, Building } from "lucide-react";
 import { RequestSummary } from '@/actions/supabase/get-request-summary';
+import { currencyT } from '@/types';
 
 interface RequestSummaryCardProps {
   requestSummaries: RequestSummary[];
   hasMore: boolean;
+  TenderCurrency: currencyT; // Add this line
   loadMore: () => void;
   isLoading: boolean;
   error: string | null;
@@ -14,6 +16,7 @@ interface RequestSummaryCardProps {
 
 const RequestSummaryCard: React.FC<RequestSummaryCardProps> = ({
   requestSummaries,
+  TenderCurrency,
   hasMore,
   loadMore,
   isLoading,
@@ -50,7 +53,6 @@ const RequestSummaryCard: React.FC<RequestSummaryCardProps> = ({
                     {summary.company_title}
                   </h3>
                   <span className="font-bold text-green-600 flex items-center">
-                    <DollarSign className="mr-1 h-5 w-5" />
                     {summary.bid_price.toFixed(2)}
                   </span>
                 </div>

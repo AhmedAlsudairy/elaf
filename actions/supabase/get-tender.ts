@@ -45,6 +45,7 @@ export async function fetchTenderData(tenderId: string) {
       average_price: data.average_price,
       maximum_price: data.maximum_price,
       minimum_price: data.minimum_price,
+      currency: data.currency, // Add this line to include the currency
     },
     company: companyProfile ? {
       company_profile_id: companyProfile.company_profile_id,

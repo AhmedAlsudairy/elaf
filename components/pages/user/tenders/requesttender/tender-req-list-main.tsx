@@ -1,19 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import  { useState, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTenderRequests } from '@/hooks/use-tender-request';
 import TenderRequestCard, { TenderRequest } from './tender-req-main-card';
+import { currencyT } from '@/types';
 
 interface TenderRequestListProps {
   tenderId: string;
   onAccept: (id: string) => Promise<void>;
   acceptedRequestId?: string | null;
+  tenderCurrency: currencyT; // Add this line
+
 }
 
 type SortOrder = 'newest' | 'oldest';
 type PriceSort = 'none' | 'lowest' | 'highest';
 
-const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccept, acceptedRequestId }) => {
+const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccept, acceptedRequestId,tenderCurrency }) => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priceSort, setPriceSort] = useState<PriceSort>('none');
 
@@ -102,6 +105,8 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
               onAccept={onAccept}
               isAccepted={request.id === acceptedRequestId}
               showAcceptButton={!acceptedRequestId || request.id === acceptedRequestId}
+              tenderCurrency={tenderCurrency} // Add this line
+
             />
           ))
         )}

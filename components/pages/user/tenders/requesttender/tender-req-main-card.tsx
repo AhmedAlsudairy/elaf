@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { currencyT } from "@/types";
 
 enum TenderRequestStatusEnum {
   Pending = 'pending',
@@ -31,6 +32,7 @@ export interface TenderRequest {
   title: string;
   summary: string;
   pdf_url?: string;
+
   status: TenderRequestStatusEnum;
   created_at: string;
   updated_at: string;
@@ -42,6 +44,8 @@ export interface TenderRequest {
 
 export interface TenderRequestCardProps {
   request: TenderRequest;
+  tenderCurrency: currencyT; // Add this line
+
   onAccept: (id: string) => Promise<void>;
   isAccepted: boolean;
   showAcceptButton: boolean;
@@ -52,6 +56,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   onAccept,
   isAccepted,
   showAcceptButton,
+  tenderCurrency 
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -126,8 +131,8 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
             </div>
             <div className="text-left sm:text-right">
               <p className="font-semibold text-lg text-green-600 flex items-center sm:justify-end">
-                <DollarSign className="w-5 h-5 mr-1" />
-                {request.bid_price.toFixed(2)}
+              {request.bid_price.toFixed(2)} {tenderCurrency}
+
               </p>
               <p className="text-sm text-gray-500 flex items-center sm:justify-end">
                 <Calendar className="w-4 h-4 mr-1" />

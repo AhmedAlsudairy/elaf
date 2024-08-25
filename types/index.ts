@@ -1,3 +1,4 @@
+import { tenderRequestSchema } from "@/components/pages/user/tenders/requesttender/request-tender-form";
 import { SectorEnum, TenderStatus } from "@/constant/text";
 import { companySchema, userProfileSchema } from "@/schema";
 import { LucideIcon } from "lucide-react";
@@ -154,3 +155,5 @@ export interface SearchResult {
   error?: string;
 }
 
+export const currencyEnum = z.enum(['OMR', 'EGP', 'SAR', 'AED']);
+export type currencyT=z.infer<typeof tenderRequestSchema>['currency'];

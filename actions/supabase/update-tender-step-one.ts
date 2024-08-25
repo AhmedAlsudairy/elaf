@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
 import { z } from "zod";
 import { SectorEnum } from "@/constant/text";
+import { currencyEnum } from "@/types";
 
 const stepOneSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -14,6 +15,8 @@ const stepOneSchema = z.object({
   }),
   terms: z.string(),
   scope_of_works: z.string(),
+  currency: currencyEnum, // Add the currency field
+
 });
 
 type StepOneData = z.infer<typeof stepOneSchema>;
@@ -47,6 +50,8 @@ export async function updateTenderStepOne(tenderId: string, formData: StepOneDat
         end_date: validatedData.end_date.toISOString(),
         terms: validatedData.terms,
         scope_of_works: validatedData.scope_of_works,
+        currency: validatedData.currency, // Add the currency field
+
       })
       .eq('tender_id', tenderId)
       .select()

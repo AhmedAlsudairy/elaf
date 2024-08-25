@@ -16,8 +16,8 @@ interface PDFData {
     title: string;
     content: string[];
   }>;
-  // New fields for tender request
   bid_price?: number;
+  currency?: 'OMR' | 'EGP' | 'SAR' | 'AED';
   company_name?: string;
   is_tender_request?: boolean;
 }
@@ -188,9 +188,11 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
         <Header />
         <Text style={styles.title}>{data.title}</Text>
 
-        {data.is_tender_request && data.bid_price !== undefined && (
+        {data.is_tender_request && data.bid_price !== undefined && data.currency && (
           <View style={styles.section}>
-            <Text style={styles.bidPrice}>Bid Price: R.O{data.bid_price.toFixed(2)}</Text>
+            <Text style={styles.bidPrice}>
+              Bid Price: {data.currency} {data.bid_price.toFixed(2)}
+            </Text>
           </View>
         )}
 

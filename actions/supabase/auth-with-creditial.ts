@@ -69,7 +69,6 @@ export async function ResendConfirmationEmail(email: string): Promise<AuthResult
 
 
 
-
 export async function login(formData: FormData) {
   const supabase = createClient()
 
@@ -85,11 +84,16 @@ export async function login(formData: FormData) {
   if (error) {
     return { error: error.message }
   }
+if (!error) {
+   // Revalidate the layout to update the session
+  revalidatePath('/', 'layout')
 
- 
-  return { success: true }
+  // Redirect to the profile page
+    redirect('/profile/myprofile')
+
 }
-
+ 
+}
 export async function resetPassword(formData: FormData): Promise<AuthResult> {
   const supabase = createClient();
   const email = formData.get("email") as string;

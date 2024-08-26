@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -59,16 +59,7 @@ const Auth: React.FC<AuthProps> = ({
     },
   });
 
-  let title, buttonText;
-  if (isSignedIn) {
-    title = "Welcome Back!";
-    buttonText = "Sign out";
-  } else {
-    title = isLogin ? "Welcome Back" : "Let's Start";
-    buttonText = isLogin ? "Sign in with Google" : "Sign up with Google";
-  }
-
-  const handleGoogleAuth = async () => {
+  const handleGoogleAuth = useCallback(async () => {
     setGoogleLoading(true);
     try {
       if (isSignedIn) {
@@ -79,9 +70,9 @@ const Auth: React.FC<AuthProps> = ({
     } finally {
       setGoogleLoading(false);
     }
-  };
+  }, [isSignedIn, signOutAction, googleAuthAction]);
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = useCallback(async (values: FormValues) => {
     setEmailLoading(true);
     setEmailExists(false);
     setLastUsedEmail(values.email);
@@ -95,20 +86,18 @@ const Auth: React.FC<AuthProps> = ({
     } finally {
       setEmailLoading(false);
     }
-  };
+  }, [emailAuthAction]);
 
-  const handleResendConfirmation = async () => {
+  const handleResendConfirmation = useCallback(async () => {
     setEmailLoading(true);
     try {
       await resendConfirmationAction(lastUsedEmail);
-      // Optionally, you can add a success message here
     } catch (error) {
       console.error('Resend confirmation error:', error);
-      // Optionally, you can add an error message here
     } finally {
       setEmailLoading(false);
     }
-  };
+  }, [resendConfirmationAction, lastUsedEmail]);
 
   if (isLoading) {
     return (
@@ -117,6 +106,9 @@ const Auth: React.FC<AuthProps> = ({
       </div>
     );
   }
+
+  const title = isSignedIn ? "Welcome Back!" : (isLogin ? "Welcome Back" : "Let's Start");
+  const buttonText = isSignedIn ? "Sign out" : (isLogin ? "Sign in with Google" : "Sign up with Google");
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import Auth from "../components/auth";
 import { ELAF_LOGO_URL } from "@/constant/svg";
@@ -8,40 +8,34 @@ import { SignOut } from "@/actions/supabase/signout";
 import { OauthSignin } from "@/actions/supabase/oauth-signin";
 import { useReusableToast } from "@/components/common/success-toast";
 import { login } from "@/actions/supabase/auth-with-creditial";
+import { Loader2 } from "lucide-react";
 
 const LoginPage = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const showToast = useReusableToast();
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+   const [isLoading, setIsLoading] = useState(true);
+   const [isSignedIn, setIsSignedIn] = useState(false);
+   const showToast = useReusableToast();
+   const router = useRouter();
 
-  const redirectToProfile = useCallback(() => {
-    startTransition(() => {
-      router.push('/profile/myprofile');
-    });
-  }, [router]);
-
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const loggedIn = await IsLoggedIn();
-        setIsSignedIn(loggedIn);
-        if (loggedIn) {
-          redirectToProfile();
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkLoginStatus();
-  }, [redirectToProfile]);
+   useEffect(() => {
+     const checkLoginStatus = async () => {
+       setIsLoading(true);
+       try {
+         const loggedIn = await IsLoggedIn();
+         setIsSignedIn(loggedIn);
+         if (loggedIn) {
+           router.push('/profile/myprofile');
+         }
+       } finally {
+         setIsLoading(false);
+       }
+     };
+     checkLoginStatus();
+   }, [router]);
 
   const handleAuth = async () => {
     try {
       await OauthSignin();
-      setIsSignedIn(true);
-      redirectToProfile();
+      // The redirection will be handled by the OauthSignin function
     } catch (error) {
       showToast('error', 'OAuth sign-in failed');
     }
@@ -52,10 +46,8 @@ const LoginPage = () => {
       await SignOut();
       setIsSignedIn(false);
       showToast('success', 'Signed out successfully');
-      startTransition(() => {
-        router.push('/');
-        router.refresh();
-      });
+      router.push('/');
+      router.refresh();
     } catch (error) {
       showToast('error', 'Sign-out failed');
     }
@@ -68,13 +60,12 @@ const LoginPage = () => {
       formData.append('password', data.password);
       const result = await login(formData);
       
-      if (result.error) {
+      if (result && result.error) {
         showToast('error', result.error);
         return { error: result.error };
       }
-
-      setIsSignedIn(true);
-      redirectToProfile();
+      
+      // Successful login is handled by the login function, including redirection
       return {};
     } catch (error) {
       console.error('Login error:', error);
@@ -83,10 +74,11 @@ const LoginPage = () => {
     }
   };
 
-  if (isPending) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-xl font-semibold">Loading...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <p className="ml-2 text-xl font-semibold">Loading...</p>
       </div>
     );
   }
@@ -100,7 +92,7 @@ const LoginPage = () => {
       logoUrl={ELAF_LOGO_URL}
       isSignedIn={isSignedIn}
       emailAuthAction={handleEmailAuth}
-      resendConfirmationAction={() => Promise.resolve()} // Placeholder for resend confirmation action
+      resendConfirmationAction={() => Promise.resolve()}
     />
   );
 };

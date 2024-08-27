@@ -38,11 +38,11 @@ const RequestSummaryCard: React.FC<RequestSummaryCardProps> = ({
   return (
     <Card className="overflow-hidden">
       <CardHeader className="bg-gray-50 border-b">
-        <CardTitle className="text-xl font-bold">Request Summaries</CardTitle>
+        <CardTitle className="text-xl font-bold">pid Tender Notice</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         {requestSummaries.length === 0 && !isLoading ? (
-          <p className="p-4 text-gray-500 italic">No request summaries available.</p>
+          <p className="p-4 text-gray-500 italic">No pid Tender Notice available.</p>
         ) : (
           <div className="divide-y">
             {requestSummaries.map((summary) => (

@@ -1,5 +1,4 @@
-"use client";
-
+'use client'
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
@@ -69,11 +68,8 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [chatRoomDetails, setChatRoomDetails] =
-    useState<ChatRoomDetails | null>(null);
-  const [tenderDetails, setTenderDetails] = useState<TenderDetails | null>(
-    null
-  );
+  const [chatRoomDetails, setChatRoomDetails] = useState<ChatRoomDetails | null>(null);
+  const [tenderDetails, setTenderDetails] = useState<TenderDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [currentCompanyProfile, setCurrentCompanyProfile] = useState<any>(null);
@@ -234,6 +230,55 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     setPdfUrls((prev) => prev.filter((u) => u !== url));
   }, []);
 
+  const renderMessage = (message: Message) => {
+    const isSender = message.sender_company_profile_id === currentCompanyProfile?.company_profile_id;
+    const messageClassName = `flex items-start space-x-2 ${isSender ? 'justify-end' : 'justify-start'}`;
+    const bubbleClassName = `rounded-lg p-2 mt-1 max-w-[70%] break-words ${
+      isSender ? 'bg-blue-500 text-white' : 'bg-gray-100 text-black'
+    }`;
+
+    return (
+      <div key={message.id} className={messageClassName}>
+        {!isSender && (
+          <Avatar className="w-8 h-8 flex-shrink-0">
+            <AvatarImage src={message.sender_avatar || undefined} alt={message.sender_name} />
+            <AvatarFallback>
+              {message.sender_name.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <div className={`flex flex-col ${isSender ? 'items-end' : 'items-start'}`}>
+          <p className="text-xs text-gray-500">{message.sender_name}</p>
+          <div className={bubbleClassName}>
+            <p className="whitespace-pre-wrap">{message.content}</p>
+            {message.pdf_url && (
+              <a
+                href={message.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center ${isSender ? 'text-white' : 'text-blue-500'} hover:underline mt-2`}
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                View PDF
+              </a>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            {format(new Date(message.created_at), "HH:mm")}
+          </p>
+        </div>
+        {isSender && (
+          <Avatar className="w-8 h-8 flex-shrink-0">
+            <AvatarImage src={message.sender_avatar || undefined} alt={message.sender_name} />
+            <AvatarFallback>
+              {message.sender_name.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -271,8 +316,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
             </CardTitle>
           </div>
         </CardHeader>
-        {/* TODO: the last tender request details if it is exist perhaps under  the tender details*/}
-
+        {/* TODO:ADD TENDER request details  */}
         {tenderDetails && (
           <div className="px-4 py-2 bg-gray-100">
             <Button
@@ -314,39 +358,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
         )}
         <CardContent className="flex-grow overflow-y-auto pt-4">
           <div className="space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className="flex items-start space-x-2">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage
-                    src={message.sender_avatar || undefined}
-                    alt={message.sender_name}
-                  />
-                  <AvatarFallback>
-                    {message.sender_name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <p className="text-xs text-gray-500">{message.sender_name}</p>
-                  <div className="bg-gray-100 rounded-lg p-2 mt-1 max-w-[80%]">
-                    <p>{message.content}</p>
-                    {message.pdf_url && (
-                      <a
-                        href={message.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center text-blue-500 hover:underline mt-2"
-                      >
-                        <FileText className="h-4 w-4 mr-1" />
-                        View PDF
-                      </a>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {format(new Date(message.created_at), "HH:mm")}
-                  </p>
-                </div>
-              </div>
-            ))}
+            {messages.map(renderMessage)}
             <div ref={messagesEndRef} />
           </div>
         </CardContent>

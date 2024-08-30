@@ -1,13 +1,13 @@
 /* eslint-disable react/display-name */
 
-'use client'
+"use client"
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, FileText, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, FileText, Clock, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import TenderInfo from "./tender-info";
@@ -24,6 +24,8 @@ import TenderRequestList from "../requesttender/tender-req-list-main";
 import TenderRequestForm, { tenderRequestSchema } from "../requesttender/request-tender-form";
 import { acceptTenderRequest } from "@/actions/supabase/accept-tender-request";
 import { z } from "zod";
+import { createOrGetChatRoom } from "@/actions/supabase/chats";
+import { useRouter } from "next/navigation";
 
 enum SectorEnum {
   Technology = 'Technology',
@@ -62,8 +64,7 @@ interface Tender {
   scope_of_works: string;
   tender_sectors: SectorEnum[];
   created_at: string | null;
-  currency: z.infer<typeof tenderRequestSchema>['currency']; // Add this line
-
+  currency: z.infer<typeof tenderRequestSchema>['currency'];
   average_price?: number;
   maximum_price?: number;
   minimum_price?: number;
@@ -79,6 +80,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   const [showScopeOfWork, setShowScopeOfWork] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [companyProfile, setCompanyProfile] = useState<Company | null>(null);
+  const [currentCompanyProfile, setCurrentCompanyProfile] = useState<Company | null>(null);
   const { toast } = useToast();
   const { isOwner, isLoading } = useIsOwnerOfCompany(company.company_profile_id);
   const queryClient = useQueryClient();
@@ -88,6 +90,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [acceptedRequest, setAcceptedRequest] = useState<RequestSummary | null>(null);
+  const router = useRouter();
 
   const loadMoreSummaries = useCallback(async () => {
     if (isOwner && !isLoadingSummaries) {
@@ -118,11 +121,12 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
   }, [isOwner, loadMoreSummaries]);
 
   useEffect(() => {
-    const fetchCompanyProfile = async () => {
+    const fetchCompanyProfiles = async () => {
       const profile = await getCurrentCompanyProfile();
       setCompanyProfile(profile);
+      setCurrentCompanyProfile(profile);
     };
-    fetchCompanyProfile();
+    fetchCompanyProfiles();
   }, []);
 
   const handleTenderRequestSubmit = useCallback(async (formData: any, pdfBlob?: Blob) => {
@@ -181,6 +185,41 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
     }
   }, [tender.tender_id, toast, requestSummaries, loadMoreSummaries]);
 
+  const handleOpenChatRoom = useCallback(async () => {
+    if (!currentCompanyProfile) {
+      toast({
+        title: "Error",
+        description: "Unable to fetch your company profile. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const result = await createOrGetChatRoom(
+        currentCompanyProfile.company_profile_id,
+        company.company_profile_id,
+        tender.tender_id
+      );
+      if (result.success && result.data) {
+        router.push(`/chats/${result.data.chat_room_id}`);
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to open chat room. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [currentCompanyProfile, company.company_profile_id, tender.tender_id, router, toast]);
+
   const formatDate = useCallback((dateString: string | null): string => {
     if (!dateString) return "Not specified";
     const date = new Date(dateString);
@@ -230,9 +269,21 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                 <CardTitle className="text-2xl font-bold">
                   {tender.title || "Untitled Tender"}
                 </CardTitle>
-                <Badge variant={getBadgeVariant(tender.status)}>
-                  {tender.status}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={getBadgeVariant(tender.status)}>
+                    {tender.status}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenChatRoom}
+                    className="flex items-center"
+                    disabled={!currentCompanyProfile}
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Chat
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -240,7 +291,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                 <div className="mb-4 p-4 bg-green-100 rounded-md">
                   <h3 className="text-lg font-semibold text-green-800">Accepted Request</h3>
                   <p>Company: {acceptedRequest.company_title}</p>
-                  <p>Bid Price:{tender.currency } {acceptedRequest.bid_price.toFixed(2)} </p>
+                  <p>Bid Price: {tender.currency} {acceptedRequest.bid_price.toFixed(2)}</p>
                 </div>
               )}
 
@@ -319,13 +370,13 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                       <Button className="mt-4 w-full sm:w-auto">
-                        Submit pid Tender Notice
+                        Submit Bid Tender Notice
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px] p-0 flex flex-col">
                       <DialogHeader className="p-6 bg-gray-100 shrink-0">
                         <DialogTitle className="text-xl sm:text-2xl">
-                          Submit pid Tender Notice
+                          Submit Bid Tender Notice
                         </DialogTitle>
                       </DialogHeader>
                       <div className="flex-1 overflow-y-auto">
@@ -335,52 +386,50 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                             tenderId={tender.tender_id}
                             companyProfile={companyProfile}
                             tenderTitle={tender.title}
-                            tenderCurrency={tender.currency} // Add this line
-
-                          />
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )
-              )}
-            </CardContent>
-          </Card>
-
-          {isOwner && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>pid Tender Notice</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TenderRequestList
-                  tenderId={tender.tender_id}
-                  onAccept={handleAcceptRequest}
-                  acceptedRequestId={acceptedRequest?.id}
-                  tenderCurrency={tender.currency} // Add this line
-
-                />
+                            tenderCurrency={tender.currency}
+                            />
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )
+                )}
               </CardContent>
             </Card>
-          )}
-        </div>
-        <div className="h-[calc(100vh-2rem)]">
-          {isOwner ? (
-            <RequestSummaryCard
-              requestSummaries={requestSummaries}
-              TenderCurrency={tender.currency} // Add this line
-              hasMore={hasMoreSummaries}
-              loadMore={loadMoreSummaries}
-              isLoading={isLoadingSummaries}
-              error={summaryError}
-            />
-          ) : (
-            <CompanyCard company={company} />
-          )}
+  
+            {isOwner && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Bid Tender Notices</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TenderRequestList
+                    tenderId={tender.tender_id}
+                    onAccept={handleAcceptRequest}
+                    acceptedRequestId={acceptedRequest?.id}
+                    tenderCurrency={tender.currency}
+                  />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          <div className="h-[calc(100vh-2rem)]">
+            {isOwner ? (
+              <RequestSummaryCard
+                requestSummaries={requestSummaries}
+                TenderCurrency={tender.currency}
+                hasMore={hasMoreSummaries}
+                loadMore={loadMoreSummaries}
+                isLoading={isLoadingSummaries}
+                error={summaryError}
+              />
+            ) : (
+              <CompanyCard company={company} />
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-export default SingleTenderClientComponent;
+    );
+  };
+  
+  export default SingleTenderClientComponent;

@@ -101,7 +101,7 @@ const TenderCard: React.FC<TenderCardProps> = ({
             <p className="text-sm text-gray-500">Start: {formatDate(startingDate)}</p>
             <p className="text-sm text-gray-500">End: {formatDate(endDate)}</p>
           </div>
-          <p className="text-sm text-gray-500 mt-2 line-clamp-1">Address: {address}</p>
+         {address&&<p className="text-sm text-gray-500 mt-2 line-clamp-1">Address: {address}</p> } 
         </CardContent>
         <CardFooter className="text-xs text-gray-500">
           Tender ID: {tenderId}

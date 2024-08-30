@@ -51,6 +51,14 @@ export interface TenderRequestCardProps {
   showAcceptButton: boolean;
 }
 
+
+
+
+
+// TODO:ADD chat button here
+
+
+
 const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   request,
   onAccept,

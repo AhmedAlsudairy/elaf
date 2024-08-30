@@ -273,7 +273,8 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                   <Badge variant={getBadgeVariant(tender.status)}>
                     {tender.status}
                   </Badge>
-                  <Button
+                  {/* TODO: Add loading button */}
+                 {!isOwner&& <Button
                     variant="outline"
                     size="sm"
                     onClick={handleOpenChatRoom}
@@ -282,7 +283,7 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
                   >
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Chat
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             </CardHeader>

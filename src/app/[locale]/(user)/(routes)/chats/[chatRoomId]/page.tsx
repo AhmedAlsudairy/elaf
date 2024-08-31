@@ -1,14 +1,7 @@
-import ChatRoomComponent from '@/components/pages/user/chats/single-chat-component';
-import React from 'react';
+import ChatInterface from "@/components/pages/user/chats/chat-layout";
 
-interface PageProps {
-  params: { chatRoomId: string };
-}
-
-const ChatRoomPage: React.FC<PageProps> = ({ params }) => {
-  const { chatRoomId } = params;
-
-  return <ChatRoomComponent chatRoomId={chatRoomId} />;
+const ChatRoomPage = () => {
+  return <ChatInterface />;
 };
 
 export default ChatRoomPage;

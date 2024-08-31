@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -21,25 +19,29 @@ import {
   ChevronUp,
   FileText,
   ExternalLink,
+  Menu,
 } from "lucide-react";
-import { getMessages, sendMessage } from "@/actions/supabase/chats";
 import { fetchTenderData } from "@/actions/supabase/get-tender";
-import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
-import { useSubscribeToChat } from "@/hooks/messages subs-hook";
 import PDFUpload from "@/components/common/pdf-upload";
+import { getReadStatus, sendMessage, getMessages } from "@/actions/supabase/chats";
+import { useQuery } from '@tanstack/react-query';
+import { useSubscribeToChat } from "@/hooks/messages subs-hook";
 
 interface Message {
   id: string;
-  sender_company_profile_id: string;
-  receiver_company_profile_id: string;
+  chat_room_id: string;
+  tender_id: string | null;
   content: string;
   created_at: string;
-  sender_name: string;
-  sender_avatar: string | null;
-  company_title: string | null;
-  company_image: string | null;
-  tender_id?: string | null;
-  pdf_url?: string | null;
+  tender_request_id: string | null;
+  pdf_url: string | null;
+  sender_company_profile_id: string;
+  receiver_company_profile_id: string;
+  read_status: string;
+  sender_name?: string;
+  sender_avatar?: string | null;
+  company_title?: string | null;
+  company_image?: string | null;
 }
 
 interface ChatRoomDetails {
@@ -53,8 +55,8 @@ interface ChatRoomDetails {
   recipient_company_image: string | null;
 }
 
-interface TenderDetails {
-  tender_id: string | null;
+interface TenderInfo {
+  tender_id: string;
   title: string;
   status: string;
   end_date: string | null;
@@ -62,116 +64,98 @@ interface TenderDetails {
 
 interface ChatRoomComponentProps {
   chatRoomId: string;
+  initialMessages: Message[];
+  isLoading: boolean;
+  fetchNextPage: () => void;
+  hasNextPage: boolean | undefined;
+  currentCompanyProfile: any;
+  toggleChatList: () => void;
 }
 
 const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   chatRoomId,
+  initialMessages,
+  isLoading,
+  fetchNextPage,
+  hasNextPage,
+  currentCompanyProfile,
+  toggleChatList,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [chatRoomDetails, setChatRoomDetails] = useState<ChatRoomDetails | null>(null);
-  const [tenderDetails, setTenderDetails] = useState<TenderDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSending, setIsSending] = useState(false);
-  const [currentCompanyProfile, setCurrentCompanyProfile] = useState<any>(null);
   const [showTenderDetails, setShowTenderDetails] = useState(false);
   const [pdfUrls, setPdfUrls] = useState<string[]>([]);
+  const [chatRoomDetails, setChatRoomDetails] = useState<ChatRoomDetails | null>(null);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [allMessages, setAllMessages] = useState<Message[]>(initialMessages);
+  const [tenderInfo, setTenderInfo] = useState<TenderInfo | null>(null);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const { data: readStatus } = useQuery({
+    queryKey: ['readStatus'],
+    queryFn: getReadStatus
+  });
+
   const newMessages = useSubscribeToChat(chatRoomId);
 
-  const updateTenderDetails = useCallback(async (tenderId: string) => {
-    const tenderResult = await fetchTenderData(tenderId);
-    if (tenderResult?.tender) {
-      setTenderDetails({
-        tender_id: tenderResult.tender.tender_id || null,
-        title: tenderResult.tender.title,
-        status: tenderResult.tender.status,
-        end_date: tenderResult.tender.end_date || null,
-      });
-    }
-  }, []);
+  useEffect(() => {
+    setAllMessages(prevMessages => {
+      const updatedMessages = [...prevMessages, ...newMessages];
+      return updatedMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    });
+  }, [newMessages]);
 
-  const fetchChatData = useCallback(async () => {
-    try {
-      const [messagesResult, currentCompanyProfileResult] = await Promise.all([
-        getMessages(chatRoomId),
-        getCurrentCompanyProfile(),
-      ]);
+  useEffect(() => {
+    setAllMessages(initialMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
+  }, [initialMessages]);
 
-      if (messagesResult.success && messagesResult.data) {
-        setMessages(messagesResult.data.messages);
-        setChatRoomDetails(messagesResult.data.chatRoomDetails);
-
-        const lastTenderMessage = [...messagesResult.data.messages]
-          .reverse()
-          .find((msg) => msg.tender_id);
-
-        if (lastTenderMessage?.tender_id) {
-          await updateTenderDetails(lastTenderMessage.tender_id);
+  useEffect(() => {
+    const fetchChatRoomDetails = async () => {
+      if (allMessages.length > 0 && !chatRoomDetails) {
+        try {
+          const result = await getMessages(chatRoomId, 1, 0);
+          if (result.chatRoomDetails) {
+            setChatRoomDetails(result.chatRoomDetails);
+          }
+        } catch (error) {
+          console.error("Error fetching chat room details:", error);
         }
-      } else {
-        toast({
-          title: "Error",
-          description: messagesResult.error || "Failed to load chat data.",
-          variant: "destructive",
-        });
       }
+    };
 
-      if (currentCompanyProfileResult) {
-        setCurrentCompanyProfile(currentCompanyProfileResult);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to load current company profile.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading chat data.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chatRoomId, toast, updateTenderDetails]);
+    fetchChatRoomDetails();
+  }, [allMessages, chatRoomId, chatRoomDetails]);
+
+  const lastTenderMessage = useMemo(() => {
+    return [...allMessages].reverse().find(message => message.tender_id !== null);
+  }, [allMessages]);
 
   useEffect(() => {
-    fetchChatData();
-  }, [fetchChatData]);
-
-  useEffect(() => {
-    if (newMessages.length > 0) {
-      setMessages((prevMessages) => [...prevMessages, ...newMessages]);
-      const lastTenderMessage = [...newMessages]
-        .reverse()
-        .find((msg) => msg.tender_id);
+    const fetchTenderInfo = async () => {
       if (lastTenderMessage?.tender_id) {
-        updateTenderDetails(lastTenderMessage.tender_id);
+        try {
+          const result = await fetchTenderData(lastTenderMessage.tender_id);
+          setTenderInfo(result.tender);
+        } catch (error) {
+          console.error("Error fetching tender info:", error);
+        }
       }
-    }
-  }, [newMessages, updateTenderDetails]);
+    };
+
+    fetchTenderInfo();
+  }, [lastTenderMessage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [allMessages]);
 
   const handleSendMessage = async () => {
-    if (
-      (!newMessage.trim() && pdfUrls.length === 0) ||
-      !chatRoomDetails ||
-      !currentCompanyProfile
-    )
-      return;
+    if ((!newMessage.trim() && pdfUrls.length === 0) || !chatRoomDetails || !currentCompanyProfile) return;
 
-    setIsSending(true);
+    setIsSendingMessage(true);
+
     const receiverCompanyProfileId =
-      chatRoomDetails.initiator_company_profile_id ===
-      currentCompanyProfile.company_profile_id
+      chatRoomDetails.initiator_company_profile_id === currentCompanyProfile.company_profile_id
         ? chatRoomDetails.recipient_company_profile_id
         : chatRoomDetails.initiator_company_profile_id;
 
@@ -181,15 +165,17 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
         newMessage,
         currentCompanyProfile.company_profile_id,
         receiverCompanyProfileId,
+        undefined,
+        undefined,
         pdfUrls[0]
       );
-      if (result.success) {
+      if (result && result.success && result.data) {
         setNewMessage("");
         setPdfUrls([]);
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to send message.",
+          description: "Failed to send message",
           variant: "destructive",
         });
       }
@@ -197,27 +183,21 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
       console.error("Unexpected error:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while sending the message.",
+        description: "Unexpected error sending message",
         variant: "destructive",
       });
     } finally {
-      setIsSending(false);
+      setIsSendingMessage(false);
     }
   };
 
   const getOtherCompanyDetails = useCallback(() => {
     if (!chatRoomDetails || !currentCompanyProfile) return null;
 
-    const isInitiator =
-      chatRoomDetails.initiator_company_profile_id ===
-      currentCompanyProfile.company_profile_id;
+    const isInitiator = chatRoomDetails.initiator_company_profile_id === currentCompanyProfile.company_profile_id;
     return {
-      company_title: isInitiator
-        ? chatRoomDetails.recipient_company_title
-        : chatRoomDetails.initiator_company_title,
-      company_image: isInitiator
-        ? chatRoomDetails.recipient_company_image
-        : chatRoomDetails.initiator_company_image,
+      company_title: isInitiator ? chatRoomDetails.recipient_company_title : chatRoomDetails.initiator_company_title,
+      company_image: isInitiator ? chatRoomDetails.recipient_company_image : chatRoomDetails.initiator_company_image,
     };
   }, [chatRoomDetails, currentCompanyProfile]);
 
@@ -244,7 +224,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
           <Avatar className="w-8 h-8 flex-shrink-0 mx-2">
             <AvatarImage src={message.sender_avatar || undefined} alt={message.sender_name} />
             <AvatarFallback>
-              {message.sender_name.substring(0, 2).toUpperCase()}
+              {message.company_title && message.company_title.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className={`flex flex-col ${isSender ? 'items-end' : 'items-start'} flex-grow`}>
@@ -275,8 +255,8 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Loading chat room...
+      <div className="flex justify-center items-center h-full">
+        Loading Chat Room...
       </div>
     );
   }
@@ -284,41 +264,46 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   const otherCompanyDetails = getOtherCompanyDetails();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Card className="h-[90vh] flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <Link href="/messages">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
+    <div className="h-full flex flex-col">
+      <Card className="flex-grow flex flex-col overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 border-b shrink-0">
           <div className="flex items-center">
-            <Avatar className="w-8 h-8 mr-2">
-              <AvatarImage
-                src={otherCompanyDetails?.company_image || undefined}
-                alt={otherCompanyDetails?.company_title}
-              />
-              <AvatarFallback>
-                {otherCompanyDetails?.company_title
-                  ?.substring(0, 2)
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <CardTitle className="text-lg font-bold">
-              {otherCompanyDetails?.company_title}
-            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={toggleChatList} className="mr-2 lg:hidden">
+              <Menu className="h-4 w-4" />
+            </Button>
+            <Link href="/messages">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            </Link>
           </div>
+          {otherCompanyDetails && (
+            <div className="flex items-center">
+              <Avatar className="w-8 h-8 mr-2">
+                <AvatarImage
+                  src={otherCompanyDetails.company_image || undefined}
+                  alt={otherCompanyDetails.company_title}
+                />
+                <AvatarFallback>
+                  {otherCompanyDetails.company_title.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <CardTitle className="text-lg font-bold">
+                {otherCompanyDetails.company_title}
+              </CardTitle>
+            </div>
+          )}
         </CardHeader>
-        {tenderDetails && (
-          <div className="px-4 py-2 bg-gray-100">
+        {lastTenderMessage && tenderInfo && (
+          <div className="px-4 py-2 bg-gray-100 border-b shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleTenderDetails}
               className="w-full flex justify-between items-center"
             >
-              <span>Current Tender: {tenderDetails.title}</span>
+              <span className="text-left truncate">Tender: {tenderInfo.title}</span>
               {showTenderDetails ? (
                 <ChevronUp size={16} />
               ) : (
@@ -328,36 +313,48 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
             {showTenderDetails && (
               <div className="mt-2 text-sm">
                 <p>
-                  <strong>Status:</strong> {tenderDetails.status}
+                  <strong>Status:</strong> {tenderInfo.status}
                 </p>
                 <p>
                   <strong>End Date:</strong>{" "}
-                  {tenderDetails.end_date
-                    ? format(new Date(tenderDetails.end_date), "PPP")
+                  {tenderInfo.end_date
+                    ? format(new Date(tenderInfo.end_date), "PPP")
                     : "Not specified"}
                 </p>
-                {tenderDetails.tender_id && (
-                  <Link
-                    href={`/tenders/${tenderDetails.tender_id}`}
-                    className="text-blue-500 hover:underline flex items-center mt-2"
-                  >
-                    View Full Tender Details
-                    <ExternalLink className="h-4 w-4 ml-1" />
-                  </Link>
-                )}
+                <p>
+                  <strong>Last Message:</strong> {lastTenderMessage.content}
+                </p>
+                <p>
+                  <strong>Sent at:</strong>{" "}
+                  {format(new Date(lastTenderMessage.created_at), "PPP HH:mm")}
+                </p>
+                <Link
+                  href={`/tenders/${tenderInfo.tender_id}`}
+                  className="text-blue-500 hover:underline flex items-center mt-2"
+                >
+                  View Full Tender Details
+                  <ExternalLink className="h-4 w-4 ml-1" />
+                </Link>
               </div>
             )}
           </div>
         )}
-        <CardContent className="flex-grow overflow-y-auto pt-4 ">
+        <CardContent className="flex-grow overflow-y-auto py-4">
           <div className="space-y-4">
-            {messages.map(renderMessage)}
+            {hasNextPage && (
+              <div className="flex justify-center mb-4">
+                <Button onClick={() => fetchNextPage()} variant="outline" size="sm">
+                  Load More Messages
+                </Button>
+              </div>
+            )}
+            {allMessages.map(renderMessage)}
             <div ref={messagesEndRef} />
           </div>
         </CardContent>
-        <CardFooter className="flex-col space-y-2">
+        <CardFooter className="flex-col space-y-2 border-t shrink-0 p-4">
           <PDFUpload
-            disabled={isSending}
+            disabled={isSendingMessage}
             onChange={handlePdfChange}
             onRemove={handlePdfRemove}
             value={pdfUrls}
@@ -370,15 +367,19 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) =>
-                e.key === "Enter" && !isSending && handleSendMessage()
+                e.key === "Enter" && !isSendingMessage && handleSendMessage()
               }
-              disabled={isSending}
+              disabled={isSendingMessage}
             />
-            <Button onClick={handleSendMessage} disabled={isSending}>
-              {isSending ? "Sending..." : <Send className="h-4 w-4" />}
+            <Button onClick={handleSendMessage} disabled={isSendingMessage}>
+              {isSendingMessage ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
-        </CardFooter>
+          </CardFooter>
       </Card>
     </div>
   );

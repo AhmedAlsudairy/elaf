@@ -6,16 +6,19 @@ const supabase = createClient()
 
 interface Message {
   id: string;
-  sender_company_profile_id: string;
-  receiver_company_profile_id: string;
+  chat_room_id: string;
+  tender_id: string | null;
   content: string;
   created_at: string;
-  sender_name: string;
-  sender_avatar: string | null;
-  company_title: string | null;
-  company_image: string | null;
-  tender_id?: string | null;
-  pdf_url?: string | null;
+  tender_request_id: string | null;
+  pdf_url: string | null;
+  sender_company_profile_id: string;
+  receiver_company_profile_id: string;
+  read_status: string;
+  sender_name?: string;
+  sender_avatar?: string | null;
+  company_title?: string | null;
+  company_image?: string | null;
 }
 
 export const useSubscribeToChat = (chatRoomId: string) => {
@@ -38,6 +41,7 @@ export const useSubscribeToChat = (chatRoomId: string) => {
 
     const newMessageData: Message = {
       id: payload.new.id,
+      chat_room_id: chatRoomId,
       sender_company_profile_id: payload.new.sender_company_profile_id,
       receiver_company_profile_id: payload.new.receiver_company_profile_id,
       content: payload.new.content,
@@ -47,12 +51,14 @@ export const useSubscribeToChat = (chatRoomId: string) => {
       company_title: senderData.company_title,
       company_image: senderData.profile_image,
       tender_id: payload.new.tender_id || null,
-      pdf_url: payload.new.pdf_url || null
+      tender_request_id: payload.new.tender_request_id || null,
+      pdf_url: payload.new.pdf_url || null,
+      read_status: payload.new.read_status
     };
 
     console.log('Processed new message:', newMessageData);
     setMessages(prevMessages => [...prevMessages, newMessageData]);
-  }, []);
+  }, [chatRoomId]);
 
   useEffect(() => {
     const channel = supabase

@@ -19,7 +19,7 @@ interface ChatRoom {
 interface ChatRoomListProps {
   chatRooms: ChatRoom[];
   currentChatRoomId: string | undefined;
-  onChatRoomClick: (chatRoomId: string) => void;
+  onChatRoomClick: (chatRoomId: string) => Promise<void>;
 }
 
 const ChatRoomList: React.FC<ChatRoomListProps> = React.memo(({ chatRooms, currentChatRoomId, onChatRoomClick }) => {

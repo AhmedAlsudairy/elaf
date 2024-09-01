@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -20,6 +20,7 @@ import {
   FileText,
   ExternalLink,
   Menu,
+  Loader2,
 } from "lucide-react";
 import { fetchTenderData } from "@/actions/supabase/get-tender";
 import PDFUpload from "@/components/common/pdf-upload";
@@ -88,8 +89,10 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [allMessages, setAllMessages] = useState<Message[]>(initialMessages);
   const [tenderInfo, setTenderInfo] = useState<TenderInfo | null>(null);
+  const [isBackLoading, setIsBackLoading] = useState(false);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const { data: readStatus } = useQuery({
     queryKey: ['readStatus'],
@@ -211,6 +214,22 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     setPdfUrls((prev) => prev.filter((u) => u !== url));
   }, []);
 
+  const handleBack = async () => {
+    setIsBackLoading(true);
+    try {
+      await router.push("/chats");
+    } catch (error) {
+      console.error("Error navigating back:", error);
+      toast({
+        title: "Error",
+        description: "Failed to navigate back. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBackLoading(false);
+    }
+  };
+
   const renderMessage = (message: Message) => {
     const isSender = message.sender_company_profile_id === currentCompanyProfile?.company_profile_id;
     const messageClassName = `flex ${isSender ? 'justify-end' : 'justify-start'} mb-4`;
@@ -271,12 +290,19 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
             <Button variant="ghost" size="sm" onClick={toggleChatList} className="mr-2 lg:hidden">
               <Menu className="h-4 w-4" />
             </Button>
-            <Link href="/chats">
-              <Button variant="ghost" size="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              disabled={isBackLoading}
+            >
+              {isBackLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
-            </Link>
+              )}
+              Back
+            </Button>
           </div>
           {otherCompanyDetails && (
             <div className="flex items-center">
@@ -302,6 +328,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={toggleTenderDetails}
+                disabled={isBackLoading}
                 className="w-full flex justify-between items-center"
               >
                 <span className="text-left truncate">Tender: {tenderInfo.title}</span>
@@ -329,13 +356,16 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                     <strong>Sent at:</strong>{" "}
                     {format(new Date(lastTenderMessage.created_at), "PPP HH:mm")}
                   </p>
-                  <Link
-                    href={`/tenders/${tenderInfo.tender_id}`}
-                    className="text-blue-500 hover:underline flex items-center mt-2"
+                  <Button
+                    variant="link"
+                    asChild
+                    className="text-blue-500 hover:underline flex items-center mt-2 p-0"
                   >
-                    View Full Tender Details
-                    <ExternalLink className="h-4 w-4 ml-1" />
-                  </Link>
+                    <a href={`/tenders/${tenderInfo.tender_id}`}>
+                      View Full Tender Details
+                      <ExternalLink className="h-4 w-4 ml-1" />
+                    </a>
+                  </Button>
                 </div>
               )}
             </div>
@@ -380,7 +410,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                 <Send className="h-4 w-4" />
               )}
             </Button>
-            </div>
+          </div>
         </CardFooter>
       </Card>
     </div>

@@ -7,8 +7,8 @@ import { getChatRoomsForCurrentProfile, getMessages, markMessagesAsRead } from "
 import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
 import ChatRoomComponent from '@/components/pages/user/chats/single-chat-component';
 import { useSubscribeToChat } from "@/hooks/messages subs-hook";
-import { Button } from "@/components/ui/button";
 import ChatRoomList from './chatr-list';
+import { Button } from "@/components/ui/button";
 
 const MESSAGES_PER_PAGE = 20;
 
@@ -90,13 +90,17 @@ const ChatInterface: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setShowChatList(pathname === '/chats' || window.innerWidth <= 700);
+      if (window.innerWidth > 700) {
+        setShowChatList(true);
+      } else {
+        setShowChatList(pathname === '/chats' || !currentChatRoomId);
+      }
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [pathname]);
+  }, [pathname, currentChatRoomId]);
 
   const { 
     data: chatRooms, 
@@ -141,9 +145,11 @@ const ChatInterface: React.FC = () => {
     if (profile?.company_profile_id && chatRoomId !== currentChatRoomId) {
       setIsRouting(true);
       try {
-        router.push(`/chats/${chatRoomId}`);
+        await router.push(`/chats/${chatRoomId}`);
         await markMessagesAsRead(chatRoomId, profile.company_profile_id);
-        setShowChatList(window.innerWidth <= 700);
+        if (window.innerWidth <= 700) {
+          setShowChatList(false);
+        }
         await refetchMessages();
       } catch (error) {
         console.error('Error during navigation:', error);
@@ -175,14 +181,14 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen md:flex-row">
-      <div className={`md:w-1/3 ${showChatList || pathname === '/chats' ? 'flex-grow md:flex-grow-0' : 'hidden'} md:block border-r`}>
+      <div className={`md:w-1/3 ${showChatList ? 'flex-grow md:flex-grow-0' : 'hidden'} md:block border-r`}>
         <ChatRoomList
           chatRooms={chatRooms || []}
           currentChatRoomId={currentChatRoomId}
           onChatRoomClick={handleChatRoomClick}
         />
       </div>
-      <div className={`flex-grow ${!showChatList && pathname !== '/chats' ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
+      <div className={`flex-grow ${!showChatList || (window.innerWidth > 700 && currentChatRoomId) ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
         {isRouting ? (
           <div className="flex justify-center items-center h-full">
             <ClipLoader color="#3B82F6" size={50} />

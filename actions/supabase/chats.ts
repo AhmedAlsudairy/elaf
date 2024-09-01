@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/utils/supabase/server";
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
 import { CompanyProfile } from "@/types";
+import { sendEmail } from "@/lib/utils/resend/send-emails";
 
 const supabase = createClient();
 
@@ -67,6 +68,77 @@ interface ChatRoomWithDetails {
 
 export async function getReadStatus() {
   return ReadStatus;
+}
+
+
+
+// ... (previous code remains the same)
+
+function getEmailFromUserData(userData: any): string | undefined {
+  if (Array.isArray(userData)) {
+    return userData[0]?.email;
+  } else if (typeof userData === 'object' && userData !== null) {
+    return userData.email;
+  }
+  return undefined;
+}
+
+async function sendNewMessageNotification(
+  senderId: string,
+  receiverId: string,
+  chatRoomId: string,
+  messageContent: string
+) {
+  try {
+    const [sender, receiver] = await Promise.all([
+      supabase
+        .from("company_profiles")
+        .select(`
+          company_title,
+          users(email)
+        `)
+        .eq("company_profile_id", senderId)
+        .single(),
+      supabase
+        .from("company_profiles")
+        .select(`
+          users(email)
+        `)
+        .eq("company_profile_id", receiverId)
+        .single()
+    ]);
+
+    if (sender.error) {
+      console.error("Error fetching sender:", sender.error);
+      throw new Error("Failed to fetch sender profile");
+    }
+    if (receiver.error) {
+      console.error("Error fetching receiver:", receiver.error);
+      throw new Error("Failed to fetch receiver profile");
+    }
+
+    console.log("Sender data:", JSON.stringify(sender.data, null, 2));
+    console.log("Receiver data:", JSON.stringify(receiver.data, null, 2));
+
+    const receiverEmail = getEmailFromUserData(receiver.data.users);
+    console.log("receiverEmail", receiverEmail);
+
+    if (!receiverEmail) {
+      console.log("No valid email found for receiver, skipping notification");
+      return;
+    }
+
+    const emailParams = {
+      to: [receiverEmail],
+      title: "New Message Received",
+      body: `You have a new message from ${sender.data.company_title}. Message preview: "${messageContent.substring(0, 50)}${messageContent.length > 50 ? '...' : ''}". Click <a href="${process.env.NEXT_PUBLIC_WEBSITE_URL}/chats/${chatRoomId}">here</a> to view the full conversation.`
+    };
+
+    await sendEmail(emailParams);
+    console.log("New message notification sent successfully");
+  } catch (error) {
+    console.error("Error sending new message notification:", error);
+  }
 }
 
 export async function getMessages(chatRoomId: string, limit: number, offset: number) {
@@ -265,6 +337,47 @@ export async function markMessagesAsRead(chatRoomId: string, receiverCompanyProf
   }
 }
 
+export async function createOrGetChatRoom(
+  initiatorCompanyProfileId: string,
+  recipientCompanyProfileId: string,
+  tenderId?: string
+): Promise<{ chat_room_id: string; is_new: boolean } | null> {
+  try {
+    const { data, error } = await supabase
+      .rpc('create_or_get_chat_room', {
+        p_initiator_id: initiatorCompanyProfileId,
+        p_recipient_id: recipientCompanyProfileId
+      });
+
+    if (error) throw error;
+
+    const chatRoom = data[0];
+
+    if (chatRoom.is_new) {
+      // Create an initial message for the new chat room
+      await sendMessage(
+        chatRoom.chat_room_id,
+        "Chat room created",
+        initiatorCompanyProfileId,
+        recipientCompanyProfileId,
+        tenderId
+      );
+
+      // Send email notification for new chat room
+      await sendNewChatRoomNotification(initiatorCompanyProfileId, recipientCompanyProfileId, chatRoom.chat_room_id);
+    }
+
+    return {
+      chat_room_id: chatRoom.chat_room_id,
+      is_new: chatRoom.is_new,
+    };
+  } catch (error) {
+    console.error("Error in createOrGetChatRoom:", error);
+    return null;
+  }
+}
+
+
 export async function sendMessage(
   chatRoomId: string,
   content: string,
@@ -292,6 +405,9 @@ export async function sendMessage(
 
     if (error) throw error;
 
+    // Send email notification for new message
+    await sendNewMessageNotification(senderCompanyProfileId, receiverCompanyProfileId, chatRoomId, content);
+
     return { success: true, data: data as Message };
   } catch (error) {
     console.error("Error sending message:", error);
@@ -299,40 +415,60 @@ export async function sendMessage(
   }
 }
 
-export async function createOrGetChatRoom(
-  initiatorCompanyProfileId: string,
-  recipientCompanyProfileId: string,
-  tenderId?: string
-): Promise<{ chat_room_id: string; is_new: boolean } | null> {
+
+async function sendNewChatRoomNotification(
+  initiatorId: string,
+  recipientId: string,
+  chatRoomId: string
+) {
   try {
-    const { data, error } = await supabase
-      .rpc('create_or_get_chat_room', {
-        p_initiator_id: initiatorCompanyProfileId,
-        p_recipient_id: recipientCompanyProfileId
-      });
+    const [initiator, recipient] = await Promise.all([
+      supabase
+        .from("company_profiles")
+        .select(`
+          company_title,
+          users(email)
+        `)
+        .eq("company_profile_id", initiatorId)
+        .single(),
+      supabase
+        .from("company_profiles")
+        .select(`
+          users(email)
+        `)
+        .eq("company_profile_id", recipientId)
+        .single()
+    ]);
 
-    if (error) throw error;
-
-    // The function returns an array with one object, so we need to access the first element
-    const chatRoom = data[0];
-
-    if (chatRoom.is_new) {
-      // Create an initial message for the new chat room
-      await sendMessage(
-        chatRoom.id,
-        "Chat room created",
-        initiatorCompanyProfileId,
-        recipientCompanyProfileId,
-        tenderId
-      );
+    if (initiator.error) {
+      console.error("Error fetching initiator:", initiator.error);
+      throw new Error("Failed to fetch initiator profile");
+    }
+    if (recipient.error) {
+      console.error("Error fetching recipient:", recipient.error);
+      throw new Error("Failed to fetch recipient profile");
     }
 
-    return {
-      chat_room_id: chatRoom.id,
-      is_new: chatRoom.is_new,
+    console.log("Initiator data:", JSON.stringify(initiator.data, null, 2));
+    console.log("Recipient data:", JSON.stringify(recipient.data, null, 2));
+
+    const recipientEmail = getEmailFromUserData(recipient.data.users);
+    console.log("recipientEmail", recipientEmail);
+
+    if (!recipientEmail) {
+      console.log("No valid email found for recipient, skipping notification");
+      return;
+    }
+
+    const emailParams = {
+      to: [recipientEmail],
+      title: "New Chat Room Created",
+      body: `${initiator.data.company_title} has started a new chat with you. Click <a href="${process.env.NEXT_PUBLIC_WEBSITE_URL}/chats/${chatRoomId}">here</a> to view the conversation.`
     };
+
+    await sendEmail(emailParams);
+    console.log("New chat room notification sent successfully");
   } catch (error) {
-    console.error("Error in createOrGetChatRoom:", error);
-    return null;
+    console.error("Error sending new chat room notification:", error);
   }
 }

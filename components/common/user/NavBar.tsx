@@ -63,7 +63,7 @@ export const Header = () => {
     router.push('/');
   }, [router]);
 
-  const navItems = useMemo(() => ["tenders", "profile/companyprofiles", "contact"], []);
+  const navItems = useMemo(() => ["tenders", "profile/companyprofiles", "contact","chats"], []);
   const isRTL = direction === 'rtl';
 
   const renderNavItems = useCallback((isMobile = false) => 

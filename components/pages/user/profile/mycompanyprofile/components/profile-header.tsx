@@ -1,9 +1,14 @@
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CardDescription, CardTitle } from "@/components/ui/card";
 import { CompanyProfile } from "@/types";
-import { Pencil, Save, Loader2 } from "lucide-react";
+import { Pencil, Save, Loader2, MessageCircle } from "lucide-react";
 import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
+import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
+import { createOrGetChatRoom } from '@/actions/supabase/chats';
+import { useRouter } from 'next/navigation';
+// Adjust the import path as needed
 
 interface ProfileHeaderProps {
   profile: CompanyProfile;
@@ -20,7 +25,34 @@ export function ProfileHeader({
   onSave, 
   isLoading 
 }: ProfileHeaderProps) {
+  const router = useRouter();
   const { isOwner, isLoading: isCheckingOwnership } = useIsOwnerOfCompany(profile.company_profile_id);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const handleChatClick = async () => {
+    setIsChatLoading(true);
+    try {
+      const currentProfile = await getCurrentCompanyProfile();
+      if (!currentProfile) {
+        console.error("Current user's company profile not found");
+        return;
+      }
+  
+      console.log("Initiator:", currentProfile.company_profile_id);
+      console.log("Recipient:", profile.company_profile_id);
+  
+      const result = await createOrGetChatRoom(currentProfile.company_profile_id, profile.company_profile_id);
+      if (result) {
+        router.push(`/chats/${result.chat_room_id}`);
+      } else {
+        console.error("Failed to create or get chat room");
+      }
+    } catch (error) {
+      console.error("Error initiating chat:", error);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -34,24 +66,39 @@ export function ProfileHeader({
           {profile.bio && <CardDescription>{profile.bio}</CardDescription>}
         </div>
       </div>
-      {!isCheckingOwnership && isOwner && !isEditing && (
-        <Button onClick={() => setIsEditing(true)} className="mt-4 md:mt-0">
-          <Pencil className="mr-2 h-4 w-4" /> Edit
-        </Button>
-      )}
-      {isEditing && (
-        <Button onClick={onSave} className="mt-4 md:mt-0" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" /> Save
-            </>
-          )}
-        </Button>
-      )}
+      <div className="flex mt-4 md:mt-0 space-x-2">
+        {!isCheckingOwnership && isOwner && !isEditing && (
+          <Button onClick={() => setIsEditing(true)}>
+            <Pencil className="mr-2 h-4 w-4" /> Edit
+          </Button>
+        )}
+        {isEditing && (
+          <Button onClick={onSave} disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Save
+              </>
+            )}
+          </Button>
+        )}
+        {!isOwner && (
+          <Button onClick={handleChatClick} disabled={isChatLoading}>
+            {isChatLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
+              </>
+            ) : (
+              <>
+                <MessageCircle className="mr-2 h-4 w-4" /> Chat
+              </>
+            )}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

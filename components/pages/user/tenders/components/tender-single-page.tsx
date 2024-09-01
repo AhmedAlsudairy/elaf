@@ -340,7 +340,7 @@ const SingleTenderClientComponent: React.FC<
                   <Badge variant={getBadgeVariant(tender.status)}>
                     {tender.status}
                   </Badge>
-                  {/* TODO: Add loading button */}
+                  {/* TODO: Add loading button, done✅ */}
                   {!isOwner && (
                     <Button
                       variant="outline"

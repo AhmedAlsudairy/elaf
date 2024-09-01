@@ -7,6 +7,7 @@
     "tenders": "Tenders",
     "profile/companyprofiles": "Companies",
     "contact": "Contact",
+    "chats": "Chats",
     "signin": "Sign In",
     "logout": "Logout",
     "myProfile": "My Profile",
@@ -14,6 +15,7 @@
     "newCompany": "New Company",
     "myAccount": "My Account",
     "loading": "Loading..."
+
   },
   "LocalSwitcher": {
     "selectLanguage": "Select the language",

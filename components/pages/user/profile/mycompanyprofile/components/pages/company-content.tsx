@@ -3,9 +3,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProfileInfo } from '../company-info';
 import { CompanyProfile } from '@/types';
 import { updateProfile } from '@/actions/supabase/update-company-profile';
-import { ProfileHeader } from '../profile-header';
 import { useReusableToast } from '@/components/common/success-toast';
 import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
+import { ProfileHeader } from '../profile-header';
 
 interface ProfileContentProps {
   profile: CompanyProfile;

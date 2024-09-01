@@ -201,12 +201,12 @@ const SingleTenderClientComponent: React.FC<SingleTenderClientComponentProps> = 
         company.company_profile_id,
         tender.tender_id
       );
-      if (result.success && result.data) {
-        router.push(`/chats/${result.data.chat_room_id}`);
+      if (result && result.chat_room_id) {
+        router.push(`/chats/${result.chat_room_id}`);
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to open chat room. Please try again.",
+          description: "Failed to open chat room. Please try again.",
           variant: "destructive",
         });
       }

@@ -1,7 +1,6 @@
 'use client'
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useQuery, useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
 import { ClipLoader } from 'react-spinners';
 import { getChatRoomsForCurrentProfile, getMessages, markMessagesAsRead } from "@/actions/supabase/chats";
@@ -64,9 +63,11 @@ interface MessagesResponse {
 const ChatInterface: React.FC = () => {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const currentChatRoomId = params.chatRoomId as string | undefined;
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [showChatList, setShowChatList] = useState(true);
+  const [isRouting, setIsRouting] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -87,6 +88,16 @@ const ChatInterface: React.FC = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setShowChatList(pathname === '/chats' || window.innerWidth <= 700);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [pathname]);
+
   const { 
     data: chatRooms, 
     isLoading: isChatRoomsLoading, 
@@ -105,7 +116,8 @@ const ChatInterface: React.FC = () => {
     hasNextPage,
     isFetchingNextPage,
     status: messagesStatus,
-    error: messagesError
+    error: messagesError,
+    refetch: refetchMessages
   } = useInfiniteQuery<MessagesResponse, Error, InfiniteData<MessagesResponse>, [string, string | undefined], number>({
     queryKey: ['messages', currentChatRoomId],
     queryFn: async ({ pageParam }) => {
@@ -126,12 +138,20 @@ const ChatInterface: React.FC = () => {
   }, [messagesData, newMessages]);
 
   const handleChatRoomClick = useCallback(async (chatRoomId: string) => {
-    if (profile?.company_profile_id) {
-      router.push(`/chats/${chatRoomId}`);
-      await markMessagesAsRead(chatRoomId, profile.company_profile_id);
-      setShowChatList(false);
+    if (profile?.company_profile_id && chatRoomId !== currentChatRoomId) {
+      setIsRouting(true);
+      try {
+        await router.push(`/chats/${chatRoomId}`);
+        await markMessagesAsRead(chatRoomId, profile.company_profile_id);
+        setShowChatList(window.innerWidth <= 700);
+        await refetchMessages();
+      } catch (error) {
+        console.error('Error during navigation:', error);
+      } finally {
+        setIsRouting(false);
+      }
     }
-  }, [profile, router]);
+  }, [profile, router, currentChatRoomId, refetchMessages]);
 
   const toggleChatList = useCallback(() => {
     setShowChatList(prev => !prev);
@@ -154,35 +174,41 @@ const ChatInterface: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen">
-      <div className={`lg:w-1/3 ${showChatList ? 'w-full' : 'hidden'} lg:block border-r`}>
+    <div className="flex flex-col h-screen md:flex-row">
+      <div className={`md:w-1/3 ${showChatList || pathname === '/chats' ? 'flex-grow md:flex-grow-0' : 'hidden'} md:block border-r`}>
         <ChatRoomList
           chatRooms={chatRooms || []}
           currentChatRoomId={currentChatRoomId}
           onChatRoomClick={handleChatRoomClick}
         />
       </div>
-      <div className={`flex-1 ${!showChatList ? 'block' : 'hidden'} lg:block`}>
-        {currentChatRoomId ? (
+      <div className={`flex-grow ${!showChatList && pathname !== '/chats' ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
+        {isRouting ? (
+          <div className="flex justify-center items-center h-full">
+            <ClipLoader color="#3B82F6" size={50} />
+          </div>
+        ) : currentChatRoomId ? (
           <div className="flex flex-col h-full">
-            <ChatRoomComponent
-              chatRoomId={currentChatRoomId}
-              initialMessages={allMessages}
-              isLoading={messagesStatus === 'pending'}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={!!hasNextPage}
-              currentCompanyProfile={profile}
-              toggleChatList={toggleChatList}
-            />
-            {messagesStatus === 'error' && (
-              <div className="text-center text-red-500 my-4">Error loading messages. Please try again.</div>
-            )}
+            <div className="flex-grow overflow-y-auto">
+              <ChatRoomComponent
+                chatRoomId={currentChatRoomId}
+                initialMessages={allMessages}
+                isLoading={messagesStatus === 'pending'}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={!!hasNextPage}
+                currentCompanyProfile={profile}
+                toggleChatList={toggleChatList}
+              />
+              {messagesStatus === 'error' && (
+                <div className="text-center text-red-500 my-4">Error loading messages. Please try again.</div>
+              )}
+            </div>
             {hasNextPage && (
-              <div className="flex justify-center my-4">
+              <div className="p-4 border-t">
                 <Button
                   onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
-                  className="flex items-center space-x-2"
+                  className="flex items-center justify-center space-x-2 w-full"
                 >
                   {isFetchingNextPage ? (
                     <>
@@ -196,11 +222,7 @@ const ChatInterface: React.FC = () => {
               </div>
             )}
           </div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-xl text-gray-500">Select a chat to start messaging</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

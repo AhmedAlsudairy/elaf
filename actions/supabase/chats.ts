@@ -55,7 +55,6 @@ interface ChatRoomDetails {
   recipient_company_image: string | null;
 }
 
-
 interface ChatRoomWithDetails {
   id: string;
   other_company_profile: {
@@ -70,56 +69,47 @@ export async function getReadStatus() {
   return ReadStatus;
 }
 
-
 export async function getMessages(chatRoomId: string, limit: number, offset: number) {
   try {
-    // Fetch messages with pagination
-    const { data: messages, error: messagesError } = await supabase
-      .from("messages")
-      .select(`
-        id,
-        sender_company_profile_id,
-        receiver_company_profile_id,
-        content,
-        pdf_url,
-        created_at,
-        tender_id
-      `)
-      .eq("chat_room_id", chatRoomId)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Fetch messages, chat room details, and company profiles in parallel
+    const [messagesResult, chatRoomResult, companyProfilesResult] = await Promise.all([
+      supabase
+        .from("messages")
+        .select(`
+          id,
+          sender_company_profile_id,
+          receiver_company_profile_id,
+          content,
+          pdf_url,
+          created_at,
+          tender_id
+        `)
+        .eq("chat_room_id", chatRoomId)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
+      
+      supabase
+        .from("chat_rooms")
+        .select(`
+          id,
+          initiator_company_profile_id,
+          recipient_company_profile_id
+        `)
+        .eq("id", chatRoomId)
+        .single(),
+      
+      supabase
+        .from("company_profiles")
+        .select("company_profile_id, company_title, profile_image")
+    ]);
 
-    if (messagesError) throw messagesError;
+    if (messagesResult.error) throw messagesResult.error;
+    if (chatRoomResult.error) throw chatRoomResult.error;
+    if (companyProfilesResult.error) throw companyProfilesResult.error;
 
-    // Fetch chat room details
-    const { data: chatRoomData, error: chatRoomError } = await supabase
-      .from("chat_rooms")
-      .select(`
-        id,
-        initiator_company_profile_id,
-        recipient_company_profile_id
-      `)
-      .eq("id", chatRoomId)
-      .single();
-
-    if (chatRoomError) throw chatRoomError;
-
-    // Fetch company profiles for all unique company profile IDs
-    const uniqueCompanyIds = Array.from(
-      new Set([
-        ...messages.map((msg) => msg.sender_company_profile_id),
-        ...messages.map((msg) => msg.receiver_company_profile_id),
-        chatRoomData.initiator_company_profile_id,
-        chatRoomData.recipient_company_profile_id,
-      ])
-    );
-
-    const { data: companyProfiles, error: companyProfilesError } = await supabase
-      .from("company_profiles")
-      .select("company_profile_id, company_title, profile_image")
-      .in("company_profile_id", uniqueCompanyIds);
-
-    if (companyProfilesError) throw companyProfilesError;
+    const messages = messagesResult.data;
+    const chatRoomData = chatRoomResult.data;
+    const companyProfiles = companyProfilesResult.data;
 
     // Create a map of company_profile_id to company profile for easy lookup
     const companyProfileMap = new Map(
@@ -170,7 +160,6 @@ export async function getMessages(chatRoomId: string, limit: number, offset: num
   }
 }
 
-
 export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetails[] | null> {
   try {
     const currentProfile = await getCurrentCompanyProfile();
@@ -181,33 +170,41 @@ export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetai
 
     const currentProfileId = currentProfile.company_profile_id;
 
-    // Fetch chat rooms
-    const { data: chatRooms, error: chatRoomsError } = await supabase
-      .from("chat_rooms")
-      .select(`*`)
-      .or(`initiator_company_profile_id.eq.${currentProfileId},recipient_company_profile_id.eq.${currentProfileId}`);
+    // Fetch chat rooms and messages in parallel
+    const [chatRoomsResult, messagesResult, companyProfilesResult] = await Promise.all([
+      supabase
+        .from("chat_rooms")
+        .select(`*`)
+        .or(`initiator_company_profile_id.eq.${currentProfileId},recipient_company_profile_id.eq.${currentProfileId}`),
+      
+      supabase
+        .from("messages")
+        .select(`
+          id,
+          chat_room_id,
+          tender_id,
+          content,
+          created_at,
+          tender_request_id,
+          pdf_url,
+          sender_company_profile_id,
+          receiver_company_profile_id,
+          read_status
+        `)
+        .order('created_at', { ascending: false }),
+      
+      supabase
+        .from("company_profiles")
+        .select("company_profile_id, company_title, profile_image")
+    ]);
 
-    if (chatRoomsError) throw chatRoomsError;
+    if (chatRoomsResult.error) throw chatRoomsResult.error;
+    if (messagesResult.error) throw messagesResult.error;
+    if (companyProfilesResult.error) throw companyProfilesResult.error;
 
-    // Fetch messages for all chat rooms
-    const { data: messages, error: messagesError } = await supabase
-      .from("messages")
-      .select(`
-        id,
-        chat_room_id,
-        tender_id,
-        content,
-        created_at,
-        tender_request_id,
-        pdf_url,
-        sender_company_profile_id,
-        receiver_company_profile_id,
-        read_status
-      `)
-      .in('chat_room_id', chatRooms.map(room => room.id))
-      .order('created_at', { ascending: false });
-
-    if (messagesError) throw messagesError;
+    const chatRooms = chatRoomsResult.data;
+    const messages = messagesResult.data;
+    const companyProfiles = companyProfilesResult.data;
 
     // Group messages by chat room
     const messagesByChatRoom: { [key: string]: Message[] } = messages.reduce((acc: { [key: string]: Message[] }, message: Message) => {
@@ -217,15 +214,6 @@ export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetai
       acc[message.chat_room_id].push(message);
       return acc;
     }, {});
-
-    const companyProfileIds = new Set(chatRooms.flatMap(room => [room.initiator_company_profile_id, room.recipient_company_profile_id]));
-
-    const { data: companyProfiles, error: companyProfilesError } = await supabase
-      .from("company_profiles")
-      .select("company_profile_id, company_title, profile_image")
-      .in('company_profile_id', Array.from(companyProfileIds));
-
-    if (companyProfilesError) throw companyProfilesError;
 
     const companyProfileMap = new Map(companyProfiles.map(profile => [profile.company_profile_id, profile]));
 
@@ -237,7 +225,7 @@ export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetai
       const otherCompanyProfile = companyProfileMap.get(otherCompanyProfileId) as CompanyProfile | undefined;
       
       const roomMessages = messagesByChatRoom[room.id] || [];
-      const lastMessage = roomMessages[0] || null; // The first message is the latest due to descending order
+      const lastMessage = roomMessages[0] || null;
       const unreadCount = roomMessages.filter(
         (msg: Message) => msg.receiver_company_profile_id === currentProfileId && msg.read_status === 'unread'
       ).length;
@@ -259,6 +247,7 @@ export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetai
     return null;
   }
 }
+
 export async function markMessagesAsRead(chatRoomId: string, receiverCompanyProfileId: string): Promise<boolean> {
   try {
     const { error } = await supabase
@@ -316,51 +305,31 @@ export async function createOrGetChatRoom(
   tenderId?: string
 ): Promise<{ chat_room_id: string; is_new: boolean } | null> {
   try {
-    // Check if a chat room already exists for these company profiles
-    const { data: existingRoom, error: fetchError } = await supabase
-      .from("chat_rooms")
-      .select("id")
-      .or(
-        `initiator_company_profile_id.eq.${initiatorCompanyProfileId},initiator_company_profile_id.eq.${recipientCompanyProfileId}`
-      )
-      .or(
-        `recipient_company_profile_id.eq.${initiatorCompanyProfileId},recipient_company_profile_id.eq.${recipientCompanyProfileId}`
-      )
-      .single();
+    const { data, error } = await supabase
+      .rpc('create_or_get_chat_room', {
+        p_initiator_id: initiatorCompanyProfileId,
+        p_recipient_id: recipientCompanyProfileId
+      });
 
-    if (fetchError && fetchError.code !== "PGRST116") throw fetchError; // PGRST116 is the error code for no rows returned
+    if (error) throw error;
 
-    if (existingRoom) {
-      return {
-        chat_room_id: existingRoom.id,
-        is_new: false,
-      };
+    // The function returns an array with one object, so we need to access the first element
+    const chatRoom = data[0];
+
+    if (chatRoom.is_new) {
+      // Create an initial message for the new chat room
+      await sendMessage(
+        chatRoom.id,
+        "Chat room created",
+        initiatorCompanyProfileId,
+        recipientCompanyProfileId,
+        tenderId
+      );
     }
 
-    // If no existing room, create a new one
-    const { data: newRoom, error: insertRoomError } = await supabase
-      .from("chat_rooms")
-      .insert({
-        initiator_company_profile_id: initiatorCompanyProfileId,
-        recipient_company_profile_id: recipientCompanyProfileId,
-      })
-      .select()
-      .single();
-
-    if (insertRoomError) throw insertRoomError;
-
-    // Create an initial message for the new chat room
-    await sendMessage(
-      newRoom.id,
-      "Chat room created",
-      initiatorCompanyProfileId,
-      recipientCompanyProfileId,
-      tenderId
-    );
-
     return {
-      chat_room_id: newRoom.id,
-      is_new: true,
+      chat_room_id: chatRoom.id,
+      is_new: chatRoom.is_new,
     };
   } catch (error) {
     console.error("Error in createOrGetChatRoom:", error);

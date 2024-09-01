@@ -51,6 +51,7 @@
     "react-query": "^3.39.3",
     "react-spinners": "^0.14.1",
     "resend": "^4.0.0",
+    "root": "github:tanstack/react-virtual",
     "rtl-detect": "^1.1.2",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",

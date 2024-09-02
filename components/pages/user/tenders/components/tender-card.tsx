@@ -14,7 +14,7 @@ interface TenderCardProps {
   endDate: string;
   tenderTitle: string;
   summary: string;
-  status: 'open' | 'closed' | 'awarded';
+  status: 'open' | 'closed' | 'awarded'|"done";
   address: string;
 }
 

@@ -62,6 +62,7 @@ enum TenderStatusEnum {
   Open = "open",
   Closed = "closed",
   Awarded = "awarded",
+  Done="done"
 }
 
 interface Company {

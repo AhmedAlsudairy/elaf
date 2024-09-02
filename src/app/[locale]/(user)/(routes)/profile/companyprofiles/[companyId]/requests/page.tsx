@@ -17,7 +17,7 @@ interface TenderRequest {
   bid_price: number;
   currency: currencyT;
   pdf_url: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' |"done";
   tender: {
     tender_id: string;
     status: 'open' | 'closed' | 'awarded';  

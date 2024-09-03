@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, Calendar, DollarSign } from "lucide-react";
+import { ExternalLink, FileText, Calendar } from "lucide-react";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -18,10 +18,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { currencyT } from "@/types";
 
+import { useToast } from "@/components/ui/use-toast";
+import { addRating } from "@/actions/supabase/add-rating";
+import TenderCompletionButton from "@/components/common/user/rating/tender-req-rating";
+
 enum TenderRequestStatusEnum {
   Pending = 'pending',
   Accepted = 'accepted',
-  Rejected = 'rejected'
+  Rejected = 'rejected',
+  Done = 'done'
 }
 
 export interface TenderRequest {
@@ -32,7 +37,6 @@ export interface TenderRequest {
   title: string;
   summary: string;
   pdf_url?: string;
-
   status: TenderRequestStatusEnum;
   created_at: string;
   updated_at: string;
@@ -44,20 +48,11 @@ export interface TenderRequest {
 
 export interface TenderRequestCardProps {
   request: TenderRequest;
-  tenderCurrency: currencyT; // Add this line
-
+  tenderCurrency: currencyT;
   onAccept: (id: string) => Promise<void>;
   isAccepted: boolean;
   showAcceptButton: boolean;
 }
-
-
-
-
-
-// TODO:ADD chat button here
-
-
 
 const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   request,
@@ -68,6 +63,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const formatDate = (dateString: string) => {
     try {
@@ -86,6 +82,8 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
         return <Badge variant="secondary">Accepted</Badge>;
       case TenderRequestStatusEnum.Rejected:
         return <Badge variant="destructive">Rejected</Badge>;
+      case TenderRequestStatusEnum.Done:
+        return <Badge variant="outline">Done</Badge>;
     }
   };
 
@@ -93,92 +91,142 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
     setIsLoading(true);
     try {
       await onAccept(request.id);
+      toast({
+        title: "Request Accepted",
+        description: "The tender request has been accepted successfully.",
+      });
     } catch (error) {
       console.error("Error accepting request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to accept the request. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
       setIsDialogOpen(false);
     }
   };
 
-  return (
-    <>
-      <Card className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${isAccepted ? 'border-green-500 border-2' : ''}`}>
-        <CardHeader className="pb-2">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-4">
-              {request.company_profile.profile_image ? (
-                <Image
-                  src={request.company_profile.profile_image}
-                  alt={request.company_profile.company_title}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover border-2 border-gray-200"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-xl font-bold text-gray-500">
-                    {request.company_profile.company_title.charAt(0)}
-                  </span>
-                </div>
-              )}
-              <div>
-                <Link 
-                  href={`/profile/companyprofiles/${request.company_profile_id}`}
-                  className="hover:underline"
-                >
-                  <CardTitle className="flex items-center">
-                    <span className="truncate max-w-[200px]">{request.company_profile.company_title}</span>
-                    <ExternalLink className="ml-2 w-4 h-4 flex-shrink-0" />
-                  </CardTitle>
-                </Link>
-                <p className="text-sm text-gray-500">
-                  ID: {request.company_profile_id}
-                </p>
-              </div>
-            </div>
-            <div className="text-left sm:text-right">
-              <p className="font-semibold text-lg text-green-600 flex items-center sm:justify-end">
-              {request.bid_price.toFixed(2)} {tenderCurrency}
+  const handleRatingSubmit = async (rating: {
+    quality: number;
+    communication: number;
+    experience: number;
+    deadline: number;
+    comment: string;
+    isAnonymous: boolean;
+  }) => {
+    try {
+      const result = await addRating({
+        tenderId: request.tender_id,
+        tenderRequestId: request.id,
+        companyProfileId: request.company_profile_id,
+        ...rating
+      });
+      if (result.success) {
+        toast({
+          title: "Rating Submitted",
+          description: "Your rating has been submitted successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: `Failed to submit rating: ${result.error}`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error submitting rating:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-              </p>
-              <p className="text-sm text-gray-500 flex items-center sm:justify-end">
-                <Calendar className="w-4 h-4 mr-1" />
-                {formatDate(request.created_at)}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <h3 className="font-semibold text-lg mb-2">{request.title}</h3>
-          <p className="text-sm text-gray-600 mb-4">{request.summary}</p>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-            {request.pdf_url && (
-              <a
-                href={request.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline flex items-center"
-              >
-                <FileText className="w-4 h-4 mr-1" />
-                View PDF
-              </a>
+  return (
+    <Card className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${isAccepted ? 'border-green-500 border-2' : ''}`}>
+      <CardHeader className="pb-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+          <div className="flex items-center space-x-4">
+            {request.company_profile.profile_image ? (
+              <Image
+                src={request.company_profile.profile_image}
+                alt={request.company_profile.company_title}
+                width={48}
+                height={48}
+                className="rounded-full object-cover border-2 border-gray-200"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-xl font-bold text-gray-500">
+                  {request.company_profile.company_title.charAt(0)}
+                </span>
+              </div>
             )}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-              {getStatusBadge(request.status)}
-              {showAcceptButton && request.status === TenderRequestStatusEnum.Pending && (
-                <Button 
-                  onClick={() => setIsDialogOpen(true)} 
-                  className="bg-green-500 hover:bg-green-600 text-white mt-2 sm:mt-0"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Accepting..." : "Accept Request"}
-                </Button>
-              )}
+            <div>
+              <Link 
+                href={`/profile/companyprofiles/${request.company_profile_id}`}
+                className="hover:underline"
+              >
+                <CardTitle className="flex items-center">
+                  <span className="truncate max-w-[200px]">{request.company_profile.company_title}</span>
+                  <ExternalLink className="ml-2 w-4 h-4 flex-shrink-0" />
+                </CardTitle>
+              </Link>
+              <p className="text-sm text-gray-500">
+                ID: {request.company_profile_id}
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="text-left sm:text-right">
+            <p className="font-semibold text-lg text-green-600 flex items-center sm:justify-end">
+              {request.bid_price.toFixed(2)} {tenderCurrency}
+            </p>
+            <p className="text-sm text-gray-500 flex items-center sm:justify-end">
+              <Calendar className="w-4 h-4 mr-1" />
+              {formatDate(request.created_at)}
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <h3 className="font-semibold text-lg mb-2">{request.title}</h3>
+        <p className="text-sm text-gray-600 mb-4">{request.summary}</p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+          {request.pdf_url && (
+            <a
+              href={request.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline flex items-center"
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              View PDF
+            </a>
+          )}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+            {getStatusBadge(request.status)}
+            {showAcceptButton && request.status === TenderRequestStatusEnum.Pending && (
+              <Button 
+                onClick={() => setIsDialogOpen(true)} 
+                className="bg-green-500 hover:bg-green-600 text-white mt-2 sm:mt-0"
+                disabled={isLoading}
+              >
+                {isLoading ? "Accepting..." : "Accept Request"}
+              </Button>
+            )}
+            {request.status === TenderRequestStatusEnum.Accepted && (
+              <TenderCompletionButton
+                companyProfileId={request.company_profile_id}
+                tenderId={request.tender_id}
+                onComplete={handleRatingSubmit}
+              />
+            )}
+          </div>
+        </div>
+      </CardContent>
 
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent>
@@ -196,7 +244,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </Card>
   );
 };
 

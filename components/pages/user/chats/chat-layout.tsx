@@ -179,9 +179,10 @@ const ChatInterface: React.FC = () => {
 if (!profile ) {
   return (
     <div className="text-center text-red-500 my-4">
-you don't have a company profile. Please create one to start chatting.
+you don&apos;t have a company profile. Please create one to start chatting.
     </div>
   );
+
 }
   if (chatRoomsError) {
     return (

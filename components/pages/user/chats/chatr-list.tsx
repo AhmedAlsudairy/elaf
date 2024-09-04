@@ -26,7 +26,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = React.memo(({ chatRooms, curre
   if (chatRooms.length === 0) {
     return (
       <div className="flex justify-center items-center h-full">
-        <p className="text-gray-500">You don&apost have any chat rooms!</p>
+        <p className="text-gray-500">You don&apos;t have any chat rooms!</p>
       </div>
     );
   }

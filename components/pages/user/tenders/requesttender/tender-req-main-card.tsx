@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,12 +21,13 @@ import { currencyT } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { addRating } from "@/actions/supabase/add-rating";
 import TenderCompletionButton from "@/components/common/user/rating/tender-req-rating";
+import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
 
 enum TenderRequestStatusEnum {
-  Pending = 'pending',
-  Accepted = 'accepted',
-  Rejected = 'rejected',
-  Done = 'done'
+  Pending = "pending",
+  Accepted = "accepted",
+  Rejected = "rejected",
+  Done = "done",
 }
 
 export interface TenderRequest {
@@ -59,11 +60,20 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   onAccept,
   isAccepted,
   showAcceptButton,
-  tenderCurrency 
+  tenderCurrency,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentCompanyProfile, setCurrentCompanyProfile] = useState<any>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchCurrentCompanyProfile() {
+      const profile = await getCurrentCompanyProfile();
+      setCurrentCompanyProfile(profile);
+    }
+    fetchCurrentCompanyProfile();
+  }, []);
 
   const formatDate = (dateString: string) => {
     try {
@@ -116,13 +126,30 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
     comment: string;
     isAnonymous: boolean;
   }) => {
+    if (!currentCompanyProfile) {
+      toast({
+        title: "Error",
+        description:
+          "Unable to submit rating. Current company profile not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const result = await addRating({
+        ratingCompanyId: currentCompanyProfile.company_profile_id,
+        ratedCompanyId: request.company_profile_id,
         tenderId: request.tender_id,
         tenderRequestId: request.id,
-        companyProfileId: request.company_profile_id,
-        ...rating
+        quality: rating.quality,
+        communication: rating.communication,
+        experience: rating.experience,
+        deadline: rating.deadline,
+        comment: rating.comment,
+        isAnonymous: rating.isAnonymous,
       });
+
       if (result.success) {
         toast({
           title: "Rating Submitted",
@@ -146,7 +173,11 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
   };
 
   return (
-    <Card className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${isAccepted ? 'border-green-500 border-2' : ''}`}>
+    <Card
+      className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${
+        isAccepted ? "border-green-500 border-2" : ""
+      }`}
+    >
       <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <div className="flex items-center space-x-4">
@@ -166,12 +197,14 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               </div>
             )}
             <div>
-              <Link 
+              <Link
                 href={`/profile/companyprofiles/${request.company_profile_id}`}
                 className="hover:underline"
               >
                 <CardTitle className="flex items-center">
-                  <span className="truncate max-w-[200px]">{request.company_profile.company_title}</span>
+                  <span className="truncate max-w-[200px]">
+                    {request.company_profile.company_title}
+                  </span>
                   <ExternalLink className="ml-2 w-4 h-4 flex-shrink-0" />
                 </CardTitle>
               </Link>
@@ -208,22 +241,24 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
           )}
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             {getStatusBadge(request.status)}
-            {showAcceptButton && request.status === TenderRequestStatusEnum.Pending && (
-              <Button 
-                onClick={() => setIsDialogOpen(true)} 
-                className="bg-green-500 hover:bg-green-600 text-white mt-2 sm:mt-0"
-                disabled={isLoading}
-              >
-                {isLoading ? "Accepting..." : "Accept Request"}
-              </Button>
-            )}
-            {request.status === TenderRequestStatusEnum.Accepted && (
-              <TenderCompletionButton
-                companyProfileId={request.company_profile_id}
-                tenderId={request.tender_id}
-                onComplete={handleRatingSubmit}
-              />
-            )}
+            {showAcceptButton &&
+              request.status === TenderRequestStatusEnum.Pending && (
+                <Button
+                  onClick={() => setIsDialogOpen(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white mt-2 sm:mt-0"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Accepting..." : "Accept Request"}
+                </Button>
+              )}
+            {request.status === TenderRequestStatusEnum.Accepted &&
+              currentCompanyProfile && (
+                <TenderCompletionButton
+                  companyProfileId={request.company_profile_id}
+                  tenderId={request.tender_id}
+                  onComplete={handleRatingSubmit}
+                />
+              )}
           </div>
         </div>
       </CardContent>
@@ -233,7 +268,8 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Accept Tender Request</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to accept this tender request? This action cannot be undone.
+              Are you sure you want to accept this tender request? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

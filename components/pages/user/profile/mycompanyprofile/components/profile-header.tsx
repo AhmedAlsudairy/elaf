@@ -8,7 +8,7 @@ import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
 import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
 import { createOrGetChatRoom } from '@/actions/supabase/chats';
 import { useRouter } from 'next/navigation';
-// Adjust the import path as needed
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProfileHeaderProps {
   profile: CompanyProfile;
@@ -28,27 +28,43 @@ export function ProfileHeader({
   const router = useRouter();
   const { isOwner, isLoading: isCheckingOwnership } = useIsOwnerOfCompany(profile.company_profile_id);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleChatClick = async () => {
     setIsChatLoading(true);
     try {
       const currentProfile = await getCurrentCompanyProfile();
       if (!currentProfile) {
-        console.error("Current user's company profile not found");
+        toast({
+          title: "Error",
+          description: "You don't have a company profile. Please create one to start chatting.",
+          variant: "destructive",
+        });
         return;
       }
   
       console.log("Initiator:", currentProfile.company_profile_id);
       console.log("Recipient:", profile.company_profile_id);
-  
-      const result = await createOrGetChatRoom(currentProfile.company_profile_id, profile.company_profile_id);
-      if (result) {
-        router.push(`/chats/${result.chat_room_id}`);
-      } else {
-        console.error("Failed to create or get chat room");
+      if (profile.company_profile_id) {
+        const result = await createOrGetChatRoom(currentProfile.company_profile_id, profile.company_profile_id);
+      
+        if (result) {
+          router.push(`/chats/${result.chat_room_id}`);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to create or get chat room. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Error initiating chat:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while initiating the chat. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsChatLoading(false);
     }

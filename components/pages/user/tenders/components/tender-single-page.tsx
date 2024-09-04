@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -62,7 +63,7 @@ enum TenderStatusEnum {
   Open = "open",
   Closed = "closed",
   Awarded = "awarded",
-  Done="done"
+  Done = "done",
 }
 
 interface Company {
@@ -323,10 +324,13 @@ const SingleTenderClientComponent: React.FC<
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
+ if (isLoading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <Loader2 className="w-8 h-8 animate-spin" />
+    </div>
+  );
+}
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -456,7 +460,7 @@ const SingleTenderClientComponent: React.FC<
                         </DialogTitle>
                       </DialogHeader>
                       <div className="flex-1 overflow-y-auto">
-                        {companyProfile && (
+                        {companyProfile ? (
                           <TenderRequestForm
                             onSubmit={handleTenderRequestSubmit}
                             tenderId={tender.tender_id}
@@ -464,6 +468,11 @@ const SingleTenderClientComponent: React.FC<
                             tenderTitle={tender.title}
                             tenderCurrency={tender.currency}
                           />
+                        ) : (
+                          <p className="text-center text-red-500">
+                            Please create a company profile to submit a tender
+                            request.
+                          </p>
                         )}
                       </div>
                     </DialogContent>

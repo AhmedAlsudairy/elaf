@@ -16,8 +16,7 @@ export const userProfileSchema = z.object({
   
   export const companySchema = z.object({
     id: z.string().uuid().optional(),
-    company_profile_id: z.string(),
-
+    company_profile_id: z.string().optional(),
     company_title: z.string().min(2, { message: "Company title must be at least 2 characters." }),
     company_number: z.string().optional(),
     company_website: z.string().url({ message: "Please enter a valid URL." }).optional(),

@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache';
 interface AddRatingParams {
   tenderId: string;
   tenderRequestId: string;
-  companyProfileId: string;
+  ratingCompanyId: string;
+  ratedCompanyId: string;
   quality: number;
   communication: number;
   experience: number;
@@ -18,7 +19,8 @@ interface AddRatingParams {
 export async function addRating({
   tenderId,
   tenderRequestId,
-  companyProfileId,
+  ratingCompanyId,
+  ratedCompanyId,
   quality,
   communication,
   experience,
@@ -38,7 +40,8 @@ export async function addRating({
     const { data, error } = await supabase.rpc('add_rating_and_update_statuses', {
       p_tender_id: tenderId,
       p_tender_request_id: tenderRequestId,
-      p_company_profile_id: companyProfileId,
+      p_rating_company_id: ratingCompanyId,
+      p_rated_company_id: ratedCompanyId,
       p_quality: quality,
       p_communication: communication,
       p_experience: experience,
@@ -58,7 +61,7 @@ export async function addRating({
     }
 
     // Check the return value from the PostgreSQL function
-    if (data && data.startsWith('ERROR:')) {
+    if (data && typeof data === 'string' && data.startsWith('ERROR:')) {
       console.error("PostgreSQL function error:", data);
       return {
         success: false,

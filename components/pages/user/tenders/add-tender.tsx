@@ -38,7 +38,6 @@ export function TenderForm() {
       terms: "",
       scope_of_works: "",
       currency: "OMR",
-
       pdf_choice: "upload",
       custom_fields: [{ title: "", description: "" }],
       tender_sectors: [] as SectorEnum[],
@@ -58,68 +57,77 @@ export function TenderForm() {
 
   async function handleNextStep() {
     setIsLoading(true);
-    const isValid = await form.trigger([
-      "title",
-      "summary",
-      "currency",
-      "end_date",
-      "terms",
-      "scope_of_works",
-      "tender_sectors",
-    ]);
-    if (isValid) {
-      try {
-        const stepOneData = form.getValues();
-        let result;
-        if (tenderId) {
-          result = await updateTenderStepOne(tenderId, stepOneData);
-          showToast("success", "Tender updated successfully");
-        } else {
-          result = await addTenderStepOne(stepOneData);
-          showToast("success", "New tender created successfully");
+
+    // Step 1 validation without checking the PDF
+    if (step === 1) {
+      const isValid = await form.trigger([
+        "title",
+        "summary",
+        "currency",
+        "end_date",
+        "terms",
+        "scope_of_works",
+        "tender_sectors",
+      ]);
+
+      if (isValid) {
+        try {
+          const stepOneData = form.getValues();
+          let result;
+          if (tenderId) {
+            result = await updateTenderStepOne(tenderId, stepOneData);
+            showToast("success", "Tender updated successfully");
+          } else {
+            result = await addTenderStepOne(stepOneData);
+            showToast("success", "New tender created successfully");
+            setTenderId(result.tender_id);
+          }
+          setStep(2);
+        } catch (error) {
+          console.error("Error handling tender step one:", error);
+          showToast("error", "Error processing tender data");
+        } finally {
+          setIsLoading(false);
         }
-        setTenderId(result.tender_id);
-        setStep(2);
-      } catch (error) {
-        console.error("Error handling tender step one:", error);
-        showToast("error", "Error processing tender data");
-      } finally {
+      } else {
+        showToast("error", "Please fill out all required fields in Step 1.");
         setIsLoading(false);
       }
-    } else {
-      const errors = form.formState.errors;
-      const errorMessages = Object.values(errors).map((error) => error.message);
-      showToast("error", errorMessages.join(", "));
-      setIsLoading(false);
-    }
-  }
+    } else if (step === 2) {
+      // Step 2 validation, including PDF check
+      const isValid = await form.trigger(["pdf_url"]);
 
-  async function onSubmit(values: FormValues) {
-    if (step === 2) {
-      setIsLoading(true);
-      try {
-        if (!tenderId) {
-          throw new Error("Tender ID is missing");
+      if (isValid && form.getValues("pdf_url")) {
+        try {
+          const stepTwoData = form.getValues();
+          await updateTenderStepTwo({
+            pdf_url: stepTwoData.pdf_url,
+            tender_id: tenderId,
+          });
+          showToast("success", "Tender submitted successfully");
+          if (companyProfile && companyProfile.company_profile_id) {
+            router.push(
+              `/profile/companyprofiles/${companyProfile.company_profile_id}/tenders`
+            );
+            router.refresh();
+          } else {
+            showToast("error", "Company profile information is missing");
+          }
+        } catch (error) {
+          console.error("Error submitting tender:", error);
+          showToast("error", "Error submitting tender");
+        } finally {
+          setIsLoading(false);
         }
-        const result = await updateTenderStepTwo({
-          pdf_url: values.pdf_url,
-          tender_id: tenderId,
-        });
-
-        console.log("Final submission:", result);
-        showToast("success", "Tender submitted successfully");
-        if (companyProfile && companyProfile.company_profile_id) {
-          router.push(
-            `/profile/companyprofiles/${companyProfile.company_profile_id}/tenders`
-          );
-          router.refresh();
-        } else {
-          showToast("error", "Company profile information is missing");
+      } else {
+        const errors = form.formState.errors;
+        const errorMessages = Object.values(errors).map(
+          (error) => error.message
+        );
+        if (!form.getValues("pdf_url")) {
+          errorMessages.push("Please upload a PDF file for your tender.");
         }
-      } catch (error) {
-        console.error("Error submitting tender:", error);
-        showToast("error", "Error submitting tender");
-      } finally {
+        showToast("error", errorMessages.join(", "));
         setIsLoading(false);
       }
     }
@@ -142,8 +150,8 @@ export function TenderForm() {
               scope_of_works: data.tender.scope_of_works || "",
               tender_sectors:
                 (data.tender.tender_sectors as SectorEnum[]) || [],
-              pdf_choice: "upload", // Assuming a default value
-              custom_fields: [{ title: "", description: "" }], // Assuming a default value
+              pdf_choice: "upload",
+              custom_fields: [{ title: "", description: "" }],
             };
             form.reset(formattedData);
           }
@@ -159,7 +167,7 @@ export function TenderForm() {
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-8">
       <h1 className="text-2xl font-bold mb-6 text-center">Create New Tender</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onsubmit)} className="space-y-8">
           {step === 1 ? (
             <TenderFormStep1 form={form} isLoading={isLoading} />
           ) : (
@@ -190,13 +198,16 @@ export function TenderForm() {
                 }
               }}
               className="ml-auto"
-              disabled={isLoading}
+              disabled={isLoading || (step === 2 && !form.getValues("pdf_url"))}  // Disable if no PDF in step 2
             >
               {isLoading ? "Processing..." : step === 1 ? "Next" : "Submit"}
             </Button>
           </div>
         </form>
       </Form>
+      <p className="mt-4 text-gray-500">
+        <strong>Note:</strong> Adding a PDF file to your tender is required for the review process.
+      </p>
     </div>
   );
 }

@@ -23,14 +23,22 @@ interface ChatRoomListProps {
 }
 
 const ChatRoomList: React.FC<ChatRoomListProps> = React.memo(({ chatRooms, currentChatRoomId, onChatRoomClick }) => {
+  if (chatRooms.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-gray-500">You don't have any chat rooms!</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col bg-white">
       <h2 className="text-2xl font-bold p-4 border-b">Chats</h2>
       <ul className="flex-grow overflow-y-auto divide-y divide-gray-200">
         {chatRooms.map((room) => (
           <li key={room.id} className="hover:bg-gray-50">
-            <button 
-              onClick={() => onChatRoomClick(room.id)} 
+            <button
+              onClick={() => onChatRoomClick(room.id)}
               className={`w-full text-left p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${
                 currentChatRoomId === room.id ? 'bg-blue-50' : ''
               }`}

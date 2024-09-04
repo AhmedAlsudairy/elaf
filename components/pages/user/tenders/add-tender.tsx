@@ -58,7 +58,6 @@ export function TenderForm() {
   async function handleNextStep() {
     setIsLoading(true);
 
-    // Step 1 validation without checking the PDF
     if (step === 1) {
       const isValid = await form.trigger([
         "title",
@@ -94,7 +93,6 @@ export function TenderForm() {
         setIsLoading(false);
       }
     } else if (step === 2) {
-      // Step 2 validation, including PDF check
       const isValid = await form.trigger(["pdf_url"]);
 
       if (isValid && form.getValues("pdf_url")) {
@@ -102,7 +100,7 @@ export function TenderForm() {
           const stepTwoData = form.getValues();
           await updateTenderStepTwo({
             pdf_url: stepTwoData.pdf_url,
-            tender_id: tenderId,
+            tender_id: tenderId!,
           });
           showToast("success", "Tender submitted successfully");
           if (companyProfile && companyProfile.company_profile_id) {
@@ -161,13 +159,19 @@ export function TenderForm() {
           showToast("error", "Error fetching tender data");
         });
     }
-  }, [tenderId]);
+  }, [tenderId, form]);
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    if (step === 2) {
+      await handleNextStep();
+    }
+  });
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-8">
       <h1 className="text-2xl font-bold mb-6 text-center">Create New Tender</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onsubmit)} className="space-y-8">
+        <form onSubmit={onSubmit} className="space-y-8">
           {step === 1 ? (
             <TenderFormStep1 form={form} isLoading={isLoading} />
           ) : (
@@ -189,16 +193,14 @@ export function TenderForm() {
               </Button>
             )}
             <Button
-              type="button"
+              type={step === 2 ? "submit" : "button"}
               onClick={() => {
                 if (step === 1) {
                   handleNextStep();
-                } else {
-                  form.handleSubmit(onSubmit)();
                 }
               }}
               className="ml-auto"
-              disabled={isLoading || (step === 2 && !form.getValues("pdf_url"))}  // Disable if no PDF in step 2
+              disabled={isLoading || (step === 2 && !form.getValues("pdf_url"))}
             >
               {isLoading ? "Processing..." : step === 1 ? "Next" : "Submit"}
             </Button>

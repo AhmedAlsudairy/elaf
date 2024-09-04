@@ -157,3 +157,26 @@ export interface SearchResult {
 
 export const currencyEnum = z.enum(['OMR', 'EGP', 'SAR', 'AED']);
 export type currencyT=z.infer<typeof tenderRequestSchema>['currency'];
+
+// types/companyRating.ts
+export interface CompanyRatings {
+  avg_quality: number;
+  avg_communication: number;
+  avg_experience: number;
+  avg_deadline: number;
+  avg_overall_rating: number;
+  number_of_ratings: number;
+}
+
+export interface RatingCategoryProps {
+  label: string;
+  value: number;
+}
+
+export interface RatingStarsProps {
+  rating: number;
+}
+
+export interface CompanyRatingHeaderProps {
+  ratings: CompanyRatings | null;
+}

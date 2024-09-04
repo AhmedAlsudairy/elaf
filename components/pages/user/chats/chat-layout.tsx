@@ -166,13 +166,7 @@ const ChatInterface: React.FC = () => {
   const toggleChatList = useCallback(() => {
     setShowChatList(prev => !prev);
   }, []);
-if (!profile ) {
-  return (
-    <div className="text-center text-red-500 my-4">
-you don't have a company profile. Please create one to start chatting.
-    </div>
-  );
-}
+
 
 
   if (!profile || isChatRoomsLoading) {
@@ -182,7 +176,13 @@ you don't have a company profile. Please create one to start chatting.
       </div>
     );
   }
-
+if (!profile ) {
+  return (
+    <div className="text-center text-red-500 my-4">
+you don't have a company profile. Please create one to start chatting.
+    </div>
+  );
+}
   if (chatRoomsError) {
     return (
       <div className="text-center text-red-500 my-4">

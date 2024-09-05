@@ -148,6 +148,7 @@ export interface Tender {
   summary: string;
   status: TenderStatus;
   address: string;
+  
 }
 
 export interface SearchResult {

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Mail, Briefcase, Hash } from "lucide-react";
+import { Mail, Briefcase, Hash, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CompanyCardProps {
@@ -13,7 +13,37 @@ interface CompanyCardProps {
   profileImage?: string;
   companyId: string;
   sectors: string[];
+  rating: number | null;
+  numberOfRatings: number;
 }
+
+const StarRating: React.FC<{ rating: number | null }> = ({ rating }) => {
+  const totalStars = 5;
+
+  if (rating === null || rating === 0) {
+    return <span className="text-sm text-gray-400">No ratings yet</span>;
+  }
+
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+
+  return (
+    <div className="flex">
+      {[...Array(totalStars)].map((_, index) => (
+        <Star
+          key={index}
+          className={`w-4 h-4 ${
+            index < fullStars
+              ? 'text-yellow-400 fill-current'
+              : index === fullStars && hasHalfStar
+              ? 'text-yellow-400 fill-current half-star'
+              : 'text-gray-300'
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
 
 export const CompanyCard: React.FC<CompanyCardProps> = ({
   companyTitle,
@@ -21,7 +51,9 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
   email,
   profileImage,
   companyId,
-  sectors
+  sectors,
+  rating,
+  numberOfRatings
 }) => {
   return (
     <Link href={`/profile/companyprofiles/${companyId}`} passHref>
@@ -44,6 +76,14 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
               <Hash className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
               <span className="truncate">ID: {companyId}</span>
             </p>
+            <div className="flex items-center justify-center sm:justify-start mt-2">
+              <StarRating rating={rating} />
+              {rating !== null && rating > 0 && (
+                <span className="ml-2 text-xs sm:text-sm text-muted-foreground">
+                  {rating.toFixed(1)} ({numberOfRatings})
+                </span>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">

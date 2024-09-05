@@ -20,19 +20,19 @@ export const ContactDetails = () => (
         </div>
         <div className="flex items-center space-x-4">
           <MailIcon className="h-6 w-6 text-muted-foreground" />
-          <p className="text-muted-foreground">contact@elaaaf.com</p>
+          <p className="text-muted-foreground">ahmedsf100@gmail.com</p>
         </div>
       </div>
       <div className="flex items-center space-x-4">
-        <Link href="#" className="text-muted-foreground hover:text-primary" prefetch={false}>
+        {/* <Link href="#" className="text-muted-foreground hover:text-primary" prefetch={false}>
           <TwitterIcon className="h-6 w-6" />
-        </Link>
-        <Link href="#" className="text-muted-foreground hover:text-primary" prefetch={false}>
+        </Link> */}
+        <Link href="https://www.linkedin.com/company/elaaaf" className="text-muted-foreground hover:text-primary" prefetch={false}>
           <LinkedinIcon className="h-6 w-6" />
         </Link>
-        <Link href="#" className="text-muted-foreground hover:text-primary" prefetch={false}>
+        {/* <Link href="#" className="text-muted-foreground hover:text-primary" prefetch={false}>
           <FacebookIcon className="h-6 w-6" />
-        </Link>
+        </Link> */}
       </div>
     </div>
     <div className="flex flex-col space-y-4">

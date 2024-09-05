@@ -5,10 +5,11 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCompanyProfiles } from '@/actions/supabase/get-compamies-profile';
-import CompanyCard from '../company-profile-card';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { ClipLoader } from "react-spinners";
+import { CompanyCard } from '../company-profile-card';
 
+// Types
 interface CompanyProfile {
   company_profile_id: string;
   company_title: string;
@@ -16,6 +17,8 @@ interface CompanyProfile {
   company_email: string;
   profile_image?: string;
   sectors: string[];
+  avg_overall_rating: number;
+  number_of_ratings: number;
 }
 
 interface CompanyProfilesSuccess {
@@ -36,6 +39,7 @@ interface CompanyProfilesError {
 
 type CompanyProfilesResult = CompanyProfilesSuccess | CompanyProfilesError;
 
+// Helper function to fetch company profiles
 const fetchCompanyProfiles = async ({ pageParam = 1, searchTerm = '', pageSize = 12 }) => {
   const formData = new FormData();
   formData.append('searchTerm', searchTerm);
@@ -49,6 +53,7 @@ const fetchCompanyProfiles = async ({ pageParam = 1, searchTerm = '', pageSize =
   return result;
 };
 
+// ResponsiveCompanyProfileList Component
 export default function ResponsiveCompanyProfileList() {
   const [searchTerm, setSearchTerm] = useState('');
   const pageSize = 12;
@@ -125,6 +130,8 @@ export default function ResponsiveCompanyProfileList() {
                 profileImage={profile.profile_image}
                 companyId={profile.company_profile_id}
                 sectors={profile.sectors}
+                rating={profile.avg_overall_rating}
+                numberOfRatings={profile.number_of_ratings}
               />
             ))}
           </div>

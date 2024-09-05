@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, Calendar } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Star } from "lucide-react";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -44,6 +44,8 @@ export interface TenderRequest {
   company_profile: {
     company_title: string;
     profile_image?: string;
+    avg_overall_rating: number;
+    number_of_ratings: number;
   };
 }
 
@@ -172,6 +174,29 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
     }
   };
 
+  const renderStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <>
+        {[...Array(fullStars)].map((_, i) => (
+          <Star key={`full-${i}`} className="w-4 h-4 text-yellow-400 fill-current" />
+        ))}
+        {hasHalfStar && (
+          <div className="relative w-4 h-4">
+            <Star className="w-4 h-4 text-yellow-400 absolute" />
+            <Star className="w-4 h-4 text-yellow-400 fill-current absolute" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+          </div>
+        )}
+        {[...Array(emptyStars)].map((_, i) => (
+          <Star key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />
+        ))}
+      </>
+    );
+  };
+
   return (
     <Card
       className={`mb-4 hover:shadow-lg transition-shadow duration-300 ${
@@ -211,6 +236,23 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
               <p className="text-sm text-gray-500">
                 ID: {request.company_profile_id}
               </p>
+              <div className="flex items-center mt-1">
+                {request.company_profile.number_of_ratings > 0 ? (
+                  <>
+                    <div className="flex items-center mr-1">
+                      {renderStars(request.company_profile.avg_overall_rating)}
+                    </div>
+                    <span className="text-sm font-semibold">
+                      {request.company_profile.avg_overall_rating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-1">
+                      ({request.company_profile.number_of_ratings} ratings)
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xs text-gray-500">No ratings yet</span>
+                )}
+              </div>
             </div>
           </div>
           <div className="text-left sm:text-right">

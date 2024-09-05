@@ -201,6 +201,25 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
           <Text style={styles.fieldContent}>{data.summary}</Text>
         </View>
 
+        {/* Custom Content Sections */}
+        {data.content_sections.map((section, index) => (
+          <View key={index} style={styles.section}>
+            <Text style={styles.fieldTitle}>{section.title}</Text>
+            {section.type === 'paragraph' ? (
+              section.content.map((paragraph, pIndex) => (
+                <Text key={pIndex} style={styles.paragraph}>{paragraph}</Text>
+              ))
+            ) : (
+              section.content.map((item, lIndex) => (
+                <View key={lIndex} style={styles.listItem}>
+                  <Text style={styles.bullet}>• </Text>
+                  <Text style={styles.fieldContent}>{item}</Text>
+                </View>
+              ))
+            )}
+          </View>
+        ))}
+
         {!data.is_tender_request && (
           <>
             <View style={styles.section}>
@@ -219,24 +238,6 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
                 {renderScopeOfWorks(data.scope_of_works)}
               </View>
             </View>
-
-            {data.content_sections.map((section, index) => (
-              <View key={index} style={styles.section}>
-                <Text style={styles.fieldTitle}>{section.title}</Text>
-                {section.type === 'paragraph' ? (
-                  section.content.map((paragraph, pIndex) => (
-                    <Text key={pIndex} style={styles.paragraph}>{paragraph}</Text>
-                  ))
-                ) : (
-                  section.content.map((item, lIndex) => (
-                    <View key={lIndex} style={styles.listItem}>
-                      <Text style={styles.bullet}>• </Text>
-                      <Text style={styles.fieldContent}>{item}</Text>
-                    </View>
-                  ))
-                )}
-              </View>
-            ))}
 
             {data.custom_fields.map((field, index) => (
               <View key={index} style={styles.section}>

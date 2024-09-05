@@ -1,4 +1,4 @@
-import  { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTenderRequests } from '@/hooks/use-tender-request';
@@ -9,16 +9,22 @@ interface TenderRequestListProps {
   tenderId: string;
   onAccept: (id: string) => Promise<void>;
   acceptedRequestId?: string | null;
-  tenderCurrency: currencyT; // Add this line
-
+  tenderCurrency: currencyT;
 }
 
 type SortOrder = 'newest' | 'oldest';
 type PriceSort = 'none' | 'lowest' | 'highest';
+type RatingSort = 'none' | 'highest' | 'lowest';
 
-const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccept, acceptedRequestId,tenderCurrency }) => {
+const TenderRequestList: React.FC<TenderRequestListProps> = ({ 
+  tenderId, 
+  onAccept, 
+  acceptedRequestId, 
+  tenderCurrency 
+}) => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priceSort, setPriceSort] = useState<PriceSort>('none');
+  const [ratingSort, setRatingSort] = useState<RatingSort>('none');
 
   const { 
     data, 
@@ -45,6 +51,20 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
       sorted.sort((a, b) => b.bid_price - a.bid_price);
     }
 
+    if (ratingSort === 'highest') {
+      sorted.sort((a, b) => {
+        const ratingA = a.company_profile.avg_overall_rating || 0;
+        const ratingB = b.company_profile.avg_overall_rating || 0;
+        return ratingB - ratingA;
+      });
+    } else if (ratingSort === 'lowest') {
+      sorted.sort((a, b) => {
+        const ratingA = a.company_profile.avg_overall_rating || 0;
+        const ratingB = b.company_profile.avg_overall_rating || 0;
+        return ratingA - ratingB;
+      });
+    }
+
     if (acceptedRequestId) {
       const acceptedIndex = sorted.findIndex(request => request.id === acceptedRequestId);
       if (acceptedIndex !== -1) {
@@ -54,14 +74,14 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
     }
 
     return sorted;
-  }, [data, sortOrder, priceSort, acceptedRequestId]);
+  }, [data, sortOrder, priceSort, ratingSort, acceptedRequestId]);
 
   if (status === 'pending') return <div>Loading...</div>;
   if (status === 'error') return <div>Error: {(error as Error).message}</div>;
 
   return (
     <div>
-      <div className="mb-4 flex justify-between">
+      <div className="mb-4 flex flex-wrap gap-2">
         <Select onValueChange={(value: SortOrder) => setSortOrder(value)} defaultValue={sortOrder}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by date" />
@@ -79,6 +99,16 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
             <SelectItem value="none">No price sort</SelectItem>
             <SelectItem value="lowest">Lowest price first</SelectItem>
             <SelectItem value="highest">Highest price first</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select onValueChange={(value: RatingSort) => setRatingSort(value)} defaultValue={ratingSort}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by rating" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No rating sort</SelectItem>
+            <SelectItem value="highest">Highest rated first</SelectItem>
+            <SelectItem value="lowest">Lowest rated first</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -105,8 +135,7 @@ const TenderRequestList: React.FC<TenderRequestListProps> = ({ tenderId, onAccep
               onAccept={onAccept}
               isAccepted={request.id === acceptedRequestId}
               showAcceptButton={!acceptedRequestId || request.id === acceptedRequestId}
-              tenderCurrency={tenderCurrency} // Add this line
-
+              tenderCurrency={tenderCurrency}
             />
           ))
         )}

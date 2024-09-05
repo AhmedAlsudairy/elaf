@@ -13,7 +13,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import StarRating from './star-rating';
 
-
 interface TenderCompletionButtonProps {
   companyProfileId: string;
   tenderId: string;
@@ -44,6 +43,7 @@ const TenderCompletionButton: React.FC<TenderCompletionButtonProps> = ({
   const [comment, setComment] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleRatingChange = (category: keyof typeof rating) => (value: number) => {
@@ -61,6 +61,7 @@ const TenderCompletionButton: React.FC<TenderCompletionButtonProps> = ({
       return;
     }
 
+    setIsLoading(true);
     try {
       await onComplete({ 
         companyProfileId, 
@@ -81,6 +82,8 @@ const TenderCompletionButton: React.FC<TenderCompletionButtonProps> = ({
         description: "Failed to submit rating. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,7 +131,9 @@ const TenderCompletionButton: React.FC<TenderCompletionButtonProps> = ({
           </div>
         </div>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-        <Button onClick={handleSubmit} disabled={!isValid}>Submit Rating</Button>
+        <Button onClick={handleSubmit} disabled={!isValid || isLoading}>
+          {isLoading ? "Submitting..." : "Submit Rating"}
+        </Button>
       </DialogContent>
     </Dialog>
   );

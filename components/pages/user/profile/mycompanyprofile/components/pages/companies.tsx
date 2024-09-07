@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import Head from 'next/head';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ interface CompanyProfilesError {
   success: false;
   error: string;
 }
-// TODO: add meta data here 
+
 type CompanyProfilesResult = CompanyProfilesSuccess | CompanyProfilesError;
 
 // Helper function to fetch company profiles
@@ -82,61 +83,85 @@ export default function ResponsiveCompanyProfileList() {
   };
 
   const profiles = data?.pages.flatMap(page => page.data) ?? [];
+  const totalCompanies = data?.pages[0]?.metadata.totalCount ?? 0;
+
+  //// here i wrote the Dynamic metadata
+  const pageTitle = searchTerm 
+    ? `Search Results for "${searchTerm}" | Elaaaf Company Directory`
+    : "Company Directory | Elaaaf - B2B Tendering and Bidding";
+
+  const pageDescription = searchTerm
+    ? `Explore ${totalCompanies} companies matching "${searchTerm}" in Elaaaf's Company Directory. Find B2B tendering and bidding opportunities.`
+    : `Discover ${totalCompanies} businesses for B2B tendering and bidding in Elaaaf's Company Directory.`;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <form onSubmit={handleSearch} className="mb-8">
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            name="searchTerm"
-            defaultValue={searchTerm}
-            placeholder="Search company profiles"
-            className="flex-grow"
-          />
-          <Button type="submit">Search</Button>
-        </div>
-      </form>
-
-      {status === 'pending' ? (
-        <div className="flex justify-center items-center h-64">
-          <ClipLoader color="#123abc" loading={true} size={50} />
-        </div>
-      ) : status === 'error' ? (
-        <div className="text-center text-red-500">{(error as Error).message}</div>
-      ) : (
-        <InfiniteScroll
-          dataLength={profiles.length}
-          next={fetchNextPage}
-          hasMore={!!hasNextPage}
-          loader={
-            <div className="flex justify-center items-center h-20">
-              <ClipLoader color="#123abc" loading={true} size={50} />
-            </div>
-          }
-          endMessage={
-            <p className="text-center mt-4">
-              <b>You have seen all companies</b>
-            </p>
-          }
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {profiles.map((profile) => (
-              <CompanyCard
-                key={profile.company_profile_id}
-                companyTitle={profile.company_title}
-                bio={profile.bio}
-                email={profile.company_email}
-                profileImage={profile.profile_image}
-                companyId={profile.company_profile_id}
-                sectors={profile.sectors}
-                rating={profile.avg_overall_rating}
-                numberOfRatings={profile.number_of_ratings}
-              />
-            ))}
+    <>
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={`Elaaaf, B2B, tendering, bidding, procurement, supplier directory, Egypt, Oman, company directory, business networking${searchTerm ? `, ${searchTerm}` : ''}`} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Elaaaf" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+      </Head>
+      <div className="container mx-auto px-4 py-8">
+        <form onSubmit={handleSearch} className="mb-8">
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              name="searchTerm"
+              defaultValue={searchTerm}
+              placeholder="Search company profiles"
+              className="flex-grow"
+            />
+            <Button type="submit">Search</Button>
           </div>
-        </InfiniteScroll>
-      )}
-    </div>
+        </form>
+
+        {status === 'pending' ? (
+          <div className="flex justify-center items-center h-64">
+            <ClipLoader color="#123abc" loading={true} size={50} />
+          </div>
+        ) : status === 'error' ? (
+          <div className="text-center text-red-500">{(error as Error).message}</div>
+        ) : (
+          <InfiniteScroll
+            dataLength={profiles.length}
+            next={fetchNextPage}
+            hasMore={!!hasNextPage}
+            loader={
+              <div className="flex justify-center items-center h-20">
+                <ClipLoader color="#123abc" loading={true} size={50} />
+              </div>
+            }
+            endMessage={
+              <p className="text-center mt-4">
+                <b>You have seen all companies</b>
+              </p>
+            }
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {profiles.map((profile) => (
+                <CompanyCard
+                  key={profile.company_profile_id}
+                  companyTitle={profile.company_title}
+                  bio={profile.bio}
+                  email={profile.company_email}
+                  profileImage={profile.profile_image}
+                  companyId={profile.company_profile_id}
+                  sectors={profile.sectors}
+                  rating={profile.avg_overall_rating}
+                  numberOfRatings={profile.number_of_ratings}
+                />
+              ))}
+            </div>
+          </InfiniteScroll>
+        )}
+      </div>
+    </>
   );
 }

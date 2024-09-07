@@ -13,8 +13,15 @@ import Favicon from "/public/favicon.ico"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Elaf",
-  description: "Tender  make life easier",
+
+  title: {
+    default: "Elaf",
+    template: "%s - Elaf",
+  },
+  description: "Elaf is a cutting-edge B2B tendering platform that revolutionizes procurement and supplier management. Our e-tendering solution streamlines the entire process from RFP creation to bid submission for both government and private sector tenders. Elaf's robust marketplace connects businesses with diverse suppliers, facilitating efficient sourcing, proposal handling, and contract bidding. Whether you're a vendor seeking new opportunities or a company looking to optimize procurement, Elaf provides the tools and visibility needed to thrive in today's competitive business landscape. Join Elaf to simplify your tendering process, expand your network, and drive growth through strategic sourcing and bidding.",
+  twitter: {
+    card: "summary_large_image",
+  },
   icons: [{ rel: "icon", url: Favicon.src }],
 
 };

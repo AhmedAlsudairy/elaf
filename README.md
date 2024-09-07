@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Elaf Platform Logo](https://ibb.co/c2t6t43)
+![Elaf Platform Logo](https://i.ibb.co/wpCSC5g/logomainpng.png)
 
 </div>
 

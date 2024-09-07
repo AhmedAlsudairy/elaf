@@ -8,12 +8,15 @@ import { Header } from "@/components/common/user/NavBar";
 import { Footer } from "@/components/common/user/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ReactQueryClientProvider } from "@/providers/query-providers";
+import Favicon from "/public/favicon.ico"
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Elaf",
   description: "Tender  make life easier",
+  icons: [{ rel: "icon", url: Favicon.src }],
+
 };
 
  

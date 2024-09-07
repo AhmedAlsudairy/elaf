@@ -28,6 +28,7 @@ export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemC
 
   const menuItems = [
     { label: 'myProfile', href: '/profile/myprofile' },
+    { label: 'chats', href: '/chats' },
     { 
       label: companyProfile ? 'myCompany' : 'newCompany', 
       href: companyProfile ? `/profile/companyprofiles/${companyProfile.company_profile_id}` : '/profile/companyprofiles/new' 

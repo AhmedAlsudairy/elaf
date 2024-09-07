@@ -17,5 +17,6 @@ export enum TenderStatus {
     Open = 'open',
     Closed = 'closed',
     Awarded = 'awarded',
+    Done= "done"
   }
   

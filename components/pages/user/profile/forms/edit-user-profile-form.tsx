@@ -7,6 +7,7 @@ import { updateUserProfile } from '@/actions/supabase/update-user-form';
 import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profile';
 import UserProfileForm from '@/components/pages/user/profile/forms/components/user-profile-form';
 import { z } from 'zod';
+import { Loader2 } from 'lucide-react';
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
 
@@ -68,7 +69,11 @@ const EditUserProfilePage = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

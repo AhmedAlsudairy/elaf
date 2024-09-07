@@ -15,8 +15,8 @@ interface TenderRequestCardProps {
   currency: currencyT; // Add this line
   tenderId: string;
   pdfUrl: string;
-  tenderRequestStatus: 'pending' | 'accepted' | 'rejected';
-  tenderStatus: 'open' | 'closed' | 'awarded';
+  tenderRequestStatus: 'pending' | 'accepted' | 'rejected'|"done";
+  tenderStatus: 'open' | 'closed' | 'awarded'| "done";
   endDate: string | Date;
 }
 

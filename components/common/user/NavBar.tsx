@@ -63,11 +63,18 @@ export const Header = () => {
     router.push('/');
   }, [router]);
 
-  const navItems = useMemo(() => ["tenders", "profile/companyprofiles", "contact"], []);
+
+  const publicNavItems = useMemo(() => ["tenders","profile/companyprofiles", "contact"], []);
+  const privateNavItems = useMemo(() => [ "chats"], []);
   const isRTL = direction === 'rtl';
 
-  const renderNavItems = useCallback((isMobile = false) => 
-    navItems.map((item) => (
+  const renderNavItems = useCallback((isMobile = false) => {
+    const items = [...publicNavItems];
+    if (authState.isAuthenticated) {
+      items.push(...privateNavItems);
+    }
+    
+    return items.map((item) => (
       <Link
         key={item}
         href={`/${locale}/${item}`}
@@ -77,7 +84,9 @@ export const Header = () => {
       >
         {t(item)}
       </Link>
-    )), [navItems, locale, pathName, t]);
+    ));
+  }, [publicNavItems, privateNavItems, locale, pathName, t, authState.isAuthenticated]);
+
 
   return (
     <header className={`px-4 lg:px-6 h-14 flex items-center justify-between font-balooBhaijaan`} dir={direction}>
@@ -87,6 +96,8 @@ export const Header = () => {
       </Link>
       <nav className={`hidden md:flex flex-row items-center font-balooBhaijaan`}>
         {renderNavItems()}
+      
+        
       </nav>
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
         {/* <LocalSwitcher /> */}

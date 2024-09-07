@@ -16,6 +16,8 @@ interface CompanyProfile {
   profile_image: string;
   company_email: string;
   sectors: string[];
+  avg_overall_rating: number;  // Changed from overall_rating
+  number_of_ratings: number;
 }
 
 interface CompanyProfilesSuccess {
@@ -58,7 +60,15 @@ export async function getCompanyProfiles(
       throw new Error('Invalid response from server');
     }
 
-    return data as CompanyProfilesSuccess;
+    // Ensure that the returned data includes avg_overall_rating and number_of_ratings
+    const typedData = data as CompanyProfilesSuccess;
+    if (!typedData.data.every(profile => 
+      'avg_overall_rating' in profile && 'number_of_ratings' in profile
+    )) {
+      throw new Error('Invalid company profile data structure');
+    }
+
+    return typedData;
   } catch (error) {
     console.error('Error fetching company profiles:', error);
     return { 

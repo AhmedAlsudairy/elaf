@@ -36,7 +36,9 @@ export async function getRequestsByTenderId(tenderId: string, page = 0, pageSize
           address,
           profile_image,
           company_email,
-          sectors
+          sectors,
+          avg_overall_rating,
+          number_of_ratings
         )
       `, { count: 'exact' })
       .eq('tender_id', tenderId)
@@ -55,9 +57,19 @@ export async function getRequestsByTenderId(tenderId: string, page = 0, pageSize
 
     const nextPage = (count && (page + 1) * pageSize < count) ? page + 1 : null;
 
+    // Ensure that avg_overall_rating and number_of_ratings are numbers
+    const processedData = data.map(item => ({
+      ...item,
+      company_profile: {
+        ...item.company_profile,
+        avg_overall_rating: Number(item.company_profile.avg_overall_rating) || 0,
+        number_of_ratings: Number(item.company_profile.number_of_ratings) || 0
+      }
+    }));
+
     return { 
       success: true, 
-      data: data as TenderRequest[],
+      data: processedData as TenderRequest[],
       nextPage
     };
   } catch (error) {

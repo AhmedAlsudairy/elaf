@@ -44,6 +44,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeTab }) => {
           Tenders
         </Link>
       </Button>
+
+      <Button
+        variant={activeTab === "rate" ? "default" : "ghost"}
+        className={isMobileView ? "whitespace-nowrap" : "w-full justify-start"}
+        asChild
+      >
+        <Link href={`/profile/companyprofiles/${companyId}/rate`}>Rate</Link>
+      </Button>
       {!isLoading && isOwner && (
         <Button
           variant={activeTab === "requests" ? "default" : "ghost"}

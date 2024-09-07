@@ -20,7 +20,6 @@ import PDFDocument from "@/components/common/pdf-generate";
 import { ELAF_LOGO_PNG_URL } from "@/constant/svg";
 import { Trash2, Plus } from "lucide-react";
 import PDFUpload from "@/components/common/pdf-upload";
-import { currencyEnum } from "@/types";
 
 export const tenderRequestSchema = z.object({
   title: z.string().min(1, "Title is required"),

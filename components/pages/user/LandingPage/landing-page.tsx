@@ -7,6 +7,7 @@ import HeroSection from "./components/hero-section";
 import FeatureSection from "./components/feature-section";
 import SocialMediaSection from "./components/socialmedia-section";
 import { checkAuthAndProfiles } from "@/actions/supabase/check-auth-and-profile";
+import { Loader2 } from 'lucide-react';
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +33,11 @@ export default function LandingPage() {
   }, [router, searchParams]);
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or any loading indicator you prefer
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

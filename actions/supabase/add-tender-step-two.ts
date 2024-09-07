@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const stepTwoSchema = z.object({
   pdf_url: z.string().url("Invalid PDF URL"),
-  tender_id: z.string()
+  tender_id: z.string().optional(),
 });
 
 type StepTwoData = z.infer<typeof stepTwoSchema>;

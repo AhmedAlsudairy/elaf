@@ -14,11 +14,19 @@ const CompanyProfileClient: React.FC<CompanyProfileClientProps> = ({ sections, c
   const pathname = usePathname();
   let activeTab = '';
 
+//TODO:improve to be SOLID
+
+
   if (pathname.includes('/tenders')) {
     activeTab = 'tenders';
   } else if (pathname.includes('/requests')) {
     activeTab = 'requests';
-  } else {
+  }else if (pathname.includes('/rate')) {
+
+    activeTab = 'rate';
+  } 
+  
+  else {
     const pathSegments = pathname.split('/');
     const lastSegment = pathSegments[pathSegments.length - 1];
     const secondLastSegment = pathSegments[pathSegments.length - 2];

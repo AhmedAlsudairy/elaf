@@ -1,5 +1,6 @@
 import ResponsiveCompanyProfileList from "@/components/pages/user/profile/mycompanyprofile/components/pages/companies";
 
+//TODO:add meta data to it
 export default function CompanyDirectoryPage() {
   return (
     <div>

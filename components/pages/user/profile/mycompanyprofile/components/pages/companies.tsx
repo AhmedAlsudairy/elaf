@@ -36,7 +36,7 @@ interface CompanyProfilesError {
   success: false;
   error: string;
 }
-
+// TODO: add meta data here 
 type CompanyProfilesResult = CompanyProfilesSuccess | CompanyProfilesError;
 
 // Helper function to fetch company profiles

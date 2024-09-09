@@ -1,12 +1,17 @@
+import { Metadata } from "next";
 import LandingPage from "@/components/pages/user/LandingPage/landing-page";
 
-const page = () => {
+export const metadata: Metadata = {
+  title: "Your Landing Page Title",
+  description: "Your Landing Page Description",
+};
 
+const Page = ({ searchParams }: { searchParams: { msg: string | undefined } }) => {
   return (
-   <>
-   <LandingPage/>
-   </>
+    <>
+      <LandingPage searchParams={searchParams} />
+    </>
   );
 }
 
-export default page;
+export default Page;

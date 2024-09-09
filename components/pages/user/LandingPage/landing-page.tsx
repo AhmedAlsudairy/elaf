@@ -18,15 +18,17 @@ export default function LandingPage() {
     const checkAuth = async () => {
       const { isAuthenticated, userProfile } = await checkAuthAndProfiles();
       
+      // Get the message from URL parameters
+      const msg = searchParams.get('msg') || '';
+      
       if (isAuthenticated && userProfile) {
-        const msg = searchParams.get('msg');
+        // Redirect to profile page with the message as a query parameter
         const redirectUrl = `/profile/myprofile${msg ? `?message=${encodeURIComponent(msg)}` : ''}`;
         router.push(redirectUrl);
       } else {
         setIsLoading(false);
       }
     };
-    
     checkAuth();
   }, [router, searchParams]);
 

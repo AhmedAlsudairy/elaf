@@ -8,6 +8,7 @@ import { Header } from "@/components/common/user/NavBar";
 import { Footer } from "@/components/common/user/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ReactQueryClientProvider } from "@/providers/query-providers";
+import { Analytics } from "@vercel/analytics/react"
 import Favicon from "/public/favicon.ico"
 
 const inter = Inter({ subsets: ["latin"] });
@@ -45,10 +46,13 @@ export default async function RootLayout({
 
 
   return (
+
     <ReactQueryClientProvider>
 
     <html lang={locale} dir={direction}>
+      
       <body className={inter.className}>
+    <Analytics/>
 
       <NextIntlClientProvider messages={messages}>
         <Header/>

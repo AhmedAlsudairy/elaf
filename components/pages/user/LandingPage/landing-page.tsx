@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { redirect, useRouter, useSearchParams } from 'next/navigation';
 import SignUpSection from "./components/signup-section";
 import HeroSection from "./components/hero-section";
 import FeatureSection from "./components/feature-section";
@@ -24,7 +24,7 @@ export default function LandingPage() {
       if (isAuthenticated && userProfile) {
         // Redirect to profile page with the message as a query parameter
         const redirectUrl = `/profile/myprofile${msg ? `?message=${encodeURIComponent(msg)}` : ''}`;
-        router.push(redirectUrl);
+redirect(redirectUrl);
       } else {
         setIsLoading(false);
       }

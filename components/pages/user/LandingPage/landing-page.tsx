@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import SignUpSection from "./components/signup-section";
 import HeroSection from "./components/hero-section";
 import FeatureSection from "./components/feature-section";
@@ -9,17 +9,14 @@ import SocialMediaSection from "./components/socialmedia-section";
 import { checkAuthAndProfiles } from "@/actions/supabase/check-auth-and-profile";
 import { Loader2 } from 'lucide-react';
 
-export default function LandingPage() {
+export default function LandingPage({ searchParams }: { searchParams: { msg: string | undefined } }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const msg = searchParams.msg;
 
   useEffect(() => {
     const checkAuth = async () => {
       const { isAuthenticated, userProfile } = await checkAuthAndProfiles();
-      
-      // Get the message from URL parameters
-      const msg = searchParams.get('msg') || '';
       
       if (isAuthenticated && userProfile) {
         // Redirect to profile page with the message as a query parameter
@@ -30,7 +27,7 @@ export default function LandingPage() {
       }
     };
     checkAuth();
-  }, [router, searchParams]);
+  }, [router, msg]);
 
   if (isLoading) {
     return (

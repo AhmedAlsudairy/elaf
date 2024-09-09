@@ -9,6 +9,7 @@ import { Footer } from "@/components/common/user/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ReactQueryClientProvider } from "@/providers/query-providers";
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import Favicon from "/public/favicon.ico"
 
 const inter = Inter({ subsets: ["latin"] });
@@ -50,8 +51,9 @@ export default async function RootLayout({
     <ReactQueryClientProvider>
 
     <html lang={locale} dir={direction}>
-      
+
       <body className={inter.className}>
+      <SpeedInsights/>
     <Analytics/>
 
       <NextIntlClientProvider messages={messages}>

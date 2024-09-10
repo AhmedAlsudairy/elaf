@@ -9,6 +9,9 @@ import ChatRoomComponent from '@/components/pages/user/chats/single-chat-compone
 import { useSubscribeToChat } from "@/hooks/messages subs-hook";
 import ChatRoomList from './chatr-list';
 import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
+import { getLangDir } from 'rtl-detect';
 
 const MESSAGES_PER_PAGE = 20;
 
@@ -61,6 +64,11 @@ interface MessagesResponse {
 }
 
 const ChatInterface: React.FC = () => {
+  const t = useTranslations('ChatInterface');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  const isRTL = direction === 'rtl';
+
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -69,11 +77,7 @@ const ChatInterface: React.FC = () => {
   const [showChatList, setShowChatList] = useState(true);
   const [isRouting, setIsRouting] = useState(false);
 
-
-
-  
   useEffect(() => {
-
     const fetchProfile = async () => {
       try {
         const profileData = await getCurrentCompanyProfile();
@@ -167,8 +171,6 @@ const ChatInterface: React.FC = () => {
     setShowChatList(prev => !prev);
   }, []);
 
-
-
   if (!profile || isChatRoomsLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -176,25 +178,36 @@ const ChatInterface: React.FC = () => {
       </div>
     );
   }
-if (!profile ) {
-  return (
-    <div className="text-center text-red-500 my-4">
-you don&apos;t have a company profile. Please create one to start chatting.
-    </div>
-  );
 
-}
+  if (!profile.company_profile_id) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-100" dir={direction}>
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('companyProfileRequired')}</h2>
+          <p className="text-gray-600 mb-6">
+            {t('createProfileMessage')}
+          </p>
+          <Link href="/create-profile" passHref>
+            <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+              {t('createProfileButton')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (chatRoomsError) {
     return (
-      <div className="text-center text-red-500 my-4">
-        An error occurred. Please try again later.
+      <div className="text-center text-red-500 my-4" dir={direction}>
+        {t('errorMessage')}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen md:flex-row">
-      <div className={`md:w-1/3 ${showChatList ? 'flex-grow md:flex-grow-0' : 'hidden'} md:block border-r`}>
+    <div className={`flex flex-col h-screen md:flex-row ${isRTL ? 'md:flex-row-reverse' : ''}`} dir={direction}>
+      <div className={`md:w-1/3 ${showChatList ? 'flex-grow md:flex-grow-0' : 'hidden'} md:block ${isRTL ? 'border-l' : 'border-r'}`}>
         <ChatRoomList
           chatRooms={chatRooms || []}
           currentChatRoomId={currentChatRoomId}
@@ -219,7 +232,7 @@ you don&apos;t have a company profile. Please create one to start chatting.
                 toggleChatList={toggleChatList}
               />
               {messagesStatus === 'error' && (
-                <div className="text-center text-red-500 my-4">Error loading messages. Please try again.</div>
+                <div className="text-center text-red-500 my-4">{t('loadingError')}</div>
               )}
             </div>
             {hasNextPage && (
@@ -232,10 +245,10 @@ you don&apos;t have a company profile. Please create one to start chatting.
                   {isFetchingNextPage ? (
                     <>
                       <ClipLoader color="#FFFFFF" size={20} />
-                      <span>Loading more...</span>
+                      <span>{t('loadingMore')}</span>
                     </>
                   ) : (
-                    'Load More Messages'
+                    t('loadMoreMessages')
                   )}
                 </Button>
               </div>

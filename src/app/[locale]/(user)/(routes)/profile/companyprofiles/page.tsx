@@ -1,5 +1,6 @@
 import ResponsiveCompanyProfileList from "@/components/pages/user/profile/mycompanyprofile/components/pages/companies";
 import { Metadata } from 'next';
+import { useTranslations } from "next-intl";
 
 export const metadata: Metadata = {
   title: 'Company Directory',
@@ -19,9 +20,11 @@ export const metadata: Metadata = {
 };
 
 export default function CompanyDirectoryPage() {
+  const t = useTranslations('Companies');
+
   return (
     <div>
-      <h3 className="text-2xl font-bold mb-6 text-center mt-8">Company Directory</h3>
+      <h3 className="text-2xl font-bold mb-6 text-center mt-8">{t("Company Directory")}</h3>
       <ResponsiveCompanyProfileList />
     </div>
   );

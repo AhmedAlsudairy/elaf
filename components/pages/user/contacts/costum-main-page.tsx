@@ -1,11 +1,12 @@
 import React from "react";
-import { ContactHeader } from "./contact-header";
 import { ContactForm } from "./contact-form";
 import { ContactDetails } from "./contact-detailes";
+import { ContactHeader } from "./contact-header";
+
 
 export default function ContactSection() {
   return (
-    <div className="w-full">
+    <div >
       <ContactHeader />
       <ContactForm />
       <ContactDetails />

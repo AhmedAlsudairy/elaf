@@ -16,6 +16,7 @@
     "myAccount": "My Account",
     "loading": "Loading..."
 
+
   },
   "LocalSwitcher": {
     "selectLanguage": "Select the language",
@@ -95,7 +96,8 @@
     "keywords": "Elaf, B2B, tenders, bids, procurement, supplier directory, Egypt, Oman, company directory, business networks{searchTerm}",
     "searchPlaceholder": "Search in company profiles",
     "searchButton": "Search",
-    "allCompaniesViewed": "You have viewed all companies"
+    "allCompaniesViewed": "You have viewed all companies",
+    "Company Directory": "Company Directory"
   },
   "ContactForm": {
     "title": "Contact Us",
@@ -124,5 +126,110 @@
     "email": "ahmedsf100@gmail.com",
     "linkedin": "Elaaaf",
     "ourLocation": "Our Location"
-  }
+  },
+  "Auth": {
+    "welcomeBack": "Welcome Back!",
+    "letsStart": "Let's Start",
+    "signOut": "Sign out",
+    "signInWithGoogle": "Sign in with Google",
+    "signUpWithGoogle": "Sign up with Google",
+    "hideForm": "Hide Form",
+    "loginWithEmail": "Login with Email",
+    "signUpWithEmail": "Sign Up with Email",
+    "name": "Name",
+    "namePlaceholder": "John Doe",
+    "email": "Email",
+    "emailPlaceholder": "john@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "********",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "forgotPassword": "Forgot Password?",
+    "emailExistsMessage": "Email already exists. Do you want to resend the confirmation email to {email}?",
+    "resendConfirmationEmail": "Resend Confirmation Email",
+    "noAccountSignUp": "Don't have an account? Sign up",
+    "haveAccountLogin": "Already have an account? Log in",
+    "termsOfService": "Terms of Service",
+    "agreeToTerms": "By {action}, you agree to our",
+    "signingIn": "signing in",
+    "signingUp": "signing up",
+    "logoAlt": "Logo"
+  },
+  
+    "ChatInterface": {
+      "companyProfileRequired": "Company Profile Required",
+      "createProfileMessage": "You don't have a company profile. Please create one to start chatting.",
+      "createProfileButton": "Create Company Profile",
+      "errorMessage": "An error occurred. Please try again later.",
+      "loadingError": "Error loading messages. Please try again.",
+      "loadingMore": "Loading more...",
+      "loadMoreMessages": "Load More Messages"
+    },
+
+    "ChatRoomComponent": {
+      "loadingChatRoom": "Loading Chat Room...",
+      "back": "Back",
+      "error": "Error",
+      "failedToSendMessage": "Failed to send message",
+      "unexpectedErrorSendingMessage": "Unexpected error sending message",
+      "failedToNavigateBack": "Failed to navigate back. Please try again.",
+      "viewPDF": "View PDF",
+      "tender": "Tender",
+      "status": "Status",
+      "endDate": "End Date",
+      "notSpecified": "Not specified",
+      "lastMessage": "Last Message",
+      "sentAt": "Sent at",
+      "viewFullTenderDetails": "View Full Tender Details",
+      "typePlaceholder": "Type your message..."
+    },
+    "ChatRoomList": {
+      "title": "Chats",
+      "noChats": "You don't have any chat rooms!",
+      "noMessages": "No messages yet",
+      "unreadMessages": {
+        "one": "1 unread",
+        "other": "{{count}} unread"
+      }
+    },
+    "PDFUpload": {
+      "uploadPDF": "Upload PDF",
+      "dragAndDrop": "Drag and drop a PDF file here, or click to select",
+      "fileUploaded": "File uploaded",
+      "remove": "Remove"
+    },
+    "Common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirm": "Confirm",
+      "send": "Send",
+      "attach": "Attach",
+      "upload": "Upload",
+      "download": "Download",
+      "yes": "Yes",
+      "no": "No",
+      "ok": "OK"
+    },
+    "Dates": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{count}} days ago",
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hours ago"
+    },
+    "Errors": {
+      "genericError": "An error occurred. Please try again.",
+      "networkError": "Network error. Please check your connection.",
+      "authError": "Authentication error. Please log in again.",
+      "notFound": "Not found.",
+      "permissionDenied": "Permission denied.",
+      "invalidInput": "Invalid input. Please check your data."
+    }
+  
 }

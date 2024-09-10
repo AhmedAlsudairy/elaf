@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { FaGoogle } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
 import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
+import { getLangDir } from 'rtl-detect';
 
 interface AuthProps {
   mode: 'login' | 'signup';
@@ -43,6 +45,10 @@ const Auth: React.FC<AuthProps> = ({
   signOutAction,
   resendConfirmationAction
 }) => {
+  const t = useTranslations('Auth');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+
   const isLogin = mode === "login";
   const [showForm, setShowForm] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -107,15 +113,15 @@ const Auth: React.FC<AuthProps> = ({
     );
   }
 
-  const title = isSignedIn ? "Welcome Back!" : (isLogin ? "Welcome Back" : "Let's Start");
-  const buttonText = isSignedIn ? "Sign out" : (isLogin ? "Sign in with Google" : "Sign up with Google");
+  const title = isSignedIn ? t('welcomeBack') : (isLogin ? t('welcomeBack') : t('letsStart'));
+  const buttonText = isSignedIn ? t('signOut') : (isLogin ? t('signInWithGoogle') : t('signUpWithGoogle'));
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+    <section className={`bg-gray-100 min-h-screen flex items-center justify-center p-4 ${direction === 'rtl' ? 'py-12 lg:py-8 md:py-12' : 'py-8 md:py-12 lg:py-12'}`}>
       <Card className="w-full max-w-[400px] sm:max-w-[500px]">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <img src={logoUrl} alt="Logo" className="w-32 h-32 sm:w-40 sm:h-40" />
+            <img src={logoUrl} alt={t('logoAlt')} className="w-32 h-32 sm:w-40 sm:h-40" />
           </div>
           <CardTitle className="font-balooBhaijaan text-3xl sm:text-4xl">
             {title}
@@ -134,7 +140,7 @@ const Auth: React.FC<AuthProps> = ({
               <ClipLoader color="#ffffff" size={20} />
             ) : (
               <>
-                {!isSignedIn && <FaGoogle className="mr-2 h-4 w-4" />}
+                {!isSignedIn && <FaGoogle className={`${direction === 'rtl' ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
                 {buttonText}
               </>
             )}
@@ -145,7 +151,7 @@ const Auth: React.FC<AuthProps> = ({
               variant="outline"
               className="w-full mt-2"
             >
-              {showForm ? "Hide Form" : `${isLogin ? "Login" : "Sign Up"} with Email`}
+              {showForm ? t('hideForm') : t(isLogin ? 'loginWithEmail' : 'signUpWithEmail')}
             </Button>
           )}
           {showForm && !isSignedIn && (
@@ -157,9 +163,9 @@ const Auth: React.FC<AuthProps> = ({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name</FormLabel>
+                        <FormLabel>{t('name')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input placeholder={t('namePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -171,9 +177,9 @@ const Auth: React.FC<AuthProps> = ({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('email')}</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="john@example.com" {...field} />
+                        <Input type="email" placeholder={t('emailPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -184,9 +190,9 @@ const Auth: React.FC<AuthProps> = ({
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t('password')}</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="********" {...field} />
+                        <Input type="password" placeholder={t('passwordPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -196,13 +202,13 @@ const Auth: React.FC<AuthProps> = ({
                   {emailLoading ? (
                     <ClipLoader color="#ffffff" size={20} />
                   ) : (
-                    isLogin ? 'Login' : 'Sign Up'
+                    t(isLogin ? 'login' : 'signUp')
                   )}
                 </Button>
                 {isLogin && (
                   <div className="text-center mt-2">
                     <Link href="/forgotPassword" className="text-blue-500 hover:underline">
-                      Forgot Password?
+                      {t('forgotPassword')}
                     </Link>
                   </div>
                 )}
@@ -211,13 +217,13 @@ const Auth: React.FC<AuthProps> = ({
           )}
           {emailExists && (
             <div className="mt-4 p-4 border rounded-md shadow-sm">
-              <p className="mb-2 text-center">Email already exists. Do you want to resend the confirmation email to {lastUsedEmail}?</p>
+              <p className="mb-2 text-center">{t('emailExistsMessage', { email: lastUsedEmail })}</p>
               <div className="flex justify-center">
                 <Button onClick={handleResendConfirmation} disabled={emailLoading}>
                   {emailLoading ? (
                     <ClipLoader color="#ffffff" size={20} />
                   ) : (
-                    'Resend Confirmation Email'
+                    t('resendConfirmationEmail')
                   )}
                 </Button>
               </div>
@@ -225,19 +231,19 @@ const Auth: React.FC<AuthProps> = ({
           )}
           <div className="mt-4 text-center">
             <Link href={isLogin ? "/signup" : "/login"} className="text-blue-500 hover:underline">
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+              {t(isLogin ? 'noAccountSignUp' : 'haveAccountLogin')}
             </Link>
           </div>
         </CardContent>
         {!isSignedIn && (
           <CardFooter className="flex justify-center text-center">
-            <Terms linkText="Terms of Service" linkHref="/terms">
-              By {isLogin ? "signing in" : "signing up"}, you agree to our
+            <Terms linkText={t('termsOfService')} linkHref="/terms">
+              {t('agreeToTerms', { action: t(isLogin ? 'signingIn' : 'signingUp') })}
             </Terms>
           </CardFooter>
         )}
       </Card>
-    </div>
+    </section>
   );
 };
 

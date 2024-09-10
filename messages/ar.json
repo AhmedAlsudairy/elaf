@@ -7,7 +7,9 @@
     "tenders": "المناقصات",
     "companies": "الشركات",
     "contact": "اتصل بنا",
-    "signin": "تسجيل الدخول"
+    "signin": "تسجيل الدخول",
+    "profile/companyprofiles": "الشركات",
+    "chats": "الدردشات"
   },
   "LocalSwitcher": {
     "selectLanguage": "اختر اللغة",
@@ -81,7 +83,9 @@
       "keywords": "إيلاف، B2B، مناقصات، عطاءات، مشتريات، دليل الموردين، مصر، عمان، دليل الشركات، شبكات الأعمال{searchTerm}",
       "searchPlaceholder": "البحث في ملفات الشركات",
       "searchButton": "بحث",
-      "allCompaniesViewed": "لقد شاهدت جميع الشركات"
+      "allCompaniesViewed": "لقد شاهدت جميع الشركات",
+      "Company Directory": "دليل الشركات"
+
     },
     "ContactForm": {
       "title": "تواصل معنا",
@@ -110,6 +114,107 @@
       "email": "ahmedsf100@gmail.com",
       "linkedin": "Elaaaf",
       "ourLocation": "موقعنا"
+    },
+    "Auth": {
+    "welcomeBack": "مرحبًا بعودتك!",
+    "letsStart": "لنبدأ",
+    "signOut": "تسجيل الخروج",
+    "signInWithGoogle": "تسجيل الدخول باستخدام جوجل",
+    "signUpWithGoogle": "التسجيل باستخدام جوجل",
+    "hideForm": "إخفاء النموذج",
+    "loginWithEmail": "تسجيل الدخول بالبريد الإلكتروني",
+    "signUpWithEmail": "التسجيل بالبريد الإلكتروني",
+    "name": "الاسم",
+    "namePlaceholder": "جون دو",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "john@example.com",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "********",
+    "login": "تسجيل الدخول",
+    "signUp": "التسجيل",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "emailExistsMessage": "البريد الإلكتروني موجود بالفعل. هل تريد إعادة إرسال رسالة التأكيد إلى {email}؟",
+    "resendConfirmationEmail": "إعادة إرسال رسالة التأكيد",
+    "noAccountSignUp": "ليس لديك حساب؟ سجل الآن",
+    "haveAccountLogin": "لديك حساب بالفعل؟ سجل الدخول",
+    "termsOfService": "شروط الخدمة",
+    "agreeToTerms": "من خلال {action}، فإنك توافق على",
+    "signingIn": "تسجيل الدخول",
+    "signingUp": "التسجيل",
+    "logoAlt": "الشعار"
+  },
+  "ChatInterface": {
+    "companyProfileRequired": "الملف الشخصي للشركة مطلوب",
+    "createProfileMessage": "ليس لديك ملف شخصي للشركة. يرجى إنشاء واحد لبدء الدردشة.",
+    "createProfileButton": "إنشاء ملف الشركة",
+    "errorMessage": "حدث خطأ. يرجى المحاولة مرة أخرى لاحقًا.",
+    "loadingError": "خطأ في تحميل الرسائل. يرجى المحاولة مرة أخرى.",
+    "loadingMore": "جاري التحميل...",
+    "loadMoreMessages": "تحميل المزيد من الرسائل"
+  },
+  "ChatRoomComponent": {
+    "loadingChatRoom": "جاري تحميل غرفة الدردشة...",
+    "back": "رجوع",
+    "error": "خطأ",
+    "failedToSendMessage": "فشل في إرسال الرسالة",
+    "unexpectedErrorSendingMessage": "خطأ غير متوقع في إرسال الرسالة",
+    "failedToNavigateBack": "فشل في العودة. يرجى المحاولة مرة أخرى.",
+    "viewPDF": "عرض PDF",
+    "tender": "مناقصة",
+    "status": "الحالة",
+    "endDate": "تاريخ الانتهاء",
+    "notSpecified": "غير محدد",
+    "lastMessage": "آخر رسالة",
+    "sentAt": "أرسلت في",
+    "viewFullTenderDetails": "عرض تفاصيل المناقصة الكاملة",
+    "typePlaceholder": "اكتب رسالتك هنا..."
+  },
+  "ChatRoomList": {
+    "title": "المحادثات",
+    "noChats": "ليس لديك أي غرف دردشة!",
+    "noMessages": "لا توجد رسائل بعد",
+    "unreadMessages": {
+      "one": "رسالة واحدة غير مقروءة",
+      "other": "{{count}} رسائل غير مقروءة"
     }
-  
+  },
+  "PDFUpload": {
+    "uploadPDF": "رفع ملف PDF",
+    "dragAndDrop": "اسحب وأفلت ملف PDF هنا، أو انقر للاختيار",
+    "fileUploaded": "تم رفع الملف",
+    "remove": "إزالة"
+  },
+  "Common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "confirm": "تأكيد",
+    "send": "إرسال",
+    "attach": "إرفاق",
+    "upload": "رفع",
+    "download": "تنزيل",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق"
+  },
+  "Dates": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "daysAgo": "منذ {{count}} أيام",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة"
+  },
+  "Errors": {
+    "genericError": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+    "networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك.",
+    "authError": "خطأ في المصادقة. يرجى تسجيل الدخول مرة أخرى.",
+    "notFound": "غير موجود.",
+    "permissionDenied": "تم رفض الإذن.",
+    "invalidInput": "إدخال غير صالح. يرجى التحقق من بياناتك."
+  }
 }

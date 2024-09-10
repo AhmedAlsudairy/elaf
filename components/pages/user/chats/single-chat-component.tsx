@@ -27,6 +27,8 @@ import PDFUpload from "@/components/common/pdf-upload";
 import { getReadStatus, sendMessage, getMessages } from "@/actions/supabase/chats";
 import { useQuery } from '@tanstack/react-query';
 import { useSubscribeToChat } from "@/hooks/messages subs-hook";
+import { useTranslations, useLocale } from 'next-intl';
+import { getLangDir } from 'rtl-detect';
 
 interface Message {
   id: string;
@@ -82,6 +84,11 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   currentCompanyProfile,
   toggleChatList,
 }) => {
+  const t = useTranslations('ChatRoomComponent');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  const isRTL = direction === 'rtl';
+
   const [newMessage, setNewMessage] = useState("");
   const [showTenderDetails, setShowTenderDetails] = useState(false);
   const [pdfUrls, setPdfUrls] = useState<string[]>([]);
@@ -177,16 +184,16 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
         setPdfUrls([]);
       } else {
         toast({
-          title: "Error",
-          description: "Failed to send message",
+          title: t('error'),
+          description: t('failedToSendMessage'),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
-        title: "Error",
-        description: "Unexpected error sending message",
+        title: t('error'),
+        description: t('unexpectedErrorSendingMessage'),
         variant: "destructive",
       });
     } finally {
@@ -221,8 +228,8 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     } catch (error) {
       console.error("Error navigating back:", error);
       toast({
-        title: "Error",
-        description: "Failed to navigate back. Please try again.",
+        title: t('error'),
+        description: t('failedToNavigateBack'),
         variant: "destructive",
       });
     } finally {
@@ -257,7 +264,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                   className={`flex items-center ${isSender ? 'text-white' : 'text-blue-500'} hover:underline mt-2 text-xs`}
                 >
                   <FileText className="h-3 w-3 mr-1" />
-                  View PDF
+                  {t('viewPDF')}
                 </a>
               )}
             </div>
@@ -275,7 +282,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        Loading Chat Room...
+        {t('loadingChatRoom')}
       </div>
     );
   }
@@ -283,7 +290,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   const otherCompanyDetails = getOtherCompanyDetails();
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]"> {/* Adjust the 4rem value based on your footer height */}
+    <div className="flex flex-col h-[calc(100vh-4rem)]" dir={direction}>
       <Card className="flex flex-col flex-grow overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between pb-2 border-b shrink-0">
           <div className="flex items-center">
@@ -299,9 +306,9 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               {isBackLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className={`mr-2 h-4 w-4 ${isRTL ? 'transform rotate-180' : ''}`} />
               )}
-              Back
+              {t('back')}
             </Button>
           </div>
           {otherCompanyDetails && (
@@ -331,7 +338,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                 disabled={isBackLoading}
                 className="w-full flex justify-between items-center"
               >
-                <span className="text-left truncate">Tender: {tenderInfo.title}</span>
+                <span className="text-left truncate">{t('tender')}: {tenderInfo.title}</span>
                 {showTenderDetails ? (
                   <ChevronUp size={16} />
                 ) : (
@@ -340,17 +347,17 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               </Button>
               {showTenderDetails && (
                 <div className="mt-2 text-sm">
-                  <p><strong>Status:</strong> {tenderInfo.status}</p>
-                  <p><strong>End Date:</strong> {tenderInfo.end_date ? format(new Date(tenderInfo.end_date), "PPP") : "Not specified"}</p>
-                  <p><strong>Last Message:</strong> {lastTenderMessage.content}</p>
-                  <p><strong>Sent at:</strong> {format(new Date(lastTenderMessage.created_at), "PPP HH:mm")}</p>
+                  <p><strong>{t('status')}:</strong> {tenderInfo.status}</p>
+                  <p><strong>{t('endDate')}:</strong> {tenderInfo.end_date ? format(new Date(tenderInfo.end_date), "PPP") : t('notSpecified')}</p>
+                  <p><strong>{t('lastMessage')}:</strong> {lastTenderMessage.content}</p>
+                  <p><strong>{t('sentAt')}:</strong> {format(new Date(lastTenderMessage.created_at), "PPP HH:mm")}</p>
                   <Button
                     variant="link"
                     asChild
                     className="text-blue-500 hover:underline flex items-center mt-2 p-0"
                   >
                     <a href={`/tenders/${tenderInfo.tender_id}`}>
-                      View Full Tender Details
+                      {t('viewFullTenderDetails')}
                       <ExternalLink className="h-4 w-4 ml-1" />
                     </a>
                   </Button>
@@ -361,10 +368,10 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
           <div className="flex-grow overflow-hidden flex flex-col">
             <CardContent className="flex-grow overflow-y-auto py-4">
               <div className="space-y-4">
-                {hasNextPage && (
+              {hasNextPage && (
                   <div className="flex justify-center mb-8">
                     <Button onClick={() => fetchNextPage()} variant="outline" size="sm">
-                      Load More Messages
+                      {t('loadMoreMessages')}
                     </Button>
                   </div>
                 )}
@@ -385,7 +392,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
           <div className="flex w-full space-x-2">
             <Input
               type="text"
-              placeholder="Type your message..."
+              placeholder={t('typePlaceholder')}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && !isSendingMessage && handleSendMessage()}
@@ -403,7 +410,6 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
       </Card>
     </div>
   );
-  
 };
 
 export default ChatRoomComponent;

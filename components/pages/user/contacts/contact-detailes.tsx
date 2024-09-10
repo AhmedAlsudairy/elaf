@@ -1,31 +1,36 @@
+import React from 'react';
 import { FacebookIcon, LinkedinIcon, LocateIcon, MailIcon, PhoneIcon, TwitterIcon } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { getLangDir } from 'rtl-detect';
 
 export const ContactDetails = () => {
   const t = useTranslations('ContactDetails');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  const isRTL = direction === 'rtl';
 
   return (
     <section className="w-full bg-background py-8 md:py-12 lg:py-16">
       <div className="container grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="flex flex-col space-y-4">
+        <div className={`flex flex-col space-y-4 ${isRTL ? 'md:order-2' : ''}`}>
           <h2 className="text-2xl font-bold">{t('contactInformation')}</h2>
           <div className="space-y-2">
-            <div className="flex items-center space-x-4">
+            <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
               <LocateIcon className="h-6 w-6 text-muted-foreground" />
               <p className="text-muted-foreground">{t('location')}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
               <PhoneIcon className="h-6 w-6 text-muted-foreground" />
               <p className="text-muted-foreground">{t('phoneNumber')}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
               <MailIcon className="h-6 w-6 text-muted-foreground" />
               <p className="text-muted-foreground">{t('email')}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <Link href="https://www.linkedin.com/company/elaaaf" className="text-muted-foreground hover:text-primary flex items-center space-x-2" prefetch={false}>
+          <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
+            <Link href="https://www.linkedin.com/company/elaaaf" className={`text-muted-foreground hover:text-primary flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`} prefetch={false}>
               <LinkedinIcon className="h-6 w-6" />
               <span>{t('linkedin')}</span>
             </Link>
@@ -38,7 +43,7 @@ export const ContactDetails = () => {
             </Link> */}
           </div>
         </div>
-        <div className="flex flex-col space-y-4">
+        <div className={`flex flex-col space-y-4 ${isRTL ? 'md:order-1' : ''}`}>
           <h2 className="text-2xl font-bold">{t('ourLocation')}</h2>
           <div className="rounded-lg overflow-hidden">
             <iframe

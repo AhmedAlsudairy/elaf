@@ -64,5 +64,52 @@
     "privacy": "الخصوصية",
     "terms": "شروط الاستخدام",
     "contact": "اتصل بنا"
-  }
+  },
+  "CompanyCard": {
+    "about": "عن الشركة",
+    "sectors": "القطاعات",
+    "noRatings": "لا توجد تقييمات بعد",
+    "viewCompanyProfile": "عرض ملف الشركة",
+    "noRatingsYet": "لا توجد تقييمات بعد",
+    "id": "الرقم التعريفي"
+  },
+    "Companies": {
+      "searchResultsTitle": "نتائج البحث عن \"{searchTerm}\" | دليل شركات إيلاف",
+      "directoryTitle": "دليل الشركات | إيلاف - المناقصات والعطاءات B2B",
+      "searchResultsDescription": "استكشف {totalCompanies} شركة تطابق \"{searchTerm}\" في دليل شركات إيلاف. ابحث عن فرص المناقصات والعطاءات B2B.",
+      "directoryDescription": "اكتشف {totalCompanies} شركة للمناقصات والعطاءات B2B في دليل شركات إيلاف.",
+      "keywords": "إيلاف، B2B، مناقصات، عطاءات، مشتريات، دليل الموردين، مصر، عمان، دليل الشركات، شبكات الأعمال{searchTerm}",
+      "searchPlaceholder": "البحث في ملفات الشركات",
+      "searchButton": "بحث",
+      "allCompaniesViewed": "لقد شاهدت جميع الشركات"
+    },
+    "ContactForm": {
+      "title": "تواصل معنا",
+      "subtitle": "هل لديك سؤال أو تحتاج إلى مساعدة؟ املأ النموذج أدناه وسنعود إليك في أقرب وقت ممكن.",
+      "nameLabel": "الاسم",
+      "namePlaceholder": "أدخل اسمك",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "messageLabel": "الرسالة",
+      "messagePlaceholder": "أدخل رسالتك",
+      "submit": "إرسال",
+      "submitting": "جارٍ الإرسال...",
+      "successMessage": "تم إرسال الرسالة بنجاح!",
+      "errorMessage": "فشل في إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+      "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+    },
+    "ContactHeader": {
+      "logoAlt": "شعار الشركة",
+      "title": "منصة إيلاف للمناقصات",
+      "subtitle": "بسّط عملية الشراء الخاصة بك مع منصتنا القوية."
+    },
+    "ContactDetails": {
+      "contactInformation": "معلومات الاتصال",
+      "location": "صحار، عمان",
+      "phoneNumber": "+968 9565 6005",
+      "email": "ahmedsf100@gmail.com",
+      "linkedin": "Elaaaf",
+      "ourLocation": "موقعنا"
+    }
+  
 }

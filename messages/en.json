@@ -78,5 +78,51 @@
     "myCompany": "My Company",
     "newCompany": "New Company",
     "logout": "Logout"
+  },
+  "CompanyCard": {
+    "about": "about",
+    "sectors": "Sectors",
+    "noRatings": "NoRatings",
+    "viewCompanyProfile": "View Company Profile",
+    "noRatingsYet": "No Rating Yet",
+    "id": "ID"
+  },
+  "Companies": {
+    "searchResultsTitle": "Search Results for \"{searchTerm}\" | Elaf Company Directory",
+    "directoryTitle": "Company Directory | Elaf - B2B Tenders and Bids",
+    "searchResultsDescription": "Explore {totalCompanies} companies matching \"{searchTerm}\" in the Elaf Company Directory. Find B2B tender and bid opportunities.",
+    "directoryDescription": "Discover {totalCompanies} companies for B2B tenders and bids in the Elaf Company Directory.",
+    "keywords": "Elaf, B2B, tenders, bids, procurement, supplier directory, Egypt, Oman, company directory, business networks{searchTerm}",
+    "searchPlaceholder": "Search in company profiles",
+    "searchButton": "Search",
+    "allCompaniesViewed": "You have viewed all companies"
+  },
+  "ContactForm": {
+    "title": "Contact Us",
+    "subtitle": "Have a question or need assistance? Fill out the form below and we will get back to you as soon as possible.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Enter your message",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "successMessage": "Message sent successfully!",
+    "errorMessage": "Failed to send message. Please try again.",
+    "unexpectedError": "An unexpected error occurred. Please try again."
+  },
+  "ContactHeader": {
+    "logoAlt": "Company Logo",
+    "title": "Elaf Tender Platform",
+    "subtitle": "Streamline your procurement process with our powerful platform."
+  },
+  "ContactDetails": {
+    "contactInformation": "Contact Information",
+    "location": "Sohar, Oman",
+    "phoneNumber": "+968 9565 6005",
+    "email": "ahmedsf100@gmail.com",
+    "linkedin": "Elaaaf",
+    "ourLocation": "Our Location"
   }
 }

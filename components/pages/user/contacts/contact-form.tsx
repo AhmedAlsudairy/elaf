@@ -6,8 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { sendContactForm } from "@/actions/supabase/send-contact-email";
+import { useTranslations } from 'next-intl';
 
 export const ContactForm = () => {
+  const t = useTranslations('ContactForm'); // Access the 'ContactForm' translations
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,15 +37,15 @@ export const ContactForm = () => {
       const result = await sendContactForm(formData);
       if (result.success) {
         setSubmitStatus('success');
-        setStatusMessage(result.message || 'Message sent successfully!');
+        setStatusMessage(result.message || t('successMessage'));
         setFormData({ name: '', email: '', message: '' });
       } else {
         setSubmitStatus('error');
-        setStatusMessage(result.error || 'Failed to send message. Please try again.');
+        setStatusMessage(result.error || t('errorMessage'));
       }
     } catch (error) {
       setSubmitStatus('error');
-      setStatusMessage('An unexpected error occurred. Please try again.');
+      setStatusMessage(t('unexpectedError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -52,29 +55,28 @@ export const ContactForm = () => {
     <section className="w-full bg-muted py-8 md:py-8 lg:py-8">
       <div className="container grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="flex flex-col items-start justify-center space-y-4">
-          <h2 className="text-2xl font-bold">Get in Touch</h2>
+          <h2 className="text-2xl font-bold">{t('title')}</h2>
           <p className="text-muted-foreground">
-            Have a question or need assistance? Fill out the form below and we will
-            get back to you as soon as possible.
+            {t('subtitle')}
           </p>
           <form className="w-full space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{t('nameLabel')}</Label>
                 <Input 
                   id="name" 
-                  placeholder="Enter your name" 
+                  placeholder={t('namePlaceholder')} 
                   value={formData.name}
                   onChange={handleChange}
                   required
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('emailLabel')}</Label>
                 <Input 
                   id="email" 
                   type="email" 
-                  placeholder="Enter your email" 
+                  placeholder={t('emailPlaceholder')} 
                   value={formData.email}
                   onChange={handleChange}
                   required
@@ -82,10 +84,10 @@ export const ContactForm = () => {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="message">Message</Label>
+              <Label htmlFor="message">{t('messageLabel')}</Label>
               <Textarea
                 id="message"
-                placeholder="Enter your message"
+                placeholder={t('messagePlaceholder')}
                 className="min-h-[150px]"
                 value={formData.message}
                 onChange={handleChange}
@@ -93,7 +95,7 @@ export const ContactForm = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? t('submitting') : t('submit')}
             </Button>
             {submitStatus !== 'idle' && (
               <p className={submitStatus === 'success' ? 'text-green-600' : 'text-red-600'}>

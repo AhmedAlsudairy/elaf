@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ export async function generateMetadata(
   { searchParams }: { searchParams: { searchTerm?: string } },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  const t = useTranslations('Companies');
   const searchTerm = searchParams.searchTerm || '';
   
   // Fetch the total number of companies using the server action
@@ -68,17 +70,17 @@ export async function generateMetadata(
   const totalCompanies = initialData.metadata.totalCount;
 
   const pageTitle = searchTerm 
-    ? `Search Results for "${searchTerm}" | Elaaaf Company Directory`
-    : "Company Directory | Elaaaf - B2B Tendering and Bidding";
+    ? t('searchResultsTitle', { searchTerm })
+    : t('directoryTitle');
 
   const pageDescription = searchTerm
-    ? `Explore ${totalCompanies} companies matching "${searchTerm}" in Elaaaf's Company Directory. Find B2B tendering and bidding opportunities.`
-    : `Discover ${totalCompanies} businesses for B2B tendering and bidding in Elaaaf's Company Directory.`;
+    ? t('searchResultsDescription', { totalCompanies, searchTerm })
+    : t('directoryDescription', { totalCompanies });
 
   return {
     title: pageTitle,
     description: pageDescription,
-    keywords: `Elaaaf, B2B, tendering, bidding, procurement, supplier directory, Egypt, Oman, company directory, business networking${searchTerm ? `, ${searchTerm}` : ''}`,
+    keywords: t('keywords', { searchTerm: searchTerm ? `, ${searchTerm}` : '' }),
     openGraph: {
       title: pageTitle,
       description: pageDescription,
@@ -95,6 +97,7 @@ export async function generateMetadata(
 
 // ResponsiveCompanyProfileList Component
 export default function ResponsiveCompanyProfileList() {
+  const t = useTranslations('Companies');
   const [searchTerm, setSearchTerm] = useState('');
   const pageSize = 12;
 
@@ -131,10 +134,10 @@ export default function ResponsiveCompanyProfileList() {
             type="text"
             name="searchTerm"
             defaultValue={searchTerm}
-            placeholder="Search company profiles"
+            placeholder={t('searchPlaceholder')}
             className="flex-grow"
           />
-          <Button type="submit">Search</Button>
+          <Button type="submit">{t('searchButton')}</Button>
         </div>
       </form>
 
@@ -156,7 +159,7 @@ export default function ResponsiveCompanyProfileList() {
           }
           endMessage={
             <p className="text-center mt-4">
-              <b>You have seen all companies</b>
+              <b>{t('allCompaniesViewed')}</b>
             </p>
           }
         >

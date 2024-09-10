@@ -8,11 +8,15 @@ import FeatureSection from "./components/feature-section";
 import SocialMediaSection from "./components/socialmedia-section";
 import { checkAuthAndProfiles } from "@/actions/supabase/check-auth-and-profile";
 import { Loader2 } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LandingPage({ searchParams }: { searchParams: { msg: string | undefined } }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const msg = searchParams.msg;
+  const { toast } = useToast();
+
+  const palestineFlag = "\ud83c\uddf5\ud83c\uddf8";
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,10 +28,19 @@ export default function LandingPage({ searchParams }: { searchParams: { msg: str
         router.push(redirectUrl);
       } else {
         setIsLoading(false);
+        
+        // Show toast notification
+        toast({
+          title: "تذكير",
+          description: `لا تنسو اخوانكم في غزة بدعاء ${palestineFlag}`,
+        });
+        
+        // Log the message
+        console.log(`لا تنسو اخوانكم في غزة بدعاء ${palestineFlag}`);
       }
     };
     checkAuth();
-  }, [router, msg]);
+  }, [router, msg, toast]);
 
   if (isLoading) {
     return (

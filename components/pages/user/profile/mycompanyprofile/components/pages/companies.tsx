@@ -42,6 +42,7 @@ type CompanyProfilesResult = CompanyProfilesSuccess | CompanyProfilesError;
 
 // Server action to fetch company profiles
 import { getCompanyProfiles } from '@/actions/supabase/get-compamies-profile';
+import { getTranslations } from 'next-intl/server';
 
 // Helper function to fetch company profiles using the server action
 const fetchCompanyProfiles = async ({ pageParam = 1, searchTerm = '', pageSize = 12 }) => {
@@ -49,7 +50,6 @@ const fetchCompanyProfiles = async ({ pageParam = 1, searchTerm = '', pageSize =
   formData.append('searchTerm', searchTerm);
   formData.append('page', pageParam.toString());
   formData.append('pageSize', pageSize.toString());
-  
   const result = await getCompanyProfiles(formData);
   if (!result.success) {
     throw new Error(result.error);
@@ -62,7 +62,9 @@ export async function generateMetadata(
   { searchParams }: { searchParams: { searchTerm?: string } },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const t = useTranslations('Companies');
+  const locale = 'Companies';
+
+  const t = await getTranslations({locale, namespace: 'Metadata'});
   const searchTerm = searchParams.searchTerm || '';
   
   // Fetch the total number of companies using the server action

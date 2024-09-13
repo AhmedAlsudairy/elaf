@@ -16,6 +16,8 @@ import { fetchTenderData } from "@/actions/supabase/get-tender";
 import { updateTenderStepOne } from "@/actions/supabase/update-tender-step-one";
 import { SectorEnum } from "@/constant/text";
 import { updateTenderStepTwo } from "@/actions/supabase/add-tender-step-two";
+import { useTranslations, useLocale } from 'next-intl';
+import { getLangDir } from 'rtl-detect';
 
 type FormValues = z.infer<typeof TenderSchema>;
 
@@ -27,6 +29,10 @@ export function TenderForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const showToast = useReusableToast();
+  const t = useTranslations('TenderForm');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  const isRTL = direction === 'rtl';
 
   const form = useForm<FormValues>({
     resolver: zodResolver(TenderSchema),
@@ -75,21 +81,21 @@ export function TenderForm() {
           let result;
           if (tenderId) {
             result = await updateTenderStepOne(tenderId, stepOneData);
-            showToast("success", "Tender updated successfully");
+            showToast("success", t('successUpdate'));
           } else {
             result = await addTenderStepOne(stepOneData);
-            showToast("success", "New tender created successfully");
+            showToast("success", t('successCreate'));
             setTenderId(result.tender_id);
           }
           setStep(2);
         } catch (error) {
           console.error("Error handling tender step one:", error);
-          showToast("error", "Error processing tender data");
+          showToast("error", t('errorProcessing'));
         } finally {
           setIsLoading(false);
         }
       } else {
-        showToast("error", "Please fill out all required fields in Step 1.");
+        showToast("error", t('fillRequiredFields'));
         setIsLoading(false);
       }
     } else if (step === 2) {
@@ -102,18 +108,18 @@ export function TenderForm() {
             pdf_url: stepTwoData.pdf_url,
             tender_id: tenderId!,
           });
-          showToast("success", "Tender submitted successfully");
+          showToast("success", t('successSubmit'));
           if (companyProfile && companyProfile.company_profile_id) {
             router.push(
               `/profile/companyprofiles/${companyProfile.company_profile_id}/tenders`
             );
             router.refresh();
           } else {
-            showToast("error", "Company profile information is missing");
+            showToast("error", t('companyProfileMissing'));
           }
         } catch (error) {
           console.error("Error submitting tender:", error);
-          showToast("error", "Error submitting tender");
+          showToast("error", t('errorSubmitting'));
         } finally {
           setIsLoading(false);
         }
@@ -123,7 +129,7 @@ export function TenderForm() {
           (error) => error.message
         );
         if (!form.getValues("pdf_url")) {
-          errorMessages.push("Please upload a PDF file for your tender.");
+          errorMessages.push(t('uploadPDFRequired'));
         }
         showToast("error", errorMessages.join(", "));
         setIsLoading(false);
@@ -156,10 +162,10 @@ export function TenderForm() {
         })
         .catch((error) => {
           console.error("Error fetching tender data:", error);
-          showToast("error", "Error fetching tender data");
+          showToast("error", t('errorFetching'));
         });
     }
-  }, [tenderId, form]);
+  }, [tenderId, form, t]);
 
   const onSubmit = form.handleSubmit(async (data) => {
     if (step === 2) {
@@ -168,8 +174,8 @@ export function TenderForm() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-8">
-      <h1 className="text-2xl font-bold mb-6 text-center">Create New Tender</h1>
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-8" dir={direction}>
+      <h1 className="text-2xl font-bold mb-6 text-center">{t('title')}</h1>
       <Form {...form}>
         <form onSubmit={onSubmit} className="space-y-8">
           {step === 1 ? (
@@ -181,7 +187,7 @@ export function TenderForm() {
               tenderId={tenderId}
             />
           )}
-          <div className="flex justify-between mt-6">
+          <div className={`flex justify-between mt-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {step === 2 && (
               <Button
                 type="button"
@@ -189,7 +195,7 @@ export function TenderForm() {
                 variant="outline"
                 disabled={isLoading}
               >
-                Back
+                {t('back')}
               </Button>
             )}
             <Button
@@ -199,17 +205,19 @@ export function TenderForm() {
                   handleNextStep();
                 }
               }}
-              className="ml-auto"
+              className={`${isRTL ? 'mr-auto' : 'ml-auto'}`}
               disabled={isLoading || (step === 2 && !form.getValues("pdf_url"))}
             >
-              {isLoading ? "Processing..." : step === 1 ? "Next" : "Submit"}
+              {isLoading ? t('processing') : step === 1 ? t('next') : t('submit')}
             </Button>
           </div>
         </form>
       </Form>
       <p className="mt-4 text-gray-500">
-        <strong>Note:</strong> Adding a PDF file to your tender is required for the review process.
+        <strong>{t('pdfNote')}</strong>
       </p>
     </div>
   );
 }
+
+export default TenderForm;

@@ -15,8 +15,6 @@
     "newCompany": "New Company",
     "myAccount": "My Account",
     "loading": "Loading..."
-
-
   },
   "LocalSwitcher": {
     "selectLanguage": "Select the language",
@@ -155,81 +153,139 @@
     "signingUp": "signing up",
     "logoAlt": "Logo"
   },
-  
-    "ChatInterface": {
-      "companyProfileRequired": "Company Profile Required",
-      "createProfileMessage": "You don't have a company profile. Please create one to start chatting.",
-      "createProfileButton": "Create Company Profile",
-      "errorMessage": "An error occurred. Please try again later.",
-      "loadingError": "Error loading messages. Please try again.",
-      "loadingMore": "Loading more...",
-      "loadMoreMessages": "Load More Messages"
-    },
 
-    "ChatRoomComponent": {
-      "loadingChatRoom": "Loading Chat Room...",
-      "back": "Back",
-      "error": "Error",
-      "failedToSendMessage": "Failed to send message",
-      "unexpectedErrorSendingMessage": "Unexpected error sending message",
-      "failedToNavigateBack": "Failed to navigate back. Please try again.",
-      "viewPDF": "View PDF",
-      "tender": "Tender",
-      "status": "Status",
-      "endDate": "End Date",
-      "notSpecified": "Not specified",
-      "lastMessage": "Last Message",
-      "sentAt": "Sent at",
-      "viewFullTenderDetails": "View Full Tender Details",
-      "typePlaceholder": "Type your message..."
-    },
-    "ChatRoomList": {
-      "title": "Chats",
-      "noChats": "You don't have any chat rooms!",
-      "noMessages": "No messages yet",
-      "unreadMessages": {
-        "one": "1 unread",
-        "other": "{{count}} unread"
-      }
-    },
-    "PDFUpload": {
-      "uploadPDF": "Upload PDF",
-      "dragAndDrop": "Drag and drop a PDF file here, or click to select",
-      "fileUploaded": "File uploaded",
-      "remove": "Remove"
-    },
-    "Common": {
-      "loading": "Loading...",
-      "error": "Error",
-      "retry": "Retry",
-      "cancel": "Cancel",
-      "save": "Save",
-      "edit": "Edit",
-      "delete": "Delete",
-      "confirm": "Confirm",
-      "send": "Send",
-      "attach": "Attach",
-      "upload": "Upload",
-      "download": "Download",
-      "yes": "Yes",
-      "no": "No",
-      "ok": "OK"
-    },
-    "Dates": {
-      "today": "Today",
-      "yesterday": "Yesterday",
-      "daysAgo": "{{count}} days ago",
-      "justNow": "Just now",
-      "minutesAgo": "{{count}} minutes ago",
-      "hoursAgo": "{{count}} hours ago"
-    },
-    "Errors": {
-      "genericError": "An error occurred. Please try again.",
-      "networkError": "Network error. Please check your connection.",
-      "authError": "Authentication error. Please log in again.",
-      "notFound": "Not found.",
-      "permissionDenied": "Permission denied.",
-      "invalidInput": "Invalid input. Please check your data."
+  "ChatInterface": {
+    "companyProfileRequired": "Company Profile Required",
+    "createProfileMessage": "You don't have a company profile. Please create one to start chatting.",
+    "createProfileButton": "Create Company Profile",
+    "errorMessage": "An error occurred. Please try again later.",
+    "loadingError": "Error loading messages. Please try again.",
+    "loadingMore": "Loading more...",
+    "loadMoreMessages": "Load More Messages"
+  },
+
+  "ChatRoomComponent": {
+    "loadingChatRoom": "Loading Chat Room...",
+    "back": "Back",
+    "error": "Error",
+    "failedToSendMessage": "Failed to send message",
+    "unexpectedErrorSendingMessage": "Unexpected error sending message",
+    "failedToNavigateBack": "Failed to navigate back. Please try again.",
+    "viewPDF": "View PDF",
+    "tender": "Tender",
+    "status": "Status",
+    "endDate": "End Date",
+    "notSpecified": "Not specified",
+    "lastMessage": "Last Message",
+    "sentAt": "Sent at",
+    "viewFullTenderDetails": "View Full Tender Details",
+    "typePlaceholder": "Type your message..."
+  },
+  "ChatRoomList": {
+    "title": "Chats",
+    "noChats": "You don't have any chat rooms!",
+    "noMessages": "No messages yet",
+    "unreadMessages": {
+      "one": "1 unread",
+      "other": "{{count}} unread"
     }
-  
+  },
+  "PDFUpload": {
+    "uploadPDF": "Upload PDF",
+    "dragAndDrop": "Drag and drop a PDF file here, or click to select",
+    "fileUploaded": "File uploaded",
+    "remove": "Remove",
+    "uploadedPDF": "Uploaded PDF",
+    "uploadError": "Error uploading PDF!",
+    "uploading": "Uploading...",
+    "uploadGeneratedPDF": "Upload Generated PDF"
+  },
+  "Common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "send": "Send",
+    "attach": "Attach",
+    "upload": "Upload",
+    "download": "Download",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK"
+  },
+  "Dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hours ago"
+  },
+  "Errors": {
+    "genericError": "An error occurred. Please try again.",
+    "networkError": "Network error. Please check your connection.",
+    "authError": "Authentication error. Please log in again.",
+    "notFound": "Not found.",
+    "permissionDenied": "Permission denied.",
+    "invalidInput": "Invalid input. Please check your data."
+  },
+  "TenderForm": {
+    "title": "Create New Tender",
+    "step1": "Step 1",
+    "step2": "Step 2",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit",
+    "processing": "Processing...",
+    "pdfNote": "Note: Adding a PDF file to your tender is required for the review process.",
+    "successCreate": "New tender created successfully",
+    "successUpdate": "Tender updated successfully",
+    "successSubmit": "Tender submitted successfully",
+    "errorProcessing": "Error processing tender data",
+    "errorSubmitting": "Error submitting tender",
+    "errorFetching": "Error fetching tender data",
+    "fillRequiredFields": "Please fill out all required fields in Step 1.",
+    "uploadPDFRequired": "Please upload a PDF file for your tender.",
+    "companyProfileMissing": "Company profile information is missing"
+  },
+  "TenderFormStep1": {
+    "title": "Title",
+    "titlePlaceholder": "Enter title",
+    "currency": "Currency",
+    "currencyPlaceholder": "Select currency",
+    "endDate": "End Date and Time",
+    "endDatePlaceholder": "Pick a date and time",
+    "summary": "Summary",
+    "summaryPlaceholder": "Enter summary",
+    "terms": "Terms",
+    "termsPlaceholder": "Enter terms",
+    "scopeOfWorks": "Scope of Works",
+    "scopeOfWorksPlaceholder": "Enter scope of works",
+    "sectors": "Sectors",
+    "sectorsPlaceholder": "Select sectors"
+  },
+  "TenderFormStep2": {
+    "pdfUpload": "PDF Upload",
+    "contentSections": "Content Sections",
+    "sectionTitle": "Section Title",
+    "sectionTitlePlaceholder": "Section Title",
+    "selectType": "Select type",
+    "paragraph": "Paragraph",
+    "list": "List",
+    "enterParagraph": "Enter paragraph text",
+    "enterListItem": "Enter list item",
+    "addParagraph": "Add Paragraph",
+    "addListItem": "Add List Item",
+    "addContentSection": "Add Content Section",
+    "generatePreviewPDF": "Generate and Preview PDF",
+    "downloadUploadedPDF": "Download Uploaded PDF",
+    "closePreview": "Close Preview",
+    "uploadPDF": "Upload a PDF",
+    "uploadGeneratedPDF": "Upload Generated PDF",
+    "uploading": "Uploading..."
+  }
 }

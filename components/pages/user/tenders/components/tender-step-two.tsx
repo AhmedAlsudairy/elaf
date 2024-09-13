@@ -17,6 +17,8 @@ import { Trash2, Plus, FileUp, Upload } from 'lucide-react';
 import { TenderFormValues } from '@/schema';
 import { ELAF_LOGO_PNG_URL } from '@/constant/svg';
 import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
+import { useTranslations, useLocale } from 'next-intl';
+import { getLangDir } from 'rtl-detect';
 
 type TenderFormStep2Props = {
   form: UseFormReturn<TenderFormValues>;
@@ -46,6 +48,10 @@ const PDFUpload: React.FC<{
   generatedPdfBlob,
 }) => {
   const [uploading, setUploading] = useState(false);
+  const t = useTranslations('TenderFormStep2');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  const isRTL = direction === 'rtl';
 
   const uploadPDF = useCallback(async (file: File | Blob) => {
     try {
@@ -69,11 +75,11 @@ const PDFUpload: React.FC<{
       onChange(publicUrl);
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      alert('Error uploading PDF!');
+      alert(t('uploadError'));
     } finally {
       setUploading(false);
     }
-  }, [bucketName, onChange]);
+  }, [bucketName, onChange, t]);
 
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -89,12 +95,12 @@ const PDFUpload: React.FC<{
   }, [generatedPdfBlob, uploadPDF]);
 
   return (
-    <div>
+    <div dir={direction}>
       <div className="mb-4 flex flex-col gap-2">
         {value.filter(url => typeof url === 'string' && url.trim() !== '').map((url) => (
           <div key={url} className="flex items-center justify-between p-2 bg-gray-100 rounded">
             <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline truncate max-w-[70%]">
-              {url.split('/').pop() || 'Uploaded PDF'}
+              {url.split('/').pop() || t('uploadedPDF')}
             </a>
             <Button
               type="button"
@@ -107,7 +113,7 @@ const PDFUpload: React.FC<{
           </div>
         ))}
       </div>
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className={`flex flex-col sm:flex-row gap-2 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
         <Input
           type="file"
           id="pdfUpload"
@@ -123,8 +129,8 @@ const PDFUpload: React.FC<{
           onClick={() => document.getElementById('pdfUpload')?.click()}
           className="w-full sm:w-auto"
         >
-          <FileUp className="h-4 w-4 mr-2" />
-          {uploading ? 'Uploading...' : 'Upload a PDF'}
+          <FileUp className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+          {uploading ? t('uploading') : t('uploadPDF')}
         </Button>
         {generatedPdfBlob && (
           <Button
@@ -134,8 +140,8 @@ const PDFUpload: React.FC<{
             onClick={handleGeneratedPdfUpload}
             className="w-full sm:w-auto"
           >
-            <Upload className="h-4 w-4 mr-2" />
-            {uploading ? 'Uploading...' : 'Upload Generated PDF'}
+            <Upload className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+            {uploading ? t('uploading') : t('uploadGeneratedPDF')}
           </Button>
         )}
       </div>
@@ -147,6 +153,10 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
   const [contentSections, setContentSections] = useState<ContentSection[]>([]);
   const [previewPDF, setPreviewPDF] = useState(false);
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState<Blob | null>(null);
+  const t = useTranslations('TenderFormStep2');
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  const isRTL = direction === 'rtl';
 
   const handleAddContentSection = () => {
     const newSection: ContentSection = { type: 'paragraph', title: '', content: [''] };
@@ -195,6 +205,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
         }} 
         companyLogo={companyLogo}
         elafLogo={ELAF_LOGO_PNG_URL}
+        locale={locale}
       />
     ).toBlob();
     setGeneratedPdfBlob(blob);
@@ -202,13 +213,13 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={direction}>
       <FormField
         control={form.control}
         name="pdf_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>PDF Upload</FormLabel>
+            <FormLabel>{t('pdfUpload')}</FormLabel>
             <FormControl>
               <PDFUpload
                 disabled={false}
@@ -216,6 +227,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
                 onRemove={() => field.onChange("")}
                 value={field.value ? [field.value] : []}
                 bucketName="profile"
+                generatedPdfBlob={generatedPdfBlob}
               />
             </FormControl>
             <FormMessage />
@@ -224,27 +236,27 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
       />
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Content Sections</h3>
+        <h3 className="text-lg font-semibold">{t('contentSections')}</h3>
         {contentSections.map((section, index) => (
           <div key={index} className="border p-4 rounded-md space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
               <Input
-                placeholder="Section Title"
+                placeholder={t('sectionTitlePlaceholder')}
                 value={section.title}
                 onChange={(e) => handleContentSectionChange(index, 'title', e.target.value)}
                 className="w-full sm:w-1/2"
               />
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className={`flex items-center gap-2 w-full sm:w-auto ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Select
                   value={section.type}
                   onValueChange={(value: 'paragraph' | 'list') => handleContentSectionChange(index, 'type', value)}
                 >
                   <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('selectType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="paragraph">Paragraph</SelectItem>
-                    <SelectItem value="list">List</SelectItem>
+                    <SelectItem value="paragraph">{t('paragraph')}</SelectItem>
+                    <SelectItem value="list">{t('list')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
@@ -258,17 +270,17 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
               </div>
             </div>
             {section.content.map((item, itemIndex) => (
-              <div key={itemIndex} className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <div key={itemIndex} className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
                 {section.type === 'paragraph' ? (
                   <Textarea
-                    placeholder="Enter paragraph text"
+                    placeholder={t('enterParagraph')}
                     value={item}
                     onChange={(e) => handleContentItemChange(index, itemIndex, e.target.value)}
                     className="flex-grow"
                   />
                 ) : (
                   <Input
-                    placeholder="Enter list item"
+                    placeholder={t('enterListItem')}
                     value={item}
                     onChange={(e) => handleContentItemChange(index, itemIndex, e.target.value)}
                     className="flex-grow"
@@ -292,8 +304,8 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
               onClick={() => handleAddContentItem(index)}
               className="w-full sm:w-auto"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add {section.type === 'paragraph' ? 'Paragraph' : 'List Item'}
+              <Plus className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {t(section.type === 'paragraph' ? 'addParagraph' : 'addListItem')}
             </Button>
           </div>
         ))}
@@ -302,13 +314,13 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
           onClick={handleAddContentSection}
           className="w-full sm:w-auto"
         >
-          Add Content Section
+          {t('addContentSection')}
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+      <div className={`flex flex-col sm:flex-row justify-between gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
         <Button type="button" onClick={generatePDF} className="w-full sm:w-auto">
-          Generate and Preview PDF
+          {t('generatePreviewPDF')}
         </Button>
         <FormField
           control={form.control}
@@ -326,7 +338,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
                   disabled={!field.value}
                   className="w-full sm:w-auto"
                 >
-                  Download Uploaded PDF
+                  {t('downloadUploadedPDF')}
                 </Button>
               </FormControl>
             </FormItem>
@@ -347,12 +359,13 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
                   }} 
                   companyLogo={companyLogo}
                   elafLogo={ELAF_LOGO_PNG_URL}
+                  locale={locale}
                 />
               </PDFViewer>
             </div>
-            <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 p-4">
+            <div className={`mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
               <Button type="button" onClick={() => setPreviewPDF(false)} className="w-full sm:w-auto">
-                Close Preview
+                {t('closePreview')}
               </Button>
               <FormField
                 control={form.control}

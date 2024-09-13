@@ -51,15 +51,15 @@ const ChatRoomList: React.FC<ChatRoomListProps> = React.memo(({ chatRooms, curre
               }`}
             >
               <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Avatar className={`h-12 w-12 flex-shrink-0 ${isRTL ? 'ml-4' : 'mr-4'}`}>
+                <Avatar className="h-12 w-12 flex-shrink-0">
                   <AvatarImage src={room.other_company_profile.profile_image || undefined} alt={room.other_company_profile.company_title} />
                   <AvatarFallback>{room.other_company_profile.company_title.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div className="flex-grow min-w-0">
+                <div className={`flex-grow min-w-0 ${isRTL ? 'mr-4' : 'ml-4'}`}>
                   <div className={`flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <h3 className="font-semibold text-gray-900 truncate">{room.other_company_profile.company_title}</h3>
                     {room.last_message && (
-                      <span className={`text-sm text-gray-500 flex-shrink-0 ${isRTL ? 'mr-2' : 'ml-2'}`}>
+                      <span className={`text-sm text-gray-500 flex-shrink-0 ${isRTL ? 'ml-2' : 'mr-2'}`}>
                         {format(new Date(room.last_message.created_at), "HH:mm")}
                       </span>
                     )}

@@ -1,4 +1,4 @@
-import { TenderForm } from "@/components/pages/user/tenders/add-tender";
+import TenderForm from "@/components/pages/user/tenders/add-tender";
 
 const page = () => {
     return (

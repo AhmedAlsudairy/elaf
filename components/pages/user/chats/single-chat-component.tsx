@@ -246,8 +246,8 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   
     return (
       <div key={message.id} className={messageClassName}>
-        <div className={`flex ${isSender ? 'flex-row-reverse' : 'flex-row'} items-end max-w-[85%]`}>
-          <Avatar className="w-8 h-8 flex-shrink-0 mx-2">
+        <div className={`flex ${isSender ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')} items-end max-w-[85%]`}>
+          <Avatar className={`w-8 h-8 flex-shrink-0 ${isRTL ? 'ml-2' : 'mx-2'}`}>
             <AvatarImage src={message.sender_avatar || undefined} alt={message.sender_name} />
             <AvatarFallback>
               {message.company_title && message.company_title.substring(0, 2).toUpperCase()}
@@ -263,7 +263,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                   rel="noopener noreferrer"
                   className={`flex items-center ${isSender ? 'text-white' : 'text-blue-500'} hover:underline mt-2 text-xs`}
                 >
-                  <FileText className="h-3 w-3 mr-1" />
+                  <FileText className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
                   {t('viewPDF')}
                 </a>
               )}
@@ -294,7 +294,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
       <Card className="flex flex-col flex-grow overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between pb-2 border-b shrink-0">
           <div className="flex items-center">
-            <Button variant="ghost" size="sm" onClick={toggleChatList} className="mr-2 lg:hidden">
+            <Button variant="ghost" size="sm" onClick={toggleChatList} className={`${isRTL ? 'ml-2' : 'mr-2'} lg:hidden`}>
               <Menu className="h-4 w-4" />
             </Button>
             <Button
@@ -304,16 +304,16 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               disabled={isBackLoading}
             >
               {isBackLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4 animate-spin`} />
               ) : (
-                <ArrowLeft className={`mr-2 h-4 w-4 ${isRTL ? 'transform rotate-180' : ''}`} />
+                <ArrowLeft className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4 ${isRTL ? 'transform rotate-180' : ''}`} />
               )}
               {t('back')}
             </Button>
           </div>
           {otherCompanyDetails && (
             <div className="flex items-center">
-              <Avatar className="w-8 h-8 mr-2">
+              <Avatar className={`w-8 h-8 ${isRTL ? 'ml-2' : 'mr-2'}`}>
                 <AvatarImage
                   src={otherCompanyDetails.company_image || undefined}
                   alt={otherCompanyDetails.company_title}
@@ -356,9 +356,9 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
                     asChild
                     className="text-blue-500 hover:underline flex items-center mt-2 p-0"
                   >
-                    <a href={`/tenders/${tenderInfo.tender_id}`}>
+<a href={`/tenders/${tenderInfo.tender_id}`}>
                       {t('viewFullTenderDetails')}
-                      <ExternalLink className="h-4 w-4 ml-1" />
+                      <ExternalLink className={`h-4 w-4 ${isRTL ? 'mr-1' : 'ml-1'}`} />
                     </a>
                   </Button>
                 </div>
@@ -389,7 +389,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
             value={pdfUrls}
             bucketName="profile"
           />
-          <div className="flex w-full space-x-2">
+          <div className={`flex w-full ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
             <Input
               type="text"
               placeholder={t('typePlaceholder')}

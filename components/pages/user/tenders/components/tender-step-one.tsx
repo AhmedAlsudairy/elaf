@@ -24,19 +24,26 @@ import { SectorEnum } from "@/constant/text"
 import { Button } from "@/components/ui/button"
 import { MultiSelect } from '../../profile/forms/components/multiselect'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useTranslations, useLocale } from 'next-intl'
+import { getLangDir } from 'rtl-detect'
 
 type TenderFormStep1Props = {
   form: UseFormReturn<TenderFormValues>
   isLoading: boolean
 }
-   const currencyOptions = [
-    { value: 'OMR', label: 'Omani Rial' },
-    { value: 'EGP', label: 'Egyptian Pound' },
-    { value: 'SAR', label: 'Saudi Riyal' },
-    { value: 'AED', label: 'UAE Dirham' },
-  ];
-export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
 
+const currencyOptions = [
+  { value: 'OMR', label: 'Omani Rial' },
+  { value: 'EGP', label: 'Egyptian Pound' },
+  { value: 'SAR', label: 'Saudi Riyal' },
+  { value: 'AED', label: 'UAE Dirham' },
+];
+
+export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
+  const t = useTranslations('TenderFormStep1')
+  const locale = useLocale()
+  const direction = getLangDir(locale)
+  const isRTL = direction === 'rtl'
 
   const sectorOptions = Object.entries(SectorEnum).map(([key, value]) => ({
     id: key,
@@ -44,31 +51,31 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
   }));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" dir={direction}>
       <FormField
         control={form.control}
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Title</FormLabel>
+            <FormLabel>{t('title')}</FormLabel>
             <FormControl>
-              <Input placeholder="Enter title" {...field} disabled={isLoading} />
+              <Input placeholder={t('titlePlaceholder')} {...field} disabled={isLoading} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-<FormField
+      <FormField
         control={form.control}
         name="currency"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Currency</FormLabel>
+            <FormLabel>{t('currency')}</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select currency" />
+                  <SelectValue placeholder={t('currencyPlaceholder')} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -89,7 +96,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
         name="end_date"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>End Date and Time</FormLabel>
+            <FormLabel>{t('endDate')}</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -104,10 +111,10 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
                     {field.value ? (
                       format(field.value, "PPP HH:mm")
                     ) : (
-                      <span>Pick a date and time</span>
+                      <span>{t('endDatePlaceholder')}</span>
                     )}
-                    <div className="ml-auto flex items-center">
-                      <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                    <div className={`ml-auto flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <CalendarIcon className={`h-4 w-4 opacity-50 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                       <Clock className="h-4 w-4 opacity-50" />
                     </div>
                   </Button>
@@ -159,9 +166,9 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
           name="summary"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Summary</FormLabel>
+              <FormLabel>{t('summary')}</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter summary" {...field} disabled={isLoading} />
+                <Textarea placeholder={t('summaryPlaceholder')} {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -175,9 +182,9 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
           name="terms"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Terms</FormLabel>
+              <FormLabel>{t('terms')}</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter terms" {...field} disabled={isLoading} />
+                <Textarea placeholder={t('termsPlaceholder')} {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -191,9 +198,9 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
           name="scope_of_works"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Scope of Works</FormLabel>
+              <FormLabel>{t('scopeOfWorks')}</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter scope of works" {...field} disabled={isLoading} />
+                <Textarea placeholder={t('scopeOfWorksPlaceholder')} {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -207,7 +214,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
           name="tender_sectors"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Sectors</FormLabel>
+              <FormLabel>{t('sectors')}</FormLabel>
               <FormControl>
                 <MultiSelect
                   options={sectorOptions}
@@ -216,7 +223,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
                     const sectorEnums = selected.map(s => SectorEnum[s as keyof typeof SectorEnum]);
                     field.onChange(sectorEnums);
                   }}
-                  placeholder="Select sectors"
+                  placeholder={t('sectorsPlaceholder')}
                   disabled={isLoading}
                 />
               </FormControl>

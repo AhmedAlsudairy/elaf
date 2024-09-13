@@ -77,9 +77,9 @@
   },
     "Companies": {
       "searchResultsTitle": "نتائج البحث عن \"{searchTerm}\" | دليل شركات إيلاف",
-      "directoryTitle": "دليل الشركات | إيلاف - المناقصات والعطاءات B2B",
-      "searchResultsDescription": "استكشف {totalCompanies} شركة تطابق \"{searchTerm}\" في دليل شركات إيلاف. ابحث عن فرص المناقصات والعطاءات B2B.",
-      "directoryDescription": "اكتشف {totalCompanies} شركة للمناقصات والعطاءات B2B في دليل شركات إيلاف.",
+      "directoryTitle": "دليل الشركات | إيلاف - المناقصات والمناقصةات B2B",
+      "searchResultsDescription": "استكشف {totalCompanies} شركة تطابق \"{searchTerm}\" في دليل شركات إيلاف. ابحث عن فرص المناقصات والمناقصةات B2B.",
+      "directoryDescription": "اكتشف {totalCompanies} شركة للمناقصات والمناقصةات B2B في دليل شركات إيلاف.",
       "keywords": "إيلاف، B2B، مناقصات، عطاءات، مشتريات، دليل الموردين، مصر، عمان، دليل الشركات، شبكات الأعمال{searchTerm}",
       "searchPlaceholder": "البحث في ملفات الشركات",
       "searchButton": "بحث",
@@ -182,7 +182,12 @@
     "uploadPDF": "رفع ملف PDF",
     "dragAndDrop": "اسحب وأفلت ملف PDF هنا، أو انقر للاختيار",
     "fileUploaded": "تم رفع الملف",
-    "remove": "إزالة"
+    "remove": "إزالة",
+    "uploadedPDF": "ملف PDF تم رفعه",
+    "uploadError": "خطأ في رفع ملف PDF!",
+    "uploading": "جاري الرفع...",
+    "uploadGeneratedPDF": "رفع ملف PDF المُنشأ"
+  
   },
   "Common": {
     "loading": "جاري التحميل...",
@@ -216,5 +221,60 @@
     "notFound": "غير موجود.",
     "permissionDenied": "تم رفض الإذن.",
     "invalidInput": "إدخال غير صالح. يرجى التحقق من بياناتك."
+  },
+  "TenderForm": {
+    "title": "إنشاء مناقصة جديد",
+    "step1": "الخطوة 1",
+    "step2": "الخطوة 2",
+    "next": "التالي",
+    "back": "رجوع",
+    "submit": "إرسال",
+    "processing": "جاري المعالجة...",
+    "pdfNote": "ملاحظة: إضافة ملف PDF لمناقصتك مطلوب لعملية المراجعة.",
+    "successCreate": "تم إنشاء المناقصة الجديد بنجاح",
+    "successUpdate": "تم تحديث المناقصة بنجاح",
+    "successSubmit": "تم تقديم المناقصة بنجاح",
+    "errorProcessing": "خطأ في معالجة بيانات المناقصة",
+    "errorSubmitting": "خطأ في تقديم المناقصة",
+    "errorFetching": "خطأ في جلب بيانات المناقصة",
+    "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة في الخطوة 1.",
+    "uploadPDFRequired": "يرجى تحميل ملف PDF لعطائك.",
+    "companyProfileMissing": "معلومات الملف الشخصي للشركة مفقودة"
+  },
+  "TenderFormStep1": {
+    "title": "العنوان",
+    "titlePlaceholder": "أدخل العنوان",
+    "currency": "العملة",
+    "currencyPlaceholder": "اختر العملة",
+    "endDate": "تاريخ ووقت الانتهاء",
+    "endDatePlaceholder": "اختر تاريخًا ووقتًا",
+    "summary": "الملخص",
+    "summaryPlaceholder": "أدخل الملخص",
+    "terms": "الشروط",
+    "termsPlaceholder": "أدخل الشروط",
+    "scopeOfWorks": "نطاق الأعمال",
+    "scopeOfWorksPlaceholder": "أدخل نطاق الأعمال",
+    "sectors": "القطاعات",
+    "sectorsPlaceholder": "اختر القطاعات"
+  },
+  "TenderFormStep2": {
+    "pdfUpload": "تحميل PDF",
+    "contentSections": "أقسام المحتوى",
+    "sectionTitle": "عنوان القسم",
+    "sectionTitlePlaceholder": "عنوان القسم",
+    "selectType": "اختر النوع",
+    "paragraph": "فقرة",
+    "list": "قائمة",
+    "enterParagraph": "أدخل نص الفقرة",
+    "enterListItem": "أدخل عنصر القائمة",
+    "addParagraph": "إضافة فقرة",
+    "addListItem": "إضافة عنصر للقائمة",
+    "addContentSection": "إضافة قسم محتوى",
+    "generatePreviewPDF": "إنشاء ومعاينة PDF",
+    "downloadUploadedPDF": "تحميل PDF المرفوع",
+    "closePreview": "إغلاق المعاينة",
+    "uploadPDF": "تحميل PDF",
+    "uploadGeneratedPDF": "تحميل PDF المُنشأ",
+    "uploading": "جاري التحميل..."
   }
 }

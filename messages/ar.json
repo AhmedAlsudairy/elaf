@@ -9,7 +9,11 @@
     "contact": "اتصل بنا",
     "signin": "تسجيل الدخول",
     "profile/companyprofiles": "الشركات",
-    "chats": "الدردشات"
+    "chats": "الدردشات",
+    "myProfile": "الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "myCompany": "شركتي"
+
   },
   "LocalSwitcher": {
     "selectLanguage": "اختر اللغة",

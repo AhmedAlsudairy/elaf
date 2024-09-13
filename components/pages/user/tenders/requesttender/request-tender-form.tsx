@@ -20,6 +20,8 @@ import PDFDocument from "@/components/common/pdf-generate";
 import { ELAF_LOGO_PNG_URL } from "@/constant/svg";
 import { Trash2, Plus } from "lucide-react";
 import PDFUpload from "@/components/common/pdf-upload";
+import { useLocale } from "next-intl";
+import { getLangDir } from "rtl-detect";
 
 export const tenderRequestSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -61,6 +63,10 @@ export function TenderRequestForm({
   const [previewPDF, setPreviewPDF] = useState(false);
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState<Blob | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const locale = useLocale();
+  const direction = getLangDir(locale);
+  console.log(locale)
+  const isRTL = direction === 'rtl';
 
   const methods = useForm<TenderRequestFormValues>({
     resolver: zodResolver(tenderRequestSchema),
@@ -84,6 +90,8 @@ export function TenderRequestForm({
     }
   };
 
+   console.log(locale)
+
   const generatePDF = async () => {
     setIsLoading(true);
     try {
@@ -102,6 +110,8 @@ export function TenderRequestForm({
           }}
           companyLogo={companyProfile.profile_image}
           elafLogo={ELAF_LOGO_PNG_URL}
+          locale={ locale }
+
         />
       ).toBlob();
       setGeneratedPdfBlob(blob);
@@ -434,6 +444,8 @@ export function TenderRequestForm({
                     }}
                     companyLogo={companyProfile.profile_image}
                     elafLogo={ELAF_LOGO_PNG_URL}
+                    locale={ locale }
+
                   />
                 </PDFViewer>
               </div>

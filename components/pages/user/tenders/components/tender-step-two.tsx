@@ -52,7 +52,7 @@ const PDFUpload: React.FC<{
   const locale = useLocale();
   const direction = getLangDir(locale);
   const isRTL = direction === 'rtl';
-
+console.log(locale)
   const uploadPDF = useCallback(async (file: File | Blob) => {
     try {
       setUploading(true);

@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { format } from 'date-fns';
@@ -40,127 +41,121 @@ interface PDFDocumentProps {
   locale: string;
 }
 
-// Define styles
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'column' as const,
-    backgroundColor: '#FFFFFF',
-    padding: 30,
-    fontFamily: 'Cairo',
-  },
-  header: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    marginBottom: 20,
-    borderBottom: '1px solid #CCCCCC',
-    paddingBottom: 10,
-  },
-  headerColumn: {
-    flexDirection: 'column' as const,
-  },
-  logoContainer: {
-    marginBottom: 10,
-  },
-  logo: {
-    width: 100,
-    height: 50,
-    objectFit: 'contain' as const,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    fontWeight: 'bold',
-    color: '#333333',
-    textAlign: 'center' as const,
-  },
-  section: {
-    marginBottom: 10,
-  },
-  fieldTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#555555',
-  },
-  fieldContent: {
-    fontSize: 12,
-    lineHeight: 1.5,
-    color: '#333333',
-  },
-  metaData: {
-    fontSize: 10,
-    color: '#888888',
-    marginTop: 5,
-  },
-  bidPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#007bff',
-    marginBottom: 10,
-  },
-  listItem: {
-    flexDirection: 'row' as const,
-    marginBottom: 5,
-  },
-  bullet: {
-    width: 15,
-    fontSize: 12,
-  },
-});
-
 const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo, locale }) => {
   const isRTL = locale === 'ar';
 
-  const rtlStyles = {
-    ...styles,
-    page: { ...styles.page, direction: 'rtl' as const },
-    header: { ...styles.header, flexDirection: 'row-reverse' as const },
-    headerColumn: { ...styles.headerColumn, alignItems: 'flex-end' as const },
-    fieldTitle: { ...styles.fieldTitle, textAlign: 'right' as const },
-    fieldContent: { ...styles.fieldContent, textAlign: 'right' as const },
-    metaData: { ...styles.metaData, textAlign: 'right' as const },
-    bidPrice: { ...styles.bidPrice, textAlign: 'right' as const },
-    listItem: { ...styles.listItem, flexDirection: 'row-reverse' as const },
-  };
-
-  const currentStyles = isRTL ? rtlStyles : styles;
+  // Define styles
+  const styles = StyleSheet.create({
+    page: {
+      flexDirection: 'column',
+      backgroundColor: '#FFFFFF',
+      padding: 30,
+      fontFamily: 'Cairo',
+    },
+    header: {
+      flexDirection: isRTL ? 'row-reverse' : 'row',
+      justifyContent: 'space-between',
+      marginBottom: 20,
+      borderBottom: '1px solid #CCCCCC',
+      paddingBottom: 10,
+    },
+    headerColumn: {
+      flexDirection: 'column',
+      alignItems: isRTL ? 'flex-end' : 'flex-start',
+    },
+    logoContainer: {
+      marginBottom: 10,
+    },
+    logo: {
+      width: 100,
+      height: 50,
+      objectFit: 'contain',
+    },
+    title: {
+      fontSize: 24,
+      marginBottom: 20,
+      fontWeight: 'bold',
+      color: '#333333',
+      textAlign: 'center',
+    },
+    section: {
+      marginBottom: 10,
+    },
+    fieldTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      marginBottom: 5,
+      color: '#555555',
+      textAlign: isRTL ? 'right' : 'left',
+    },
+    fieldContent: {
+      fontSize: 12,
+      lineHeight: 1.5,
+      color: '#333333',
+      textAlign: isRTL ? 'right' : 'left',
+    },
+    metaData: {
+      fontSize: 10,
+      color: '#888888',
+      marginTop: 5,
+      textAlign: isRTL ? 'right' : 'left',
+    },
+    bidPrice: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#007bff',
+      marginBottom: 10,
+      textAlign: isRTL ? 'right' : 'left',
+    },
+    listItem: {
+      flexDirection: isRTL ? 'row-reverse' : 'row',
+      marginBottom: 5,
+    },
+    bullet: {
+      width: 15,
+      fontSize: 12,
+      marginRight: isRTL ? 0 : 5,
+      marginLeft: isRTL ? 5 : 0,
+    },
+  });
 
   const formatArabicDate = (date: Date) => {
-    const day = date.getDate();
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const day = date.getDate().toString().split('').map(d => arabicNumbers[parseInt(d)]).join('');
     const month = date.toLocaleString('ar-EG', { month: 'long' });
-    const year = date.getFullYear();
+    const year = date.getFullYear().toString().split('').map(y => arabicNumbers[parseInt(y)]).join('');
     return `${day} ${month} ${year}`;
   };
 
   const Header: React.FC = () => (
-    <View style={currentStyles.header}>
-      <View style={currentStyles.headerColumn}>
-        <View style={currentStyles.logoContainer}>
-          <Image style={currentStyles.logo} src={companyLogo} />
+    <View style={styles.header}>
+      <View style={styles.headerColumn}>
+        <View style={styles.logoContainer}>
+          <Image style={styles.logo} src={companyLogo} />
         </View>
-        <Text style={currentStyles.metaData}>
+        <Text style={styles.metaData}>
           {isRTL ? 'تم الإنشاء في' : 'Created At'} {isRTL ? formatArabicDate(new Date()) : format(new Date(), 'PPP', { locale: isRTL ? ar : undefined })}
         </Text>
         {data.company_name && (
-          <Text style={currentStyles.metaData}>
+          <Text style={styles.metaData}>
             {isRTL ? 'الشركة' : 'Company'} {data.company_name}
           </Text>
         )}
       </View>
-      <View style={currentStyles.headerColumn}>
-        <View style={currentStyles.logoContainer}>
-          <Image style={currentStyles.logo} src={elafLogo} />
+      <View style={styles.headerColumn}>
+        <View style={styles.logoContainer}>
+          <Image style={styles.logo} src={elafLogo} />
         </View>
-        <Text style={currentStyles.metaData}>Tender ID {data.tender_id}</Text>
+        <Text style={styles.metaData}>Tender ID {data.tender_id}</Text>
       </View>
     </View>
   );
 
   const renderSection = (title: string, content: string | React.ReactNode) => (
-    <View style={currentStyles.section}>
-      <Text style={currentStyles.fieldTitle}>{title}</Text>
+    <View style={styles.section}>
+      <Text style={styles.fieldTitle}>{title}</Text>
       {typeof content === 'string' ? (
-        <Text style={currentStyles.fieldContent}>{content}</Text>
+        <Text style={styles.fieldContent}>{content}</Text>
       ) : (
         content
       )}
@@ -169,53 +164,61 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo, 
 
   const renderListItems = (items: string[]) => (
     items.map((item, index) => (
-      <View key={index} style={currentStyles.listItem}>
-        <Text style={currentStyles.bullet}>• </Text>
-        <Text style={currentStyles.fieldContent}>{item}</Text>
+      <View key={index} style={styles.listItem}>
+        <Text style={styles.bullet}>{isRTL ? ' -' : '- '}</Text>
+        <Text style={styles.fieldContent}>{item.trim()}</Text>
       </View>
     ))
   );
 
+  const renderSectionContent = (content: string) => {
+    const items = content
+      .split('\n')
+      .map(item => item.trim())
+      .filter(item => item !== '');
+    return items.length > 1 ? renderListItems(items) : <Text style={styles.fieldContent}>{items[0]}</Text>;
+  };
+
   return (
     <Document>
-      <Page size="A4" style={currentStyles.page}>
+      <Page size="A4" style={styles.page}>
         <Header />
         <Text style={styles.title}>{data.title}</Text>
         
         {data.is_tender_request && data.bid_price !== undefined && data.currency && (
-          <View style={currentStyles.section}>
-            <Text style={currentStyles.bidPrice}>
-              {isRTL ? `سعر العطاء ${data.currency} ${data.bid_price.toFixed(2)}` 
+          <View style={styles.section}>
+            <Text style={styles.bidPrice}>
+              {isRTL ? `سعر المناقصة ${data.currency} ${data.bid_price.toFixed(2)}` 
                      : `Bid Price ${data.currency} ${data.bid_price.toFixed(2)}`}
             </Text>
           </View>
         )}
 
-        {renderSection(isRTL ? 'الملخص' : 'Summary', data.summary)}
+        {renderSection(isRTL ? 'الملخص' : 'Summary', data.summary.trim())}
 
         {!data.is_tender_request && (
           <>
             {renderSection(isRTL ? 'تاريخ الانتهاء' : 'End Date', 
               isRTL ? formatArabicDate(data.end_date) : format(data.end_date, 'PPP', { locale: undefined })
             )}
-            {renderSection(isRTL ? 'الشروط' : 'Terms', data.terms)}
-            {renderSection(isRTL ? 'نطاق الأعمال' : 'Scope of Works', data.scope_of_works)}
+            {renderSection(isRTL ? 'الشروط' : 'Terms', renderSectionContent(data.terms))}
+            {renderSection(isRTL ? 'نطاق الأعمال' : 'Scope of Works', renderSectionContent(data.scope_of_works))}
           </>
         )}
 
         {data.custom_fields.map((field, index) => (
-          renderSection(field.title, field.description)
+          renderSection(field.title, renderSectionContent(field.description))
         ))}
 
         {data.content_sections.map((section, index) => (
-          <View key={index} style={currentStyles.section}>
-            <Text style={currentStyles.fieldTitle}>{section.title}</Text>
+          <View key={index} style={styles.section}>
+            <Text style={styles.fieldTitle}>{section.title}</Text>
             {section.type === 'paragraph' ? (
               section.content.map((paragraph, pIndex) => (
-                <Text key={pIndex} style={currentStyles.fieldContent}>{paragraph}</Text>
+                <Text key={pIndex} style={styles.fieldContent}>{paragraph.trim()}</Text>
               ))
             ) : (
-              renderListItems(section.content)
+              renderListItems(section.content.map(item => item.trim()))
             )}
           </View>
         ))}

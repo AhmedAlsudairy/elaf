@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Mail, Edit, Building, LogOut, Briefcase, Info, UserCircle } from 'lucide-react';
 import { SignOut } from '@/actions/supabase/signout';
 import { useToast } from "@/components/ui/use-toast";
+import { useTranslations } from 'next-intl';
 
 type UserProfile = {
   id: string;
@@ -37,6 +38,7 @@ type UserProfileClientProps = {
 const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfile, initialCompanyProfile }) => {
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations('UserProfileClient'); // Load translations from the 'UserProfileClient' namespace
 
   const handleEdit = () => {
     router.push(`/profile/myprofile/${initialUserProfile.id}`);
@@ -57,19 +59,17 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
+        title: t('signOutErrorTitle'),
+        description: t('signOutErrorDescription'),
         variant: "destructive",
       });
     }
   };
 
-
-
-
   if (!initialUserProfile) {
     router.push('/');
   }
+
   return (
     <Card className="w-full max-w-3xl mx-auto bg-secondary/10 shadow-lg">
       <CardHeader className="relative pb-8">
@@ -101,7 +101,7 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
           className="absolute top-4 right-4 bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Edit className="h-4 w-4" />
-          <span className="sr-only">Edit Profile</span>
+          <span className="sr-only">{t('editProfile')}</span>
         </Button>
       </CardHeader>
       <CardContent className="grid gap-4 text-sm sm:text-base">
@@ -134,7 +134,6 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
             <span className="flex-1">{initialUserProfile.bio}</span>
           </div>
         )}
-      
         <div className="mt-4 space-y-2">
           <Button
             onClick={handleCompanyProfileClick}
@@ -142,16 +141,15 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
             variant="outline"
           >
             <Building className="w-5 h-5" />
-            {initialCompanyProfile ? "My Company" : "Create New Company Profile"}
+            {initialCompanyProfile ? t('myCompany') : t('createNewCompanyProfile')}
           </Button>
-          
           <Button
             onClick={handleSignOut}
             className="w-full flex items-center justify-center gap-2"
             variant="destructive"
           >
             <LogOut className="w-5 h-5" />
-            Sign Out
+            {t('signOut')}
           </Button>
         </div>
       </CardContent>

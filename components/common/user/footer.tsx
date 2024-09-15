@@ -15,10 +15,10 @@ export const Footer: React.FC = () => {
         <Link href="/privacy" className="text-xs hover:underline underline-offset-4">
           {t('privacy')}
         </Link>
-        <Link href="terms" className="text-xs hover:underline underline-offset-4">
+        <Link href="/terms" className="text-xs hover:underline underline-offset-4">
           {t('terms')}
         </Link>
-        <Link href="contact" className="text-xs hover:underline underline-offset-4">
+        <Link href="/contact" className="text-xs hover:underline underline-offset-4">
           {t('contact')}
         </Link>
       </nav>

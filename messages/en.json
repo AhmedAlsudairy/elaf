@@ -287,5 +287,71 @@
     "uploadPDF": "Upload a PDF",
     "uploadGeneratedPDF": "Upload Generated PDF",
     "uploading": "Uploading..."
-  }
+  },
+  "PrivacyPolicy": {
+  "privacy_policy": "Privacy Policy",
+  "information_we_collect_title": "1. Information We Collect",
+  "information_we_collect_content": "We collect the information you provide to us directly, such as when you create an account, submit a form, or communicate with us.",
+  "how_we_use_your_information_title": "2. How We Use Your Information",
+  "how_we_use_your_information_content": "We use the information we collect to provide, maintain, and improve our services, to communicate with you, and to comply with legal obligations.",
+  "information_sharing_title": "3. Sharing and Disclosure of Information",
+  "information_sharing_content": "We do not share your personal information with third parties except as described in this privacy policy or with your consent.",
+  "data_security_title": "4. Data Security",
+  "data_security_content": "We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, or destruction.",
+  "your_rights_title": "5. Your Rights and Choices",
+  "your_rights_content": "You have the right to access, update, or delete your personal information. You can also choose to opt out of certain communications or data collection practices.",
+  "changes_to_privacy_policy_title": "6. Changes to the Privacy Policy",
+  "changes_to_privacy_policy_content": "We may update this privacy policy from time to time. We will notify you of any changes by posting the new privacy policy on this page."
+},
+"TermsOfUse": {
+  "title": "Terms of Use",
+  "acceptance_of_terms": "1. Acceptance of Terms",
+  "acceptance_of_terms_content": "By accessing or using our service, you agree to be bound by these Terms of Use. If you disagree with any part of the terms, you may not access the service.",
+  "user_accounts": "2. User Accounts",
+  "user_accounts_content": "When you create an account with us, you must provide accurate and complete information. You are responsible for safeguarding the password and for all activities that occur under your account.",
+  "content": "3. Content",
+  "content_content": "Our service allows you to post, link, store, share and otherwise make available certain information, text, graphics, videos, or other material. You are responsible for the content you post.",
+  "intellectual_property": "4. Intellectual Property",
+  "intellectual_property_content": "The service and its original content, features, and functionality are and will remain the exclusive property of our company and its licensors.",
+  "termination": "5. Termination",
+  "termination_content": "We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.",
+  "limitation_of_liability": "6. Limitation of Liability",
+  "limitation_of_liability_content": "In no event shall our company, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages.",
+  "changes": "7. Changes",
+  "changes_content": "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms."
+},
+"TendersPage": {
+  "header": "Tender Opportunities",
+  "description": "Browse and find various tenders from different sectors.",
+  "searchPlaceholder": "Search tenders...",
+  "sectorFilter": "Filter by Sector",
+  "statusFilter": "Filter by Status",
+  "loadMoreButton": "Load More"
+},
+"ComprehensiveTenderSearch": {
+  "searchQueryPlaceholder": "Enter search query",
+  "selectSectorPlaceholder": "Select sector",
+  "allSectors": "All Sectors",
+  "selectStatusPlaceholder": "Select status",
+  "allStatuses": "All Statuses",
+  "searchButton": "Search",
+  "searching": "Searching...",
+  "errorPrefix": "Error:"
+},
+"UserProfilePage": {
+  "welcomeBackTitle": "Welcome Back",
+  "welcomeBackDescription": "Your profile and company information have been loaded.",
+  "companyProfileRequiredTitle": "Company Profile Required",
+  "companyProfileRequiredDescription": "You must create a company profile to make tenders.",
+  "noUserProfileFound": "No user profile found."
+},
+"UserProfileClient": {
+  "editProfile": "Edit Profile",
+  "myCompany": "My Company",
+  "createNewCompanyProfile": "Create New Company Profile",
+  "signOut": "Sign Out",
+  "signOutErrorTitle": "Error",
+  "signOutErrorDescription": "Failed to sign out. Please try again."
+}
+
 }

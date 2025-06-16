@@ -23,20 +23,8 @@ export async function getRequestsByTenderId(tenderId: string, page = 0, pageSize
       .select(`
         *,
         company_profile:company_profiles(
-          company_profile_id,
-          id,
-          user_id,
-          created_at,
-          updated_at,
-          company_title,
-          company_number,
-          company_website,
-          bio,
-          phone_number,
-          address,
           profile_image,
-          company_email,
-          sectors,
+          company_title,
           avg_overall_rating,
           number_of_ratings
         )

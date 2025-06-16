@@ -28,7 +28,7 @@ export async function getCurrentProfiles() {
   // Fetch company profile
   const { data: companyProfile, error: companyProfileError } = await supabase
     .from('company_profiles')
-    .select('*')
+    .select('company_profile_id')
     .eq('user_id', user.id)
     .single();
 

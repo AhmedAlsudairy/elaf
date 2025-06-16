@@ -6,7 +6,7 @@ export async function getCompanyProfileById(companyId:string) {
 
   const { data, error } = await supabase
     .from("company_profiles")
-    .select("*")
+    .select("company_profile_id, profile_image, company_title, bio, company_number, company_website, company_email, phone_number, address, sectors")
     .eq("company_profile_id", companyId)
     .single();
 

@@ -1,7 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
-import { revalidatePath } from 'next/cache';
+import { prisma } from '@/lib/prisma'import { revalidatePath } from 'next/cache';
 
 interface AddRatingParams {
   tenderId: string;

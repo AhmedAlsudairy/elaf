@@ -1,37 +1,38 @@
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 
-export async function checkAuthAndProfiles() {
-  const supabase = createClient();
-
+export async function checkAuthAndProfiles(userId: string) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { isAuthenticated: false, userProfile: null, companyProfile: null };
+    if (!userId) {
+      return {
+        isAuthenticated: false,
+        userProfile: null,
+        companyProfile: null,
+      }
     }
 
-    const [userProfileResult, companyProfileResult] = await Promise.all([
-      supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single(),
-      supabase
-        .from('company_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-    ]);
+    // Fetch user profile and company profile in parallel
+    const [userProfile, companyProfile] = await Promise.all([
+      prisma.userProfile.findUnique({
+        where: { id: userId },
+      }),
+      prisma.company.findFirst({
+        where: { companyEmail: { not: null } }, // Adjust condition if needed
+      }),
+    ])
 
     return {
       isAuthenticated: true,
-      userProfile: userProfileResult.data || null,
-      companyProfile: companyProfileResult.data || null
-    };
+      userProfile,
+      companyProfile,
+    }
   } catch (error) {
-    console.error('Error in checkAuthAndProfiles:', error);
-    return { isAuthenticated: false, userProfile: null, companyProfile: null };
+    console.error('Error in checkAuthAndProfiles:', error)
+    return {
+      isAuthenticated: false,
+      userProfile: null,
+      companyProfile: null,
+    }
   }
 }

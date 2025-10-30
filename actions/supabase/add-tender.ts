@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache';
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
 import { z } from "zod";

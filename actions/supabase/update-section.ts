@@ -1,8 +1,7 @@
 'use server'
 import { revalidatePath } from "next/cache";
 import { CustomSection } from "@/types";
-import { createClient } from "@/lib/utils/supabase/server";
-
+import { prisma } from '@/lib/prisma'
 export async function updateSection(section:CustomSection ) {
     const supabase = createClient();
   

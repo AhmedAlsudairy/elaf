@@ -1,8 +1,7 @@
 'use server'
 
 import { TenderRequest } from "@/components/pages/user/tenders/requesttender/tender-req-main-card";
-import { createClient } from "@/lib/utils/supabase/server";
-
+import { prisma } from '@/lib/prisma'
 export async function getRequestsByTenderId(tenderId: string, page = 0, pageSize = 9): Promise<{ 
   success: boolean; 
   error?: string; 

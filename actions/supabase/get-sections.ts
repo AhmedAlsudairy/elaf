@@ -1,8 +1,7 @@
 // app/actions/getSections.ts
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
-
+import { prisma } from '@/lib/prisma'
 export interface Section {
   id: string;
   title: string;

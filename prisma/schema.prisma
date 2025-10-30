@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+   output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// Enum definitions
+enum SectorEnum {
+  TECHNOLOGY
+  HEALTHCARE
+  FINANCE
+  EDUCATION
+  MANUFACTURING
+  RETAIL
+  CONSTRUCTION
+  TRANSPORTATION
+  ENERGY
+  AGRICULTURE
+  TELECOMMUNICATIONS
+  HOSPITALITY
+  REAL_ESTATE
+  MEDIA
+  CONSULTING
+  // Add your sectors here based on your SectorEnum constant
+}
+
+enum Currency {
+  OMR
+  EGP
+  SAR
+  AED
+}
+
+enum PDFChoice {
+  upload
+  generate
+}
+
+// User Profile model
+model UserProfile {
+  id                       String    @id @default(uuid())
+  name                     String
+  email                    String    @unique
+  bio                      String?
+  phoneNumber              String?   @map("phone_number")
+  address                  String?
+  profileImage             String?   @map("profile_image")
+  role                     String?
+  companyThatWorkedWith    String?   @map("company_that_worked_with")
+  
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  tenders                  Tender[]
+  
+  @@map("user_profiles")
+}
+
+// Company model
+model Company {
+  id                 String        @id @default(uuid())
+  companyProfileId   String?       @map("company_profile_id")
+  companyTitle       String        @map("company_title")
+  companyNumber      String?       @map("company_number")
+  companyWebsite     String?       @map("company_website")
+  companyEmail       String        @unique @map("company_email")
+  sectors            SectorEnum[]
+  bio                String?
+  phoneNumber        String?       @map("phone_number")
+  address            String?
+  profileImage       String?       @map("profile_image")
+  
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  
+  // Relations
+  tenders            Tender[]
+  
+  @@map("companies")
+}
+
+// Tender model
+model Tender {
+  id              String        @id @default(uuid())
+  title           String
+  summary         String        @db.Text
+  tenderSectors   SectorEnum[]  @map("tender_sectors")
+  currency        Currency
+  pdfUrl          String        @map("pdf_url")
+  endDate         DateTime      @map("end_date")
+  terms           String        @db.Text
+  scopeOfWorks    String        @map("scope_of_works") @db.Text
+  pdfChoice       PDFChoice     @map("pdf_choice")
+  
+  // Foreign keys
+  companyId       String?       @map("company_id")
+  userId          String?       @map("user_id")
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  
+  // Relations
+  company         Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            UserProfile?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customFields    CustomField[]
+  
+  @@index([companyId])
+  @@index([userId])
+  @@index([endDate])
+  @@map("tenders")
+}
+
+// Custom Fields for Tender
+model CustomField {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  tenderId    String   @map("tender_id")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  tender      Tender   @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  
+  @@index([tenderId])
+  @@map("custom_fields")
+}

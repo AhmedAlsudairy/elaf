@@ -1,131 +1,88 @@
-import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
-import { getUserProfile } from "@/actions/supabase/get-user-profile";
-import { createServerClient } from "@supabase/ssr";
+import { clerkMiddleware, getAuth } from "@clerk/nextjs/server";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma"; // make sure this path is correct in your project
+
 
 const intlMiddleware = createMiddleware({
-  // A list of all locales that are supported
   locales: ["en", "ar"],
-
-  // Used when no locale matches
   defaultLocale: "en",
 });
 
-// Define public and private routes
-const publicRoutes = ['/login', '/register','tenders' ];
-const privateRoutes = ['/settings', '/tenders/', '/profile/companyprofiles/'];
+const publicRoutes = ["/login", "/register", "/tenders"];
+const privateRoutes = ["/settings", "/tenders/", "/profile/companyprofiles/"];
 
-const isStaticAsset = (path: string) => {
+
+function isStaticAsset(path: string) {
   return /\.(svg|png|jpg|jpeg|gif|webp|ttf|woff|woff2|ico)$/i.test(path);
-};
+}
 
-export async function middleware(request: NextRequest) {
-  try {
-    // Create an unmodified response
-   
-    if (isStaticAsset(request.nextUrl.pathname)) {
-      return NextResponse.next();
-    }
+export default clerkMiddleware(async (auth, request) => {
+  if (isStaticAsset(request.nextUrl.pathname)) return NextResponse.next();
 
- let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
-     response = intlMiddleware(request);
+  let response = intlMiddleware(request);
+  const { userId } = auth();
+
+  const locale = request.nextUrl.pathname.split("/")[1];
+  const isValidLocale = ["en", "ar"].includes(locale);
+  const path = isValidLocale
+    ? "/" + request.nextUrl.pathname.split("/").slice(2).join("/")
+    : request.nextUrl.pathname;
+
+  const isPrivateRoute = privateRoutes.some((route) => path.startsWith(route));
+  const isPublicRoute = publicRoutes.some((route) => path.startsWith(route));
 
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
-            response = NextResponse.next({
-              request,
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            );
-          },
-        },
-      },
+  if (!userId && isPrivateRoute) {
+    const loginUrl = new URL(
+      `/${isValidLocale ? locale + "/" : ""}login`,
+      request.url
     );
-
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-  // Check if the user is logged in
-
-  const { data: { user } } = await supabase.auth.getUser();
-  console.log("User authentication status:", user ? "Logged in" : "Not logged in");
-
-  const locale = request.nextUrl.pathname.split('/')[1];
-  const isValidLocale = ['en', 'ar'].includes(locale);
-  const path = isValidLocale ? '/' + request.nextUrl.pathname.split('/').slice(2).join('/') : request.nextUrl.pathname;
-  console.log("Current path:", path);
-
-  const isPrivateRoute = privateRoutes.some(route => path.startsWith(route));
-  const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
-  console.log("Is private route:", isPrivateRoute);
-  console.log("Is public route:", isPublicRoute);
-
-  if (user) {
-    const userProfile = await getUserProfile(supabase, user.id);
-    const companyProfile = await getCurrentCompanyProfile();
-
-    if (!userProfile && path !== '/profile/startingprofile') {
-      const profileCreationUrl = new URL(`/${isValidLocale ? locale + '/' : ''}profile/startingprofile`, request.url);
-      return NextResponse.redirect(profileCreationUrl);
-    }
-
-    if (userProfile && path === '/profile/startingprofile') {
-      const homeUrl = new URL(`/${isValidLocale ? locale + '/' : ''}`, request.url);
-      return NextResponse.redirect(homeUrl);
-    }
-
-    // Check if the user has a company profile
-    if (companyProfile && path === '/login') {
-      const homeUrl = new URL(`/${isValidLocale ? locale + '/' : ''}`, request.url);
-      return NextResponse.redirect(homeUrl);
-    }
-  } else if (isPrivateRoute) {
-    const loginUrl = new URL(`/${isValidLocale ? locale + '/' : ''}login`, request.url);
-    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
+    loginUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
 
-  // Allow access to public routes regardless of authentication status
-
-
-  // For all other routes, proceed normally
-  return response;
-  } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
+  if (userId) {
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { clerkId: userId },
     });
+
+    if (!userProfile && path !== "/profile/startingprofile") {
+      const profileCreationUrl = new URL(
+        `/${isValidLocale ? locale + "/" : ""}profile/startingprofile`,
+        request.url
+      );
+      return NextResponse.redirect(profileCreationUrl);
+    }
+
+    if (userProfile && path === "/profile/startingprofile") {
+      const homeUrl = new URL(
+        `/${isValidLocale ? locale + "/" : ""}`,
+        request.url
+      );
+      return NextResponse.redirect(homeUrl);
+    }
+
+    // If user has company profile and tries to access login → redirect home
+    if (userProfile && isPublicRoute && path === "/login") {
+      const homeUrl = new URL(
+        `/${isValidLocale ? locale + "/" : ""}`,
+        request.url
+      );
+      return NextResponse.redirect(homeUrl);
+    }
   }
 
-}
- 
+  return response;
+});
+
+
 export const config = {
   matcher: [
     "/",
     "/(ar|en)/:path*",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-
+    "/(api|trpc)(.*)",
   ],
-
 };

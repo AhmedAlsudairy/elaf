@@ -1,6 +1,5 @@
 "use server";
-import { createClient } from "@/lib/utils/supabase/server";
-
+import { prisma } from '@/lib/prisma'
 export async function getCompanyProfileById(companyId:string) {
   const supabase = createClient();
 

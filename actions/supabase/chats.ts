@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
 import { CompanyProfile } from "@/types";
 import { sendEmail } from "@/lib/utils/resend/send-emails";

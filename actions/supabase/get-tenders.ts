@@ -1,49 +1,57 @@
 'use server'
-import { createClient } from "@/lib/utils/supabase/server";
-import { SectorEnum, TenderStatus } from "@/constant/text";
-import { z } from "zod";
 
-const searchParamsSchema = z.object({
-  query: z.string().optional(),
-  sector: z.nativeEnum(SectorEnum).optional(),
-  status: z.nativeEnum(TenderStatus).optional(),
-  from: z.number().optional(),
-  to: z.number().optional(),
-});
+import { prisma } from '@/lib/prisma'
 
-type SearchParams = z.infer<typeof searchParamsSchema>;
-
-export async function getTenders(searchParams?: SearchParams): Promise<{ success: any[]; error?: string }> {
-  const supabase = createClient();
-  console.log("getTenders called with params:", searchParams);
-
+export async function fetchTenderData(tenderId: string) {
   try {
-    const validatedParams = searchParamsSchema.parse(searchParams);
-    console.log("Validated params:", validatedParams);
+    const tender = await prisma.tenders.findUnique({
+      where: { tender_id: tenderId },
+      include: {
+        company_profiles: {
+          select: {
+            company_profile_id: true,
+            company_title: true,
+            company_email: true,
+            profile_image: true,
+          },
+        },
+      },
+    })
 
-    const { data, error } = await supabase
-      .rpc('get_tenders', {
-        search_query: validatedParams.query || null,
-        status_filter: validatedParams.status || null,
-        sector_filter: validatedParams.sector || null,
-        page_from: validatedParams.from || 0,
-        page_to: validatedParams.to || 9
-      });
-
-    if (error) {
-      console.error("Supabase error details:", error);
-      return { success: [], error: `Error fetching tenders: ${error.message}` };
+    if (!tender) {
+      throw new Error('Tender not found')
     }
 
-    console.log(`Query returned ${data?.length || 0} results.`);
+    const company = tender.company_profiles
 
-    return { success: data || [] };
+    return {
+      tender: {
+        tender_id: tender.tender_id,
+        title: tender.title,
+        summary: tender.summary,
+        pdf_url: tender.pdf_url,
+        end_date: tender.end_date ? tender.end_date.toISOString() : null,
+        status: tender.status,
+        terms: tender.terms,
+        scope_of_works: tender.scope_of_works,
+        tender_sectors: tender.tender_sectors,
+        created_at: tender.created_at ? tender.created_at.toISOString() : null,
+        average_price: tender.average_price,
+        maximum_price: tender.maximum_price,
+        minimum_price: tender.minimum_price,
+        currency: tender.currency,
+      },
+      company: company
+        ? {
+            company_profile_id: company.company_profile_id,
+            company_title: company.company_title,
+            company_email: company.company_email,
+            profile_image: company.profile_image,
+          }
+        : null,
+    }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error("Zod validation error:", error.errors);
-      return { success: [], error: "Invalid search parameters: " + JSON.stringify(error.errors) };
-    }
-    console.error("Unexpected error:", error);
-    return { success: [], error: "An unexpected error occurred" };
+    console.error('Error fetching tender data:', error)
+    throw new Error('Failed to fetch tender data')
   }
 }

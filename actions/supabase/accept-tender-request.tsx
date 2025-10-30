@@ -1,7 +1,7 @@
 'use server'
 
 import { sendEmail } from "@/lib/utils/resend/send-emails";
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache';
 
 export async function acceptTenderRequest(requestId: string, tenderId: string) {

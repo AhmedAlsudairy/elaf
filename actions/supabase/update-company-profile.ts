@@ -1,6 +1,5 @@
 'use server'
-import { createClient } from "@/lib/utils/supabase/server";
-import { CompanyProfile } from "@/types";
+import { prisma } from '@/lib/prisma'import { CompanyProfile } from "@/types";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile(profile: CompanyProfile) {

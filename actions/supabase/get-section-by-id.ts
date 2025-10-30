@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import { Section } from "./get-sections";
 
 export async function getSectionById(sectionId: string): Promise<Section | null> {

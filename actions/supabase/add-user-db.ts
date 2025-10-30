@@ -1,6 +1,5 @@
 // import { getUserDetails } from "./get-user-details";
-// import { createClient } from "@/lib/utils/supabase/server";
-
+// import { prisma } from '@/lib/prisma'
 // export async function upsertUserDetails() {
 //     try {
 //       // Assuming getUserDetails() is a function that fetches user details

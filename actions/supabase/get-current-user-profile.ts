@@ -1,5 +1,5 @@
 'use server'
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import supabaseServer from "@/lib/utils/supabase/supabase-call-server";
 
 export async function getCurrentUserProfile() {

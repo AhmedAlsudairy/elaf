@@ -1,7 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/utils/supabase/server";
-import { getCurrentCompanyProfile } from "./get-current-company-profile";
+import { prisma } from '@/lib/prisma'import { getCurrentCompanyProfile } from "./get-current-company-profile";
 
 export async function getTenderRequestsByCompanyProfileId(page = 0, pageSize = 9) {
   const supabase = createClient();

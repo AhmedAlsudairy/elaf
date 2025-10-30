@@ -1,24 +1,25 @@
 // app/actions/getUserProfile.ts
 'use server'
 
-import { SupabaseClient } from '@supabase/supabase-js'
+import { prisma } from '@/lib/prisma'
 
-export const getUserProfile = async (supabase:SupabaseClient,userId: string) => {
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
+export const getUserProfile = async (userId: string) => {
+  try {
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { id: userId },
+      include: {
+        tenders: true, // optional — include if you want related tenders too
+      },
+    })
 
-  if (error) {
+    if (!userProfile) {
+      console.log('User profile not found')
+      return null
+    }
+
+    return userProfile
+  } catch (error) {
     console.error('Error fetching user profile:', error)
     return null
   }
-
-  if (!data) {
-    console.log('User profile not found')
-    return null
-  }
-
-  return data
 }

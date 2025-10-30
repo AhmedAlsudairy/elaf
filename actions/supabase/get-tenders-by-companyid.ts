@@ -1,5 +1,5 @@
 'use server'
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import { currencyT, SearchParams, SearchResult, Tender } from "@/types";
 import { SectorEnum, TenderStatus } from "@/constant/text";
 import { z } from "zod";

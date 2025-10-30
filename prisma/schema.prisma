@@ -50,6 +50,7 @@ enum PDFChoice {
 // User Profile model
 model UserProfile {
   id                       String    @id @default(uuid())
+  clerkUserId              String   @unique
   name                     String
   email                    String    @unique
   bio                      String?

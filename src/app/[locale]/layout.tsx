@@ -11,14 +11,8 @@ import { ReactQueryClientProvider } from "@/providers/query-providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Favicon from "/public/favicon.ico";
-import{
-   ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-}from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs'
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -26,8 +20,7 @@ export const metadata: Metadata = {
     default: "Elaf",
     template: "%s - Elaf",
   },
-  description:
-    "Elaf is a cutting-edge B2B tendering platform that revolutionizes procurement and supplier management. Our e-tendering solution streamlines the entire process from RFP creation to bid submission for both government and private sector tenders. Elaf's robust marketplace connects businesses with diverse suppliers, facilitating efficient sourcing, proposal handling, and contract bidding. Whether you're a vendor seeking new opportunities or a company looking to optimize procurement, Elaf provides the tools and visibility needed to thrive in today's competitive business landscape. Join Elaf to simplify your tendering process, expand your network, and drive growth through strategic sourcing and bidding.",
+  description: "Elaf is a cutting-edge B2B tendering platform...",
   twitter: {
     card: "summary_large_image",
   },
@@ -41,32 +34,27 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }>) {
-  // ✅ Await params (required in Next.js 15)
   const { locale } = await params;
-
-  // ✅ Ensure the locale is set for next-intl
   unstable_setRequestLocale(locale);
-
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
   const direction = getLangDir(locale);
 
   return (
-  <ClerkProvider>
-    <ReactQueryClientProvider>
-      <html lang={locale} dir={direction}>
-        <body className={inter.className}>
-          <SpeedInsights />
-          <Analytics />
-
-          <NextIntlClientProvider messages={messages}>
-            <Header />
-            {children}
-            <Footer />
-            <Toaster />
-          </NextIntlClientProvider>
-        </body>
-      </html>
-    </ReactQueryClientProvider>
-  </ClerkProvider>
+    <ClerkProvider>
+      <ReactQueryClientProvider>
+        <html lang={locale} dir={direction}>
+          <body className={inter.className}>
+            <SpeedInsights />
+            <Analytics />
+            <NextIntlClientProvider messages={messages}>
+              <Header />
+              {children}
+              <Footer />
+              <Toaster />
+            </NextIntlClientProvider>
+          </body>
+        </html>
+      </ReactQueryClientProvider>
+    </ClerkProvider>
   );
 }

@@ -48,7 +48,7 @@ enum PDFChoice {
 // User Profile model
 model UserProfile {
   id                    String    @id @default(uuid())
-  clerkUserId           String    @unique
+   clerkUserId          String    @unique
   name                  String
   email                 String    @unique
   bio                   String?
@@ -58,19 +58,25 @@ model UserProfile {
   role                  String?
   companyThatWorkedWith String?   @map("company_that_worked_with")
   
+  // ADD THIS:
+  companyId             String?   @map("company_id")
+  
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   
   // Relations
+  company               Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
   tenders               Tender[]
   
+  @@index([companyId])
+  @@index([clerkUserId])
   @@map("user_profiles")
 }
 
 // Company model
 model Company {
   id                       String        @id @default(uuid())
-  companyProfileId         String?       @map("company_profile_id")
+  companyProfileId         String?       @unique @map("company_profile_id")
   companyTitle             String        @map("company_title")
   companyNumber            String?       @map("company_number")
   companyWebsite           String?       @map("company_website")
@@ -85,15 +91,16 @@ model Company {
   updatedAt                DateTime      @updatedAt @map("updated_at")
   
   // Relations
+  users                    UserProfile[]  // ADD THIS
   tenders                  Tender[]
   sentChats                ChatRoom[]    @relation("SentChats")
   receivedChats            ChatRoom[]    @relation("ReceivedChats")
   sentMessages             Message[]     @relation("SentMessages")
   receivedMessages         Message[]     @relation("ReceivedMessages")
   
+  @@index([companyEmail])
   @@map("companies")
 }
-
 // Tender model
 model Tender {
   id              String        @id @default(uuid())

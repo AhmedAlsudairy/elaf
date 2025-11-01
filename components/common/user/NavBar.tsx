@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { usePathname } from 'next/navigation'
 import { ELAF_LOGO_URL, MenuIcon, XIcon } from '@/constant/svg'
 import { useUser, UserButton } from '@clerk/nextjs'
+import { CreateOrViewCompanyButton } from '@/components/common/create-company-button'
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -23,7 +24,6 @@ export const Header = () => {
     setIsMenuOpen(prev => !prev)
   }, [])
 
-  // Public and private navigation items (localized labels handled by next-intl)
   const publicNavItems = useMemo(
     () => ['tenders', 'profile/companyprofiles', 'contact'],
     []
@@ -33,9 +33,7 @@ export const Header = () => {
   const renderNavItems = useCallback(
     (isMobile = false) => {
       const items = [...publicNavItems]
-      if (isSignedIn) {
-        items.push(...privateNavItems)
-      }
+      if (isSignedIn) items.push(...privateNavItems)
 
       return items.map(item => (
         <Link
@@ -70,8 +68,9 @@ export const Header = () => {
         {renderNavItems()}
       </nav>
 
-      {/* Auth Section */}
+      {/* Right side: Company button + Auth */}
       <div className={`hidden md:flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
+        <CreateOrViewCompanyButton variant="outline" size="sm" />
         {!isLoaded ? (
           <p className="text-sm opacity-70">{t('loading')}</p>
         ) : isSignedIn ? (
@@ -95,6 +94,7 @@ export const Header = () => {
         <div className="absolute top-14 left-0 right-0 bg-white py-4 shadow-md md:hidden font-balooBhaijaan z-50">
           {renderNavItems(true)}
           <div className="px-4 py-2 space-y-2">
+            <CreateOrViewCompanyButton variant="outline" size="sm" className="w-full" />
             {!isLoaded ? (
               <p className="text-sm opacity-70">{t('loading')}</p>
             ) : isSignedIn ? (

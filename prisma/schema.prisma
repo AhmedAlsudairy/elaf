@@ -6,14 +6,13 @@
 
 generator client {
   provider = "prisma-client-js"
-   output   = "../node_modules/.prisma/client"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 
 // Enum definitions
 enum SectorEnum {
@@ -32,7 +31,6 @@ enum SectorEnum {
   REAL_ESTATE
   MEDIA
   CONSULTING
-  // Add your sectors here based on your SectorEnum constant
 }
 
 enum Currency {
@@ -49,45 +47,49 @@ enum PDFChoice {
 
 // User Profile model
 model UserProfile {
-  id                       String    @id @default(uuid())
-  clerkUserId              String   @unique
-  name                     String
-  email                    String    @unique
-  bio                      String?
-  phoneNumber              String?   @map("phone_number")
-  address                  String?
-  profileImage             String?   @map("profile_image")
-  role                     String?
-  companyThatWorkedWith    String?   @map("company_that_worked_with")
+  id                    String    @id @default(uuid())
+  clerkUserId           String    @unique
+  name                  String
+  email                 String    @unique
+  bio                   String?
+  phoneNumber           String?   @map("phone_number")
+  address               String?
+  profileImage          String?   @map("profile_image")
+  role                  String?
+  companyThatWorkedWith String?   @map("company_that_worked_with")
   
-  createdAt                DateTime  @default(now()) @map("created_at")
-  updatedAt                DateTime  @updatedAt @map("updated_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
   
   // Relations
-  tenders                  Tender[]
+  tenders               Tender[]
   
   @@map("user_profiles")
 }
 
 // Company model
 model Company {
-  id                 String        @id @default(uuid())
-  companyProfileId   String?       @map("company_profile_id")
-  companyTitle       String        @map("company_title")
-  companyNumber      String?       @map("company_number")
-  companyWebsite     String?       @map("company_website")
-  companyEmail       String        @unique @map("company_email")
-  sectors            SectorEnum[]
-  bio                String?
-  phoneNumber        String?       @map("phone_number")
-  address            String?
-  profileImage       String?       @map("profile_image")
+  id                       String        @id @default(uuid())
+  companyProfileId         String?       @map("company_profile_id")
+  companyTitle             String        @map("company_title")
+  companyNumber            String?       @map("company_number")
+  companyWebsite           String?       @map("company_website")
+  companyEmail             String        @unique @map("company_email")
+  sectors                  SectorEnum[]
+  bio                      String?
+  phoneNumber              String?       @map("phone_number")
+  address                  String?
+  profileImage             String?       @map("profile_image")
   
-  createdAt          DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+  createdAt                DateTime      @default(now()) @map("created_at")
+  updatedAt                DateTime      @updatedAt @map("updated_at")
   
   // Relations
-  tenders            Tender[]
+  tenders                  Tender[]
+  sentChats                ChatRoom[]    @relation("SentChats")
+  receivedChats            ChatRoom[]    @relation("ReceivedChats")
+  sentMessages             Message[]     @relation("SentMessages")
+  receivedMessages         Message[]     @relation("ReceivedMessages")
   
   @@map("companies")
 }
@@ -116,6 +118,7 @@ model Tender {
   company         Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user            UserProfile?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   customFields    CustomField[]
+  chatRooms       ChatRoom[]
   
   @@index([companyId])
   @@index([userId])
@@ -138,4 +141,55 @@ model CustomField {
   
   @@index([tenderId])
   @@map("custom_fields")
+}
+
+// Chat Room to group conversations
+model ChatRoom {
+  id                       String    @id @default(uuid())
+  tenderId                 String?   @map("tender_id")
+  tenderRequestId          String?   @map("tender_request_id")
+  senderCompanyProfileId   String    @map("sender_company_profile_id")
+  receiverCompanyProfileId String    @map("receiver_company_profile_id")
+  
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  tender                   Tender?   @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  senderCompany            Company   @relation("SentChats", fields: [senderCompanyProfileId], references: [id], onDelete: Cascade)
+  receiverCompany          Company   @relation("ReceivedChats", fields: [receiverCompanyProfileId], references: [id], onDelete: Cascade)
+  messages                 Message[]
+  
+  @@unique([senderCompanyProfileId, receiverCompanyProfileId, tenderId])
+  @@index([tenderId])
+  @@index([senderCompanyProfileId])
+  @@index([receiverCompanyProfileId])
+  @@map("chat_rooms")
+}
+
+// Message model
+model Message {
+  id                       String    @id @default(uuid())
+  chatRoomId               String    @map("chat_room_id")
+  content                  String    @db.Text
+  pdfUrl                   String?   @map("pdf_url")
+  readStatus               Boolean   @default(false) @map("read_status")
+  
+  // Denormalized for performance
+  senderCompanyProfileId   String    @map("sender_company_profile_id")
+  receiverCompanyProfileId String    @map("receiver_company_profile_id")
+  
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  chatRoom                 ChatRoom  @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  senderCompany            Company   @relation("SentMessages", fields: [senderCompanyProfileId], references: [id], onDelete: Cascade)
+  receiverCompany          Company   @relation("ReceivedMessages", fields: [receiverCompanyProfileId], references: [id], onDelete: Cascade)
+  
+  @@index([chatRoomId])
+  @@index([createdAt])
+  @@index([senderCompanyProfileId])
+  @@index([receiverCompanyProfileId])
+  @@map("messages")
 }

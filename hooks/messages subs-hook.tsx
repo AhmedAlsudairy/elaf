@@ -1,8 +1,6 @@
 'use client'
-import { createClient } from '@/lib/utils/supabase/client';
-import { useState, useEffect, useCallback } from 'react';
-
-const supabase = createClient()
+import { useEffect, useState, useCallback } from "react";
+import { pusherClient } from "@/lib/pusher-client";
 
 interface Message {
   id: string;
@@ -24,59 +22,22 @@ interface Message {
 export const useSubscribeToChat = (chatRoomId: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const handleNewMessage = useCallback(async (payload: any) => {
-    console.log('New message received:', payload);
-    
-    const { data: senderData, error: senderError } = await supabase
-      .from('company_profiles')
-      .select('company_title, profile_image')
-      .eq('company_profile_id', payload.new.sender_company_profile_id)
-      .single();
-
-    console.log('Sender data:', senderData);
-    if (senderError) {
-      console.error('Error fetching sender data:', senderError);
-      return;
-    }
-
-    const newMessageData: Message = {
-      id: payload.new.id,
-      chat_room_id: chatRoomId,
-      sender_company_profile_id: payload.new.sender_company_profile_id,
-      receiver_company_profile_id: payload.new.receiver_company_profile_id,
-      content: payload.new.content,
-      created_at: payload.new.created_at,
-      sender_name: senderData.company_title,
-      sender_avatar: senderData.profile_image,
-      company_title: senderData.company_title,
-      company_image: senderData.profile_image,
-      tender_id: payload.new.tender_id || null,
-      tender_request_id: payload.new.tender_request_id || null,
-      pdf_url: payload.new.pdf_url || null,
-      read_status: payload.new.read_status
-    };
-
-    console.log('Processed new message:', newMessageData);
-    setMessages(prevMessages => [...prevMessages, newMessageData]);
-  }, [chatRoomId]);
+  const handleNewMessage = useCallback((message: Message) => {
+    console.log("📩 New message received:", message);
+    setMessages(prev => [...prev, message]);
+  }, []);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`chat_room:${chatRoomId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_room_id=eq.${chatRoomId}`
-        },
-        handleNewMessage
-      )
-      .subscribe();
+    // Subscribe to this chat room channel
+    const channel = pusherClient.subscribe(`chat-${chatRoomId}`);
+    channel.bind("new-message", handleNewMessage);
+
+    console.log(`🟢 Subscribed to chat-${chatRoomId}`);
 
     return () => {
-      supabase.removeChannel(channel);
+      console.log(`🔴 Unsubscribed from chat-${chatRoomId}`);
+      channel.unbind("new-message", handleNewMessage);
+      pusherClient.unsubscribe(`chat-${chatRoomId}`);
     };
   }, [chatRoomId, handleNewMessage]);
 

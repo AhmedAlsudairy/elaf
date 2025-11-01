@@ -1,15 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUp, Trash, Upload } from "lucide-react";
-import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
-import { Input } from '@/components/ui/input';
+import { Input } from "@/components/ui/input";
+import { put } from "@vercel/blob";
 
 interface PDFUploadProps {
   disabled?: boolean;
   onChange: (value: string) => void;
   onRemove: (value: string) => void;
   value: string[];
-  bucketName: string;
+  bucketName?: string; // not needed anymore but kept for compatibility
   generatedPdfBlob?: Blob | null;
 }
 
@@ -18,45 +18,40 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
   onChange,
   onRemove,
   value,
-  bucketName,
   generatedPdfBlob,
 }) => {
   const [uploading, setUploading] = useState(false);
 
-  const uploadPDF = useCallback(async (file: File | Blob) => {
-    try {
-      setUploading(true);
+  const uploadPDF = useCallback(
+    async (file: File | Blob) => {
+      try {
+        setUploading(true);
+        const fileName = `${crypto.randomUUID()}.pdf`;
 
-      const fileName = `${Math.random()}.pdf`;
-      const filePath = `${fileName}`;
+        // Upload the PDF to Vercel Blob
+        const blob = await put(fileName, file, { access: "public" });
 
-      let { error: uploadError } = await supabaseClient.storage
-        .from(bucketName)
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
+        // blob.url is the public file URL
+        onChange(blob.url);
+      } catch (error) {
+        console.error("Error uploading PDF:", error);
+        alert("Error uploading PDF!");
+      } finally {
+        setUploading(false);
       }
+    },
+    [onChange]
+  );
 
-      const { data: { publicUrl } } = supabaseClient.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
-
-      onChange(publicUrl);
-    } catch (error) {
-      console.error('Error uploading PDF:', error);
-      alert('Error uploading PDF!');
-    } finally {
-      setUploading(false);
-    }
-  }, [bucketName, onChange]);
-
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      uploadPDF(file);
-    }
-  }, [uploadPDF]);
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.files && event.target.files[0]) {
+        const file = event.target.files[0];
+        uploadPDF(file);
+      }
+    },
+    [uploadPDF]
+  );
 
   const handleGeneratedPdfUpload = useCallback(() => {
     if (generatedPdfBlob) {
@@ -67,21 +62,31 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2">
-        {value.filter(url => typeof url === 'string' && url.trim() !== '').map((url) => (
-          <div key={url} className="flex items-center justify-between p-2 bg-gray-100 rounded">
-            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline truncate max-w-[70%]">
-              {url.split('/').pop() || 'Uploaded PDF'}
-            </a>
-            <Button
-              type="button"
-              onClick={() => onRemove(url)}
-              size="icon"
-              variant="destructive"
+        {value
+          .filter((url) => typeof url === "string" && url.trim() !== "")
+          .map((url) => (
+            <div
+              key={url}
+              className="flex items-center justify-between p-2 bg-gray-100 rounded"
             >
-              <Trash className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline truncate max-w-[70%]"
+              >
+                {url.split("/").pop() || "Uploaded PDF"}
+              </a>
+              <Button
+                type="button"
+                onClick={() => onRemove(url)}
+                size="icon"
+                variant="destructive"
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
       </div>
       <div className="flex flex-wrap gap-2">
         <Input
@@ -90,17 +95,17 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
           accept="application/pdf"
           onChange={handleFileChange}
           disabled={disabled || uploading}
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
         />
         <Button
           type="button"
           disabled={disabled || uploading}
           variant="secondary"
-          onClick={() => document.getElementById('pdfUpload')?.click()}
+          onClick={() => document.getElementById("pdfUpload")?.click()}
           className="w-full sm:w-auto mb-2 mr-2"
         >
           <FileUp className="h-4 w-4 mr-2" />
-          {uploading ? 'Uploading...' : 'Upload a PDF'}
+          {uploading ? "Uploading..." : "Upload a PDF"}
         </Button>
         {generatedPdfBlob && (
           <Button
@@ -111,7 +116,7 @@ const PDFUpload: React.FC<PDFUploadProps> = ({
             className="w-full sm:w-auto mb-2"
           >
             <Upload className="h-4 w-4 mr-2" />
-            {uploading ? 'Uploading...' : 'Upload Generated PDF'}
+            {uploading ? "Uploading..." : "Upload Generated PDF"}
           </Button>
         )}
       </div>

@@ -2,58 +2,28 @@
 
 import { prisma } from '@/lib/prisma'
 import { getCurrentCompanyProfile } from "./get-current-company-profile";
-import { CompanyProfile } from "@/types";
 import { sendEmail } from "@/lib/utils/resend/send-emails";
+import { pusherServer } from "@/lib/pusher-server";
 
-const supabase = createClient();
-
-// Enum for message read status
-enum ReadStatus {
-  Unread = 'unread',
-  Read = 'read',
-  Archived = 'archived'
-}
-
-interface Message {
+interface MessageWithCompany {
   id: string;
-  chat_room_id: string;
-  tender_id: string | null;
+  chatRoomId: string;
   content: string;
-  created_at: string;
-  tender_request_id: string | null;
-  pdf_url: string | null;
-  sender_company_profile_id: string;
-  receiver_company_profile_id: string;
-  read_status: ReadStatus;
-  sender_name?: string;
-  sender_avatar?: string | null;
-  company_title?: string | null;
-  company_image?: string | null;
-}
-
-interface ChatRoomWithLastMessage {
-  id: string;
-  initiator_company_profile_id: string;
-  recipient_company_profile_id: string;
-  created_at: string;
-  updated_at: string;
-  last_message: Message | null;
-  unread_count: number;
-  other_company_profile: {
-    company_title: string;
-    profile_image: string | null;
+  pdfUrl: string | null;
+  readStatus: boolean;
+  senderCompanyProfileId: string;
+  receiverCompanyProfileId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  senderCompany: {
+    companyTitle: string;
+    profileImage: string | null;
   };
-}
-
-interface ChatRoomDetails {
-  id: string;
-  tender_id: string | null;
-  initiator_company_profile_id: string;
-  recipient_company_profile_id: string;
-  initiator_company_title: string;
-  initiator_company_image: string | null;
-  recipient_company_title: string;
-  recipient_company_image: string | null;
+  receiverCompany: {
+    companyTitle: string;
+    profileImage: string | null;
+  };
+  tenderId?: string | null;
 }
 
 interface ChatRoomWithDetails {
@@ -62,25 +32,33 @@ interface ChatRoomWithDetails {
     company_title: string;
     profile_image: string | null;
   };
-  last_message: Message | null;
+  last_message: MessageWithCompany | null;
   unread_count: number;
 }
 
-export async function getReadStatus() {
-  return ReadStatus;
+interface ChatRoomDetails {
+  id: string;
+  tenderId: string | null;
+  initiatorCompanyProfileId: string;
+  recipientCompanyProfileId: string;
+  initiator_company_title: string;
+  initiator_company_image: string | null;
+  recipient_company_title: string;
+  recipient_company_image: string | null;
 }
 
-
-
-// ... (previous code remains the same)
-
-function getEmailFromUserData(userData: any): string | undefined {
-  if (Array.isArray(userData)) {
-    return userData[0]?.email;
-  } else if (typeof userData === 'object' && userData !== null) {
-    return userData.email;
+// Helper function to get email from company profile
+async function getCompanyEmail(companyId: string): Promise<string | null> {
+  try {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { companyEmail: true }
+    });
+    return company?.companyEmail || null;
+  } catch (error) {
+    console.error("Error fetching company email:", error);
+    return null;
   }
-  return undefined;
 }
 
 async function sendNewMessageNotification(
@@ -91,38 +69,23 @@ async function sendNewMessageNotification(
 ) {
   try {
     const [sender, receiver] = await Promise.all([
-      supabase
-        .from("company_profiles")
-        .select(`
-          company_title,
-          users(email)
-        `)
-        .eq("company_profile_id", senderId)
-        .single(),
-      supabase
-        .from("company_profiles")
-        .select(`
-          users(email)
-        `)
-        .eq("company_profile_id", receiverId)
-        .single()
+      prisma.company.findUnique({
+        where: { id: senderId },
+        select: { companyTitle: true, companyEmail: true }
+      }),
+      prisma.company.findUnique({
+        where: { id: receiverId },
+        select: { companyEmail: true }
+      })
     ]);
 
-    if (sender.error) {
-      console.error("Error fetching sender:", sender.error);
-      throw new Error("Failed to fetch sender profile");
-    }
-    if (receiver.error) {
-      console.error("Error fetching receiver:", receiver.error);
-      throw new Error("Failed to fetch receiver profile");
+    if (!sender || !receiver) {
+      console.error("Sender or receiver not found");
+      return;
     }
 
-    console.log("Sender data:", JSON.stringify(sender.data, null, 2));
-    console.log("Receiver data:", JSON.stringify(receiver.data, null, 2));
-
-    const receiverEmail = getEmailFromUserData(receiver.data.users);
-    console.log("receiverEmail", receiverEmail);
-
+    const receiverEmail = receiver.companyEmail;
+    
     if (!receiverEmail) {
       console.log("No valid email found for receiver, skipping notification");
       return;
@@ -131,7 +94,7 @@ async function sendNewMessageNotification(
     const emailParams = {
       to: [receiverEmail],
       title: "New Message Received",
-      body: `You have a new message from ${sender.data.company_title}. Message preview: "${messageContent.substring(0, 50)}${messageContent.length > 50 ? '...' : ''}". Click <a href="${process.env.NEXT_PUBLIC_WEBSITE_URL}/chats/${chatRoomId}">here</a> to view the full conversation.`
+      body: `You have a new message from ${sender.companyTitle}. Message preview: "${messageContent.substring(0, 50)}${messageContent.length > 50 ? '...' : ''}". Click <a href="${process.env.NEXT_PUBLIC_WEBSITE_URL}/chats/${chatRoomId}">here</a> to view the full conversation.`
     };
 
     await sendEmail(emailParams);
@@ -141,89 +104,71 @@ async function sendNewMessageNotification(
   }
 }
 
-export async function getMessages(chatRoomId: string, limit: number, offset: number) {
+export async function getMessages(chatRoomId: string, limit: number = 50, offset: number = 0) {
   try {
-    // Fetch messages, chat room details, and company profiles in parallel
-    const [messagesResult, chatRoomResult, companyProfilesResult] = await Promise.all([
-      supabase
-        .from("messages")
-        .select(`
-          id,
-          sender_company_profile_id,
-          receiver_company_profile_id,
-          content,
-          pdf_url,
-          created_at,
-          tender_id
-        `)
-        .eq("chat_room_id", chatRoomId)
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1),
-      
-      supabase
-        .from("chat_rooms")
-        .select(`
-          id,
-          initiator_company_profile_id,
-          recipient_company_profile_id
-        `)
-        .eq("id", chatRoomId)
-        .single(),
-      
-      supabase
-        .from("company_profiles")
-        .select("company_profile_id, company_title, profile_image")
-    ]);
-
-    if (messagesResult.error) throw messagesResult.error;
-    if (chatRoomResult.error) throw chatRoomResult.error;
-    if (companyProfilesResult.error) throw companyProfilesResult.error;
-
-    const messages = messagesResult.data;
-    const chatRoomData = chatRoomResult.data;
-    const companyProfiles = companyProfilesResult.data;
-
-    // Create a map of company_profile_id to company profile for easy lookup
-    const companyProfileMap = new Map(
-      companyProfiles.map((profile) => [profile.company_profile_id, profile])
-    );
-
-    const formattedMessages = messages.map((msg) => {
-      const senderProfile = companyProfileMap.get(msg.sender_company_profile_id);
-      return {
-        id: msg.id,
-        chat_room_id: chatRoomId,
-        sender_company_profile_id: msg.sender_company_profile_id,
-        receiver_company_profile_id: msg.receiver_company_profile_id,
-        content: msg.content,
-        pdf_url: msg.pdf_url,
-        tender_id: msg.tender_id,
-        created_at: msg.created_at,
-        tender_request_id: null,
-        read_status: ReadStatus.Unread,
-        sender_name: senderProfile?.company_title || "Unknown Company",
-        sender_avatar: senderProfile?.profile_image || null,
-        company_title: senderProfile?.company_title || null,
-        company_image: senderProfile?.profile_image || null,
-      };
+    // Fetch messages with company details
+    const messages = await prisma.message.findMany({
+      where: { chatRoomId },
+      include: {
+        senderCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        },
+        receiverCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: offset,
+      take: limit
     });
 
-    const initiatorProfile = companyProfileMap.get(chatRoomData.initiator_company_profile_id);
-    const recipientProfile = companyProfileMap.get(chatRoomData.recipient_company_profile_id);
+    // Fetch chat room details
+    const chatRoom = await prisma.chatRoom.findUnique({
+      where: { id: chatRoomId },
+      include: {
+        senderCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        },
+        receiverCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        },
+        tender: {
+          select: {
+            id: true
+          }
+        }
+      }
+    });
 
-    const chatRoomDetails = {
-      id: chatRoomData.id,
-      tender_id: messages.length > 0 ? messages[0].tender_id : null,
-      initiator_company_profile_id: chatRoomData.initiator_company_profile_id,
-      recipient_company_profile_id: chatRoomData.recipient_company_profile_id,
-      initiator_company_title: initiatorProfile?.company_title || "Unknown Company",
-      initiator_company_image: initiatorProfile?.profile_image || null,
-      recipient_company_title: recipientProfile?.company_title || "Unknown Company",
-      recipient_company_image: recipientProfile?.profile_image || null,
+    if (!chatRoom) {
+      return { messages: [], chatRoomDetails: null };
+    }
+
+    const chatRoomDetails: ChatRoomDetails = {
+      id: chatRoom.id,
+      tenderId: chatRoom.tenderId,
+      initiatorCompanyProfileId: chatRoom.senderCompanyProfileId,
+      recipientCompanyProfileId: chatRoom.receiverCompanyProfileId,
+      initiator_company_title: chatRoom.senderCompany.companyTitle,
+      initiator_company_image: chatRoom.senderCompany.profileImage,
+      recipient_company_title: chatRoom.receiverCompany.companyTitle,
+      recipient_company_image: chatRoom.receiverCompany.profileImage,
     };
 
     return {
-      messages: formattedMessages,
+      messages: messages as MessageWithCompany[],
       chatRoomDetails,
     };
   } catch (error) {
@@ -240,78 +185,78 @@ export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetai
       return null;
     }
 
-    const currentProfileId = currentProfile.company_profile_id;
+    const currentProfileId = currentProfile.id;
 
-    // Fetch chat rooms and messages in parallel
-    const [chatRoomsResult, messagesResult, companyProfilesResult] = await Promise.all([
-      supabase
-        .from("chat_rooms")
-        .select(`*`)
-        .or(`initiator_company_profile_id.eq.${currentProfileId},recipient_company_profile_id.eq.${currentProfileId}`),
-      
-      supabase
-        .from("messages")
-        .select(`
-          id,
-          chat_room_id,
-          tender_id,
-          content,
-          created_at,
-          tender_request_id,
-          pdf_url,
-          sender_company_profile_id,
-          receiver_company_profile_id,
-          read_status
-        `)
-        .order('created_at', { ascending: false }),
-      
-      supabase
-        .from("company_profiles")
-        .select("company_profile_id, company_title, profile_image")
-    ]);
-
-    if (chatRoomsResult.error) throw chatRoomsResult.error;
-    if (messagesResult.error) throw messagesResult.error;
-    if (companyProfilesResult.error) throw companyProfilesResult.error;
-
-    const chatRooms = chatRoomsResult.data;
-    const messages = messagesResult.data;
-    const companyProfiles = companyProfilesResult.data;
-
-    // Group messages by chat room
-    const messagesByChatRoom: { [key: string]: Message[] } = messages.reduce((acc: { [key: string]: Message[] }, message: Message) => {
-      if (!acc[message.chat_room_id]) {
-        acc[message.chat_room_id] = [];
-      }
-      acc[message.chat_room_id].push(message);
-      return acc;
-    }, {});
-
-    const companyProfileMap = new Map(companyProfiles.map(profile => [profile.company_profile_id, profile]));
-
-    const chatRoomsWithDetails: ChatRoomWithDetails[] = chatRooms.map((room: ChatRoomDetails) => {
-      const otherCompanyProfileId = room.initiator_company_profile_id === currentProfileId
-        ? room.recipient_company_profile_id
-        : room.initiator_company_profile_id;
-      
-      const otherCompanyProfile = companyProfileMap.get(otherCompanyProfileId) as CompanyProfile | undefined;
-      
-      const roomMessages = messagesByChatRoom[room.id] || [];
-      const lastMessage = roomMessages[0] || null;
-      const unreadCount = roomMessages.filter(
-        (msg: Message) => msg.receiver_company_profile_id === currentProfileId && msg.read_status === 'unread'
-      ).length;
-
-      return {
-        id: room.id,
-        other_company_profile: {
-          company_title: otherCompanyProfile?.company_title || "Unknown Company",
-          profile_image: otherCompanyProfile?.profile_image || null,
+    // Fetch all chat rooms where the current profile is either sender or receiver
+    const chatRooms = await prisma.chatRoom.findMany({
+      where: {
+        OR: [
+          { senderCompanyProfileId: currentProfileId },
+          { receiverCompanyProfileId: currentProfileId }
+        ]
+      },
+      include: {
+        senderCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
         },
-        last_message: lastMessage,
-        unread_count: unreadCount,
-      };
+        receiverCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          include: {
+            senderCompany: {
+              select: {
+                companyTitle: true,
+                profileImage: true
+              }
+            },
+            receiverCompany: {
+              select: {
+                companyTitle: true,
+                profileImage: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
     });
+
+    const chatRoomsWithDetails: ChatRoomWithDetails[] = await Promise.all(
+      chatRooms.map(async (room) => {
+        const otherCompanyProfile = 
+          room.senderCompanyProfileId === currentProfileId
+            ? room.receiverCompany
+            : room.senderCompany;
+
+        // Count unread messages
+        const unreadCount = await prisma.message.count({
+          where: {
+            chatRoomId: room.id,
+            receiverCompanyProfileId: currentProfileId,
+            readStatus: false
+          }
+        });
+
+        return {
+          id: room.id,
+          other_company_profile: {
+            company_title: otherCompanyProfile.companyTitle,
+            profile_image: otherCompanyProfile.profileImage,
+          },
+          last_message: room.messages[0] as MessageWithCompany || null,
+          unread_count: unreadCount,
+        };
+      })
+    );
 
     return chatRoomsWithDetails;
   } catch (error) {
@@ -320,16 +265,22 @@ export async function getChatRoomsForCurrentProfile(): Promise<ChatRoomWithDetai
   }
 }
 
-export async function markMessagesAsRead(chatRoomId: string, receiverCompanyProfileId: string): Promise<boolean> {
+export async function markMessagesAsRead(
+  chatRoomId: string, 
+  receiverCompanyProfileId: string
+): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from("messages")
-      .update({ read_status: ReadStatus.Read })
-      .eq('chat_room_id', chatRoomId)
-      .eq('receiver_company_profile_id', receiverCompanyProfileId)
-      .eq('read_status', ReadStatus.Unread);
+    await prisma.message.updateMany({
+      where: {
+        chatRoomId,
+        receiverCompanyProfileId,
+        readStatus: false
+      },
+      data: {
+        readStatus: true
+      }
+    });
 
-    if (error) throw error;
     return true;
   } catch (error) {
     console.error("Error marking messages as read:", error);
@@ -343,40 +294,54 @@ export async function createOrGetChatRoom(
   tenderId?: string
 ): Promise<{ chat_room_id: string; is_new: boolean } | null> {
   try {
-    const { data, error } = await supabase
-      .rpc('create_or_get_chat_room', {
-        p_initiator_id: initiatorCompanyProfileId,
-        p_recipient_id: recipientCompanyProfileId
+    // Try to find existing chat room (bidirectional check)
+    let chatRoom = await prisma.chatRoom.findFirst({
+      where: {
+        OR: [
+          {
+            senderCompanyProfileId: initiatorCompanyProfileId,
+            receiverCompanyProfileId: recipientCompanyProfileId,
+            tenderId: tenderId || null
+          },
+          {
+            senderCompanyProfileId: recipientCompanyProfileId,
+            receiverCompanyProfileId: initiatorCompanyProfileId,
+            tenderId: tenderId || null
+          }
+        ]
+      }
+    });
+
+    let isNew = false;
+
+    // Create new chat room if doesn't exist
+    if (!chatRoom) {
+      chatRoom = await prisma.chatRoom.create({
+        data: {
+          senderCompanyProfileId: initiatorCompanyProfileId,
+          receiverCompanyProfileId: recipientCompanyProfileId,
+          tenderId: tenderId || null
+        }
       });
+      isNew = true;
 
-    if (error) throw error;
-
-    const chatRoom = data[0];
-
-    if (chatRoom.is_new) {
-      // Create an initial message for the new chat room
-      await sendMessage(
-        chatRoom.chat_room_id,
-        "Chat room created",
+      // Send notification for new chat room
+      await sendNewChatRoomNotification(
         initiatorCompanyProfileId,
         recipientCompanyProfileId,
-        tenderId
+        chatRoom.id
       );
-
-      // Send email notification for new chat room
-      await sendNewChatRoomNotification(initiatorCompanyProfileId, recipientCompanyProfileId, chatRoom.chat_room_id);
     }
 
     return {
-      chat_room_id: chatRoom.chat_room_id,
-      is_new: chatRoom.is_new,
+      chat_room_id: chatRoom.id,
+      is_new: isNew,
     };
   } catch (error) {
     console.error("Error in createOrGetChatRoom:", error);
     return null;
   }
 }
-
 
 export async function sendMessage(
   chatRoomId: string,
@@ -386,35 +351,61 @@ export async function sendMessage(
   tenderId?: string,
   tenderRequestId?: string,
   pdfUrl?: string
-): Promise<{ success: boolean; data?: Message; error?: string }> {
+): Promise<{ success: boolean; data?: MessageWithCompany; error?: string }> {
   try {
-    const { data, error } = await supabase
-      .from("messages")
-      .insert({
-        chat_room_id: chatRoomId,
+    // Create the message
+    const message = await prisma.message.create({
+      data: {
+        chatRoomId,
         content,
-        sender_company_profile_id: senderCompanyProfileId,
-        receiver_company_profile_id: receiverCompanyProfileId,
-        tender_id: tenderId,
-        tender_request_id: tenderRequestId,
-        pdf_url: pdfUrl,
-        read_status: ReadStatus.Unread
-      })
-      .select()
-      .single();
+        senderCompanyProfileId,
+        receiverCompanyProfileId,
+        pdfUrl: pdfUrl || null,
+        readStatus: false
+      },
+      include: {
+        senderCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        },
+        receiverCompany: {
+          select: {
+            companyTitle: true,
+            profileImage: true
+          }
+        }
+      }
+    });
 
-    if (error) throw error;
+    // Update chat room's updatedAt
+    await prisma.chatRoom.update({
+      where: { id: chatRoomId },
+      data: { updatedAt: new Date() }
+    });
 
-    // Send email notification for new message
-    await sendNewMessageNotification(senderCompanyProfileId, receiverCompanyProfileId, chatRoomId, content);
+    // Trigger Pusher event for real-time update
+    await pusherServer.trigger(
+      `chat-${chatRoomId}`,
+      "new-message",
+      message
+    );
 
-    return { success: true, data: data as Message };
+    // Send email notification
+    await sendNewMessageNotification(
+      senderCompanyProfileId,
+      receiverCompanyProfileId,
+      chatRoomId,
+      content
+    );
+
+    return { success: true, data: message as MessageWithCompany };
   } catch (error) {
     console.error("Error sending message:", error);
     return { success: false, error: "Failed to send message" };
   }
 }
-
 
 async function sendNewChatRoomNotification(
   initiatorId: string,
@@ -423,37 +414,22 @@ async function sendNewChatRoomNotification(
 ) {
   try {
     const [initiator, recipient] = await Promise.all([
-      supabase
-        .from("company_profiles")
-        .select(`
-          company_title,
-          users(email)
-        `)
-        .eq("company_profile_id", initiatorId)
-        .single(),
-      supabase
-        .from("company_profiles")
-        .select(`
-          users(email)
-        `)
-        .eq("company_profile_id", recipientId)
-        .single()
+      prisma.company.findUnique({
+        where: { id: initiatorId },
+        select: { companyTitle: true, companyEmail: true }
+      }),
+      prisma.company.findUnique({
+        where: { id: recipientId },
+        select: { companyEmail: true }
+      })
     ]);
 
-    if (initiator.error) {
-      console.error("Error fetching initiator:", initiator.error);
-      throw new Error("Failed to fetch initiator profile");
-    }
-    if (recipient.error) {
-      console.error("Error fetching recipient:", recipient.error);
-      throw new Error("Failed to fetch recipient profile");
+    if (!initiator || !recipient) {
+      console.error("Initiator or recipient not found");
+      return;
     }
 
-    console.log("Initiator data:", JSON.stringify(initiator.data, null, 2));
-    console.log("Recipient data:", JSON.stringify(recipient.data, null, 2));
-
-    const recipientEmail = getEmailFromUserData(recipient.data.users);
-    console.log("recipientEmail", recipientEmail);
+    const recipientEmail = recipient.companyEmail;
 
     if (!recipientEmail) {
       console.log("No valid email found for recipient, skipping notification");
@@ -463,7 +439,7 @@ async function sendNewChatRoomNotification(
     const emailParams = {
       to: [recipientEmail],
       title: "New Chat Room Created",
-      body: `${initiator.data.company_title} has started a new chat with you. Click <a href="${process.env.NEXT_PUBLIC_WEBSITE_URL}/chats/${chatRoomId}">here</a> to view the conversation.`
+      body: `${initiator.companyTitle} has started a new chat with you. Click <a href="${process.env.NEXT_PUBLIC_WEBSITE_URL}/chats/${chatRoomId}">here</a> to view the conversation.`
     };
 
     await sendEmail(emailParams);

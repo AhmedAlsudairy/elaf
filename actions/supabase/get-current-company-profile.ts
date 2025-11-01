@@ -1,26 +1,25 @@
 "use server";
-import { prisma } from '@/lib/prisma'
+
+import { prisma } from "@/lib/prisma";
+import { currentUser } from "@clerk/nextjs/server";
+
 export async function getCurrentCompanyProfile() {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data, error } = await supabase
-    .from("company_profiles")
-    .select("*")
-    .eq("user_id", user?.id)
-    .single();
-
-  if (error) {
-    console.error("Error fetching company profile:", error);
+  const user = await currentUser();
+  if (!user) {
+    console.error("No authenticated user found.");
     return null;
   }
 
-  if (!data) {
-    console.log("Company profile not found");
+  const companyProfile = await prisma.company.findFirst({
+    where: {
+      companyEmail: user.emailAddresses[0]?.emailAddress,
+    },
+  });
+
+  if (!companyProfile) {
+    console.log("Company profile not found for:", user.emailAddresses[0]?.emailAddress);
     return null;
   }
 
-  return data;
+  return companyProfile;
 }

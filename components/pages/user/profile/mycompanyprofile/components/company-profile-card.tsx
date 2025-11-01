@@ -63,7 +63,9 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
             {profileImage ? (
               <AvatarImage src={profileImage} alt={companyTitle} />
             ) : (
-              <AvatarFallback>{companyTitle.slice(0, 2).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>
+              {(companyTitle ?? "NA").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
             )}
           </Avatar>
           <div className="flex flex-col text-center sm:text-left w-full min-w-0">

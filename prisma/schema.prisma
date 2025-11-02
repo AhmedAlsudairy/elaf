@@ -16,21 +16,21 @@ datasource db {
 
 // Enum definitions
 enum SectorEnum {
-  TECHNOLOGY
-  HEALTHCARE
-  FINANCE
-  EDUCATION
-  MANUFACTURING
-  RETAIL
-  CONSTRUCTION
-  TRANSPORTATION
-  ENERGY
-  AGRICULTURE
-  TELECOMMUNICATIONS
-  HOSPITALITY
-  REAL_ESTATE
-  MEDIA
-  CONSULTING
+  Technology
+  Healthcare
+  Finance
+  Education
+  Manufacturing
+  Retail
+  Construction
+  Transportation
+  Energy
+  Agriculture
+  Telecommunications
+  Hospitality
+  Realestate
+  Media
+  Consulting
 }
 
 enum Currency {

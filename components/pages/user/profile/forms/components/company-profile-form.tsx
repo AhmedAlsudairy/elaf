@@ -57,11 +57,13 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
     form.setValue("profileImage", "");
   };
 
-  const sectorOptions: MultiSelectOption[] = Object.values(SectorEnum).map((sector) => ({
-    id: sector,
-    name: sector
-  }));
-
+      const sectorOptions: MultiSelectOption[] = Object.values(SectorEnum).map((sector) => ({
+        id: sector,
+        name: sector
+          .split('_')
+          .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+          .join(' ') 
+      }));
   const onSubmitWithToast: SubmitHandler<CompanyFormData> = async (data) => {
     try {
       await onSubmit(data);

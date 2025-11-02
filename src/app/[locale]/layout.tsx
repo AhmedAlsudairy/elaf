@@ -32,9 +32,9 @@ export default async function RootLayout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>; // Updated type
 }>) {
-  const { locale } =  params;
+  const { locale } = await params; // Await params
   unstable_setRequestLocale(locale);
   const messages = await getMessages({ locale });
   const direction = getLangDir(locale);

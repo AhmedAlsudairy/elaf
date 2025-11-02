@@ -1,16 +1,22 @@
 
 
 export enum SectorEnum {
-    Technology = 'Technology',
-    Finance = 'Finance',
-    Healthcare = 'Healthcare',
-    Education = 'Education',
-    Manufacturing = 'Manufacturing',
-    Retail = 'Retail',
-    RealEstate = 'RealEstate',
-    Transportation = 'Transportation',
-    Energy = 'Energy',
-    Entertainment = 'Entertainment',
+  Technology = 'Technology',
+  Healthcare = 'Healthcare',
+  Finance = 'Finance',
+  Education = 'Education',
+  Manufacturing = 'Manufacturing',
+  Retail = 'Retail',
+  Realestate = 'Realestate',
+  Construction = 'Construction',
+  Transportation = 'Transportation',
+  Energy = 'Energy',
+  Agriculture = 'Agriculture',
+  Telecommunications = 'Telecommunications',
+  Hospitality = 'Hospitality',
+  Media = 'Media',
+  Consulting = 'Consulting',
+
 }
 
 export enum TenderStatus {

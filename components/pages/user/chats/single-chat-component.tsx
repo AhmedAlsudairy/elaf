@@ -94,10 +94,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const { data: readStatus } = useQuery({
-    queryKey: ['readStatus'],
-    queryFn: getReadStatus
-  });
+
 
   const newMessages = useSubscribeToChat(chatRoomId);
 
@@ -112,22 +109,22 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     setAllMessages(initialMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
   }, [initialMessages]);
 
-  useEffect(() => {
-    const fetchChatRoomDetails = async () => {
-      if (allMessages.length > 0 && !chatRoomDetails) {
-        try {
-          const result = await getMessages(chatRoomId, 1, 0);
-          if (result.chatRoomDetails) {
-            setChatRoomDetails(result.chatRoomDetails);
-          }
-        } catch (error) {
-          console.error("Error fetching chat room details:", error);
-        }
-      }
-    };
+        useEffect(() => {
+          const fetchChatRoomDetails = async () => {
+            if (!chatRoomDetails) {  // Remove the allMessages.length check
+              try {
+                const result = await getMessages(chatRoomId, 1, 0);
+                if (result.chatRoomDetails) {
+                  setChatRoomDetails(result.chatRoomDetails);
+                }
+              } catch (error) {
+                console.error("Error fetching chat room details:", error);
+              }
+            }
+          };
 
-    fetchChatRoomDetails();
-  }, [allMessages, chatRoomId, chatRoomDetails]);
+          fetchChatRoomDetails();
+        }, [chatRoomId, chatRoomDetails]);  // Changed dependency from allMessages to chatRoomId
 
   const lastTenderMessage = useMemo(() => {
     return [...allMessages].reverse().find(message => message.tender_id !== null);
@@ -152,47 +149,71 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [allMessages]);
 
-  const handleSendMessage = async () => {
-    if ((!newMessage.trim() && pdfUrls.length === 0) || !chatRoomDetails || !currentCompanyProfile) return;
 
-    setIsSendingMessage(true);
+  //debugging!
+const handleSendMessage = async () => {
+  console.log('1. Starting handleSendMessage');
+  console.log('2. newMessage:', newMessage);
+  console.log('3. pdfUrls:', pdfUrls);
+  console.log('4. chatRoomDetails:', chatRoomDetails);
+  console.log('5. currentCompanyProfile:', currentCompanyProfile);
 
-    const receiverCompanyProfileId =
-      chatRoomDetails.initiator_company_profile_id === currentCompanyProfile.company_profile_id
-        ? chatRoomDetails.recipient_company_profile_id
-        : chatRoomDetails.initiator_company_profile_id;
+  if ((!newMessage.trim() && pdfUrls.length === 0) || !chatRoomDetails || !currentCompanyProfile) {
+    console.log('6. EARLY RETURN - condition failed');
+    return;
+  }
 
-    try {
-      const result = await sendMessage(
-        chatRoomId,
-        newMessage,
-        currentCompanyProfile.company_profile_id,
-        receiverCompanyProfileId,
-        undefined,
-        undefined,
-        pdfUrls[0]
-      );
-      if (result && result.success && result.data) {
-        setNewMessage("");
-        setPdfUrls([]);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to send message",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error);
+  console.log('7. Passed validation, setting isSendingMessage to true');
+  setIsSendingMessage(true);
+
+        const receiverCompanyProfileId =
+          chatRoomDetails.initiatorCompanyProfileId === currentCompanyProfile.company_profile_id
+            ? chatRoomDetails.recipientCompanyProfileId
+            : chatRoomDetails.initiatorCompanyProfileId;
+
+  console.log('8. receiverCompanyProfileId:', receiverCompanyProfileId);
+
+  try {
+    console.log('9. Calling sendMessage...');
+
+    const result = await sendMessage(
+      chatRoomId,
+      newMessage,
+      currentCompanyProfile.company_profile_id,
+      receiverCompanyProfileId,
+      undefined,
+      undefined,
+      pdfUrls[0]
+    );
+
+    console.log('10. sendMessage result:', result);
+
+    if (result && result.success && result.data) {
+      console.log('11. Message sent successfully. Clearing inputs.');
+      setNewMessage("");
+      setPdfUrls([]);
+    } else {
+      console.log('12. ERROR: sendMessage returned failure');
       toast({
         title: "Error",
-        description: "Unexpected error sending message",
+        description: "Failed to send message",
         variant: "destructive",
       });
-    } finally {
-      setIsSendingMessage(false);
     }
-  };
+
+  } catch (error) {
+    console.log('13. Unexpected error:', error);
+    toast({
+      title: "Error",
+      description: "Unexpected error sending message",
+      variant: "destructive",
+    });
+  } finally {
+    console.log('14. Finished handleSendMessage, resetting isSendingMessage');
+    setIsSendingMessage(false);
+  }
+};
+
 
   const getOtherCompanyDetails = useCallback(() => {
     if (!chatRoomDetails || !currentCompanyProfile) return null;
@@ -231,7 +252,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   };
 
   const renderMessage = (message: Message) => {
-    const isSender = message.sender_company_profile_id === currentCompanyProfile?.company_profile_id;
+    const isSender = message.senderCompanyProfileId === currentCompanyProfile?.company_profile_id;
     const messageClassName = `flex ${isSender ? 'justify-end' : 'justify-start'} mb-4`;
     const bubbleClassName = `rounded-lg p-3 ${
       isSender ? 'bg-blue-500 text-white' : 'bg-gray-100 text-black'
@@ -262,9 +283,9 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               )}
             </div>
             <div className="flex items-center mt-1 text-xs text-gray-500">
-              <span>{message.sender_name}</span>
+              <span>{message.sender_name || message.senderCompany?.companyTitle || 'Unknown'}</span>
               <span className="mx-1">•</span>
-              <span>{format(new Date(message.created_at), "HH:mm")}</span>
+              <span>{format(new Date(message.created_at || message.createdAt), "HH:mm")}</span>
             </div>
           </div>
         </div>

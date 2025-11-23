@@ -53,10 +53,10 @@ export async function getCompanyProfiles(
       where: searchTerm
         ? {
             OR: [
-              { company_title: { contains: searchTerm, mode: 'insensitive' } },
+              { companyTitle: { contains: searchTerm, mode: 'insensitive' } },
               { bio: { contains: searchTerm, mode: 'insensitive' } },
               { address: { contains: searchTerm, mode: 'insensitive' } },
-              { company_email: { contains: searchTerm, mode: 'insensitive' } },
+              { companyEmail: { contains: searchTerm, mode: 'insensitive' } },
             ],
           }
         : undefined,
@@ -67,10 +67,10 @@ export async function getCompanyProfiles(
       where: searchTerm
         ? {
             OR: [
-              { company_title: { contains: searchTerm, mode: 'insensitive' } },
+              { companyTitle: { contains: searchTerm, mode: 'insensitive' } },
               { bio: { contains: searchTerm, mode: 'insensitive' } },
               { address: { contains: searchTerm, mode: 'insensitive' } },
-              { company_email: { contains: searchTerm, mode: 'insensitive' } },
+              { companyEmail: { contains: searchTerm, mode: 'insensitive' } },
             ],
           }
         : undefined,
@@ -83,7 +83,23 @@ export async function getCompanyProfiles(
 
     return {
       success: true,
-      data: companies,
+      data: companies.map(company => ({
+        company_profile_id: company.id,
+        user_id: company.companyProfileId || '',
+        createdAt: company.createdAt,
+        updated_at: company.updatedAt,
+        company_title: company.companyTitle,
+        company_number: company.companyNumber || '',
+        company_website: company.companyWebsite || '',
+        bio: company.bio || '',
+        phone_number: company.phoneNumber || '',
+        address: company.address || '',
+        profile_image: company.profileImage || '',
+        company_email: company.companyEmail,
+        sectors: company.sectors,
+        avg_overall_rating: 0,
+        number_of_ratings: 0,
+      })),
       metadata: {
         currentPage: page,
         totalPages,

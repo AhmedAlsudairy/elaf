@@ -25,7 +25,9 @@ type UserProfile = {
 };
 
 type CompanyProfile = {
-  company_profile_id: string;
+  id?: string;
+  company_profile_id?: string;
+  company_title?: string;
   // Add other company profile fields as needed
 };
 
@@ -43,8 +45,9 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
   };
 
   const handleCompanyProfileClick = () => {
-    router.push(initialCompanyProfile 
-      ? `/profile/companyprofiles/${initialCompanyProfile.company_profile_id}`
+    const companyId = initialCompanyProfile?.id || initialCompanyProfile?.company_profile_id;
+    router.push(companyId 
+      ? `/profile/companyprofiles/${companyId}`
       : "/profile/companyprofiles/new"
     );
   };

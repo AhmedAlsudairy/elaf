@@ -9,7 +9,7 @@ const intlMiddleware = createMiddleware({
 });
 
 const publicRoutes = ["/login", "/register", "/tenders"];
-const privateRoutes = ["/settings", "/tenders/", "/profile/companyprofiles/"];
+const privateRoutes = ["/settings", "/tenders/"];
 
 function isStaticAsset(path: string) {
   return /\.(svg|png|jpg|jpeg|gif|webp|ttf|woff|woff2|ico)$/i.test(path);

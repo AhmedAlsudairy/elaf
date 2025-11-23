@@ -1,23 +1,34 @@
 "use server";
 import { prisma } from '@/lib/prisma'
-export async function getCompanyProfileById(companyId:string) {
-  const supabase = createClient();
 
-  const { data, error } = await supabase
-    .from("company_profiles")
-    .select("company_profile_id, profile_image, company_title, bio, company_number, company_website, company_email, phone_number, address, sectors")
-    .eq("company_profile_id", companyId)
-    .single();
+export async function getCompanyProfileById(companyId: string) {
+  try {
+    const company = await prisma.company.findUnique({
+      where: {
+        id: companyId,
+      },
+    });
 
-  if (error) {
+    if (!company) {
+      console.log("Company profile not found");
+      return null;
+    }
+
+    // Transform Prisma model to match expected CompanyProfile type
+    return {
+      company_profile_id: company.id, // Use id as company_profile_id for compatibility
+      profile_image: company.profileImage,
+      company_title: company.companyTitle,
+      bio: company.bio,
+      company_number: company.companyNumber,
+      company_website: company.companyWebsite,
+      company_email: company.companyEmail,
+      phone_number: company.phoneNumber,
+      address: company.address,
+      sectors: company.sectors,
+    };
+  } catch (error) {
     console.error("Error fetching company profile:", error);
     return null;
   }
-
-  if (!data) {
-    console.log("Company profile not found");
-    return null;
-  }
-
-  return data;
 }

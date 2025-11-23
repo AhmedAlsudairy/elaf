@@ -20,7 +20,9 @@ type UserProfile = {
 };
 
 type CompanyProfile = {
-  company_profile_id: string;
+  id?: string;
+  company_profile_id?: string;
+  company_title?: string;
   // Add other company profile fields as needed
 };
 

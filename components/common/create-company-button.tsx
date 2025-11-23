@@ -53,14 +53,26 @@ export function CreateOrViewCompanyButton({
   const [hasCompany, setHasCompany] = React.useState<boolean | null>(null);
   const [loading, setLoading] = React.useState(true);
 
+  const [companyId, setCompanyId] = React.useState<string | null>(null);
+
   React.useEffect(() => {
     async function checkCompany() {
       try {
         const company = await getCurrentCompanyProfile();
-        setHasCompany(!!company);
+        console.log('Company profile fetched:', company);
+        if (company) {
+          console.log('Company ID:', company.id);
+          setHasCompany(true);
+          setCompanyId(company.id);
+        } else {
+          console.log('No company profile found');
+          setHasCompany(false);
+          setCompanyId(null);
+        }
       } catch (error) {
         console.error('Error checking company:', error);
         setHasCompany(false);
+        setCompanyId(null);
       } finally {
         setLoading(false);
       }
@@ -69,9 +81,27 @@ export function CreateOrViewCompanyButton({
   }, []);
 
   const handleClick = () => {
-    if (hasCompany) {
-      router.push(`/${locale}/profile/companyprofiles`); // Update to your actual company profile route
+    console.log('Button clicked - hasCompany:', hasCompany, 'companyId:', companyId, 'loading:', loading);
+    
+    // Prevent navigation if still loading
+    if (loading) {
+      console.log('Still loading, ignoring click');
+      return;
+    }
+    
+    // If we have a company but no ID, something is wrong - redirect to create
+    if (hasCompany && !companyId) {
+      console.warn('Company exists but no ID found, redirecting to create page');
+      router.push(`/${locale}/create-company-profile`);
+      return;
+    }
+    
+    if (hasCompany && companyId && companyId !== 'undefined' && companyId.trim() !== '') {
+      const url = `/${locale}/profile/companyprofiles/${companyId}`;
+      console.log('Navigating to:', url);
+      router.push(url);
     } else {
+      console.log('No company found or invalid ID, redirecting to create page');
       router.push(`/${locale}/create-company-profile`);
     }
   };
@@ -90,6 +120,7 @@ export function CreateOrViewCompanyButton({
       size={size} 
       className={className}
       onClick={handleClick}
+      disabled={loading || (hasCompany === true && !companyId)}
     >
       {hasCompany ? (
         <>
@@ -116,16 +147,17 @@ interface ServerCompanyButtonProps {
 
 export function ServerCompanyButton({ 
   hasCompany,
+  companyId,
   variant = 'default', 
   size = 'default',
   className = ''
-}: ServerCompanyButtonProps) {
+}: ServerCompanyButtonProps & { companyId?: string | null }) {
   const router = useRouter();
   const locale = useLocale();
 
   const handleClick = () => {
-    if (hasCompany) {
-      router.push(`/${locale}/profile/companyprofiles`);
+    if (hasCompany && companyId) {
+      router.push(`/${locale}/profile/companyprofiles/${companyId}`);
     } else {
       router.push(`/${locale}/create-company-profile`);
     }

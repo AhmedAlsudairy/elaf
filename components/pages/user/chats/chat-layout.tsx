@@ -76,15 +76,16 @@ const ChatInterface: React.FC = () => {
 
     const fetchProfile = async () => {
       try {
-        const profileData = await getCurrentCompanyProfile();
-        if (profileData) {
-          setProfile({
-            company_title: profileData.company_title,
-            company_email: profileData.company_email,
-            company_profile_id: profileData.company_profile_id,
-            profile_image: profileData.profile_image,
-          });
-        }
+          const profileData = await getCurrentCompanyProfile();
+          console.log('profileData from getCurrentCompanyProfile:', profileData); 
+          if (profileData) {
+            setProfile({
+              company_title: profileData.companyTitle,      
+              company_email: profileData.companyEmail,      
+              company_profile_id: profileData.id,           
+              profile_image: profileData.profileImage,      
+            });
+          }
       } catch (error) {
         console.error('Error fetching profile:', error);
       }

@@ -8,8 +8,8 @@ const intlMiddleware = createMiddleware({
   defaultLocale: "en",
 });
 
-const publicRoutes = ["/login", "/register", "/tenders"];
-const privateRoutes = ["/settings", "/tenders/"];
+const publicRoutes = ["/sign-in", "/sign-up", "/tenders"];
+const privateRoutes = ["/settings", "/tenders/add", "/tenders/edit"];
 
 function isStaticAsset(path: string) {
   return /\.(svg|png|jpg|jpeg|gif|webp|ttf|woff|woff2|ico)$/i.test(path);
@@ -33,23 +33,33 @@ export default clerkMiddleware(async (auth, request) => {
     ? "/" + request.nextUrl.pathname.split("/").slice(2).join("/")
     : request.nextUrl.pathname;
 
-  const isPrivateRoute = privateRoutes.some((route) => path.startsWith(route));
-  const isPublicRoute = publicRoutes.some((route) => path.startsWith(route));
+  // Check private routes more precisely
+  const isPrivateRoute = privateRoutes.some((route) => 
+    path === route || path.startsWith(route + "/")
+  );
+  
+  // Check public routes - /tenders is public but not /tenders/add
+  const isPublicRoute = publicRoutes.some((route) => {
+    if (route === "/tenders") {
+      return path === "/tenders" || (path.startsWith("/tenders/") && !isPrivateRoute);
+    }
+    return path.startsWith(route);
+  });
 
-  // Redirect to login if not authenticated and accessing private route
+  // Redirect to sign-in if not authenticated and accessing private route
   if (!userId && isPrivateRoute) {
-    const loginUrl = new URL(
-      `/${isValidLocale ? locale + "/" : ""}login`,
+    const signInUrl = new URL(
+      `/${isValidLocale ? locale + "/" : ""}sign-in`,
       request.url
     );
-    loginUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+    signInUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+    return NextResponse.redirect(signInUrl);
   }
 
   // Handle user profile checks
   if (userId) {
     const userProfile = await prisma.userProfile.findUnique({
-      where: { clerkUserId: userId }, // Changed from clerkId to clerkUserId to match your schema
+      where: { clerkUserId: userId },
     });
 
     if (!userProfile && path !== "/profile/startingprofile") {
@@ -68,7 +78,7 @@ export default clerkMiddleware(async (auth, request) => {
       return NextResponse.redirect(homeUrl);
     }
 
-    if (userProfile && isPublicRoute && path === "/login") {
+    if (userProfile && isPublicRoute && path === "/sign-in") {
       const homeUrl = new URL(
         `/${isValidLocale ? locale + "/" : ""}`,
         request.url

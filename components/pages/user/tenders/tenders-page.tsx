@@ -1,9 +1,12 @@
 // File: components/pages/user/tenders/tenders-page.tsx
 import { Metadata, ResolvingMetadata } from 'next'
+import Link from 'next/link'
+import { Plus } from 'lucide-react'
 import { getTenders } from '@/actions/supabase/get-tenders'
 import { SectorEnum, TenderStatus } from '@/constant/text'
 import { SearchResult, Tender } from '@/types'
 import TenderInfiniteScrollList from './components/tender-list'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   params: { id: string }
@@ -15,7 +18,6 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const initialTenders = await fetchInitialTenders()
-  // Fix for Error 1: Use Array.from() to convert Set to Array before using join
   const sectors = Array.from(new Set(initialTenders.flatMap(tender => tender.tender_sectors))).join(', ')
   const previousImages = (await parent).openGraph?.images || []
 
@@ -32,7 +34,6 @@ export async function generateMetadata(
 }
 
 async function fetchInitialTenders(): Promise<Tender[]> {
-  // Fix for Error 2: Update the type of params to match getTenders expectations
   const params: {
     query?: string;
     from?: number;
@@ -57,19 +58,16 @@ async function fetchInitialTenders(): Promise<Tender[]> {
 export default function TenderListPage() {
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Tender Opportunities</h1>
-      <button>hello click me test cro</button>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Tender Opportunities</h1>
+        <Button asChild>
+          <Link href="tenders/add">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Tender
+          </Link>
+        </Button>
+      </div>
       <TenderInfiniteScrollList />
     </main>
   )
 }
-
-// Update SearchParams type in @/types to include from and to
-// File: types.ts (partial)
-export type SearchParams = {
-  query: string;
-  sector: SectorEnum | null;
-  status: TenderStatus | null;
-  from?: number;
-  to?: number;
-};

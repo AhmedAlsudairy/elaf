@@ -4,6 +4,7 @@
   },
   "Navbar": {
     "posts": "Posts",
+    "socialMedia":"Social Media",
     "tenders": "Tenders",
     "profile/companyprofiles": "Companies",
     "contact": "Contact",

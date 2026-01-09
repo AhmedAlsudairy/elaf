@@ -21,7 +21,12 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.next();
   }
 
-  // Skip for static assets
+  // Skip locale logic for API routes (but let Clerk auth run)
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+
   if (isStaticAsset(request.nextUrl.pathname)) return NextResponse.next();
 
   let response = intlMiddleware(request);
@@ -95,6 +100,6 @@ export const config = {
     "/",
     "/(ar|en)/:path*",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-    "/(api|trpc)(.*)",
+    "/api/:path*",
   ],
 };

@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -14,7 +11,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enum definitions
+// ==================== ENUMS ====================
+
 enum SectorEnum {
   Technology
   Healthcare
@@ -45,10 +43,26 @@ enum PDFChoice {
   generate
 }
 
+// NEW: Social Media Enums
+enum PostType {
+  POST    // Regular business post
+  NEWS    // Official news article
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  SHARE
+  FOLLOW
+  MENTION
+}
+
+// ==================== EXISTING MODELS ====================
+
 // User Profile model
 model UserProfile {
   id                    String    @id @default(uuid())
-   clerkUserId          String    @unique
+  clerkUserId           String    @unique
   name                  String
   email                 String    @unique
   bio                   String?
@@ -57,16 +71,21 @@ model UserProfile {
   profileImage          String?   @map("profile_image")
   role                  String?
   companyThatWorkedWith String?   @map("company_that_worked_with")
-  
-  // ADD THIS:
   companyId             String?   @map("company_id")
   
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   
-  // Relations
+  // Existing Relations
   company               Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
   tenders               Tender[]
+  following             Follow[] @relation("UserFollows")
+  // NEW: Social Media Relations
+  likes                 Like[]
+  comments              Comment[]
+  shares                Share[]
+  bookmarks             Bookmark[]
+  notifications         Notification[]
   
   @@index([companyId])
   @@index([clerkUserId])
@@ -90,18 +109,23 @@ model Company {
   createdAt                DateTime      @default(now()) @map("created_at")
   updatedAt                DateTime      @updatedAt @map("updated_at")
   
-  // Relations
-  users                    UserProfile[]  // ADD THIS
+  // Existing Relations
+  users                    UserProfile[]
   tenders                  Tender[]
   sentChats                ChatRoom[]    @relation("SentChats")
   receivedChats            ChatRoom[]    @relation("ReceivedChats")
   sentMessages             Message[]     @relation("SentMessages")
   receivedMessages         Message[]     @relation("ReceivedMessages")
+  followers                Follow[]      @relation("CompanyFollowers")  
+  
+  // NEW: Social Media Relations
+  posts                    Post[]        // Company creates posts
   
   @@index([companyEmail])
   @@map("companies")
 }
-// Tender model
+
+// Tender model (UNCHANGED)
 model Tender {
   id              String        @id @default(uuid())
   title           String
@@ -113,15 +137,12 @@ model Tender {
   terms           String        @db.Text
   scopeOfWorks    String        @map("scope_of_works") @db.Text
   pdfChoice       PDFChoice     @map("pdf_choice")
-  
-  // Foreign keys
   companyId       String?       @map("company_id")
   userId          String?       @map("user_id")
   
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
   
-  // Relations
   company         Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user            UserProfile?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   customFields    CustomField[]
@@ -133,7 +154,7 @@ model Tender {
   @@map("tenders")
 }
 
-// Custom Fields for Tender
+// Custom Fields for Tender (UNCHANGED)
 model CustomField {
   id          String   @id @default(uuid())
   title       String
@@ -143,14 +164,13 @@ model CustomField {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   
-  // Relations
   tender      Tender   @relation(fields: [tenderId], references: [id], onDelete: Cascade)
   
   @@index([tenderId])
   @@map("custom_fields")
 }
 
-// Chat Room to group conversations
+// Chat Room (UNCHANGED)
 model ChatRoom {
   id                       String    @id @default(uuid())
   tenderId                 String?   @map("tender_id")
@@ -161,7 +181,6 @@ model ChatRoom {
   createdAt                DateTime  @default(now()) @map("created_at")
   updatedAt                DateTime  @updatedAt @map("updated_at")
   
-  // Relations
   tender                   Tender?   @relation(fields: [tenderId], references: [id], onDelete: Cascade)
   senderCompany            Company   @relation("SentChats", fields: [senderCompanyProfileId], references: [id], onDelete: Cascade)
   receiverCompany          Company   @relation("ReceivedChats", fields: [receiverCompanyProfileId], references: [id], onDelete: Cascade)
@@ -174,22 +193,19 @@ model ChatRoom {
   @@map("chat_rooms")
 }
 
-// Message model
+// Message (UNCHANGED)
 model Message {
   id                       String    @id @default(uuid())
   chatRoomId               String    @map("chat_room_id")
   content                  String    @db.Text
   pdfUrl                   String?   @map("pdf_url")
   readStatus               Boolean   @default(false) @map("read_status")
-  
-  // Denormalized for performance
   senderCompanyProfileId   String    @map("sender_company_profile_id")
   receiverCompanyProfileId String    @map("receiver_company_profile_id")
   
   createdAt                DateTime  @default(now()) @map("created_at")
   updatedAt                DateTime  @updatedAt @map("updated_at")
   
-  // Relations
   chatRoom                 ChatRoom  @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
   senderCompany            Company   @relation("SentMessages", fields: [senderCompanyProfileId], references: [id], onDelete: Cascade)
   receiverCompany          Company   @relation("ReceivedMessages", fields: [receiverCompanyProfileId], references: [id], onDelete: Cascade)
@@ -199,4 +215,147 @@ model Message {
   @@index([senderCompanyProfileId])
   @@index([receiverCompanyProfileId])
   @@map("messages")
+}
+
+// ==================== NEW: SOCIAL MEDIA MODELS ====================
+
+// Post - Main content (created by Company)
+model Post {
+  id            String   @id @default(uuid())
+  content       String   @db.Text
+  postType      PostType @default(POST)
+  
+  // News-specific fields (only for NEWS posts)
+  title         String?
+  summary       String?  @db.Text
+  featuredImage String?  @map("featured_image")
+  
+  // Media attachments
+  mediaUrls     String[] @map("media_urls") // Array of image/video URLs
+  
+  // Author (Company posts on behalf of users)
+  companyId     String   @map("company_id")
+  
+  // Denormalized counters for performance
+  likesCount    Int      @default(0) @map("likes_count")
+  commentsCount Int      @default(0) @map("comments_count")
+  sharesCount   Int      @default(0) @map("shares_count")
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  company       Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  likes         Like[]
+  comments      Comment[]
+  shares        Share[]
+  bookmarks     Bookmark[]
+  
+  @@index([companyId])
+  @@index([postType])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+// Like - Users like posts
+model Like {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  post Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, userId]) // Can't like same post twice
+  @@index([postId])
+  @@index([userId])
+  @@map("likes")
+}
+
+// Comment - Users comment on posts (unlimited nesting)
+model Comment {
+  id              String   @id @default(uuid())
+  content         String   @db.Text
+  postId          String   @map("post_id")
+  userId          String   @map("user_id")
+  parentCommentId String?  @map("parent_comment_id") // NULL = top-level comment
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  post     Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user     UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   Comment?     @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies  Comment[]    @relation("CommentReplies") // Nested comments
+  
+  @@index([postId])
+  @@index([userId])
+  @@index([parentCommentId])
+  @@map("comments")
+}
+
+// Share - Users share/repost posts
+model Share {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  comment   String?  @db.Text // Optional comment when sharing
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  post Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([postId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("shares")
+}
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String   @map("follower_id")  // User who follows
+  followingId String   @map("following_id") // Company being followed
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  follower  UserProfile @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
+  following Company     @relation("CompanyFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+// Bookmark - Users save posts for later
+model Bookmark {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  post Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, userId]) // Can't bookmark same post twice
+  @@index([userId])
+  @@index([createdAt])
+  @@map("bookmarks")
+}
+
+// Notification - Real-time updates via Pusher
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id") // Who receives notification
+  type      NotificationType
+  content   String           // e.g., "John liked your post"
+  postId    String?          @map("post_id")
+  commentId String?          @map("comment_id")
+  actorId   String           @map("actor_id") // Who triggered it (UserProfile.id)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now()) @map("created_at")
+  
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, read]) // Fetch unread notifications
+  @@index([createdAt])
+  @@map("notifications")
 }

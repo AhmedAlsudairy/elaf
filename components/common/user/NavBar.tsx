@@ -25,10 +25,10 @@ export const Header = () => {
   }, [])
 
   const publicNavItems = useMemo(
-    () => ['tenders', 'profile/companyprofiles', 'contact'],
+    () => ['tenders', 'profile/companyprofiles', 'contact',],
     []
   )
-  const privateNavItems = useMemo(() => ['chats'], [])
+  const privateNavItems = useMemo(() => ['chats','socialMedia'], [])
 
   const renderNavItems = useCallback(
     (isMobile = false) => {

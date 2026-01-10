@@ -6,7 +6,7 @@ import SignUpSection from "./components/signup-section";
 import HeroSection from "./components/hero-section";
 import FeatureSection from "./components/feature-section";
 import SocialMediaSection from "./components/socialmedia-section";
-import { checkAuthAndProfiles } from "@/actions/supabase/check-auth-and-profile";
+import { checkUser } from "@/actions/neon/auth/check-user";
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -20,9 +20,9 @@ export default function LandingPage({ searchParams }: { searchParams: { msg: str
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { isAuthenticated, userProfile } = await checkAuthAndProfiles();
+      const userProfile = await checkUser();
       
-      if (isAuthenticated && userProfile) {
+      if (userProfile) {
         // Redirect to profile page with the message as a query parameter
         const redirectUrl = `/profile/myprofile${msg ? `?message=${encodeURIComponent(msg)}` : ''}`;
         router.push(redirectUrl);

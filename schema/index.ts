@@ -1,4 +1,4 @@
-import { SectorEnum } from "@/constant/text";
+import { SectorEnum } from "@prisma/client";
 import * as z from "zod";
 
 // User Profile Schema
@@ -17,16 +17,16 @@ export const userProfileSchema = z.object({
 // Company Schema
 export const companySchema = z.object({
   id: z.string().uuid().optional(),
-  companyProfileId: z.string().optional(),
+  companyProfileId: z.string().nullish(),
   companyTitle: z.string().min(2, { message: "Company title must be at least 2 characters." }),
-  companyNumber: z.string().optional(),
-  companyWebsite: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal("")),
+  companyNumber: z.string().nullish(),
+  companyWebsite: z.string().url({ message: "Please enter a valid URL." }).nullish().or(z.literal("")),
   companyEmail: z.string().email({ message: "Please enter a valid email address." }),
-  sectors: z.array(z.nativeEnum(SectorEnum)).optional(),
-  bio: z.string().optional(),
-  phoneNumber: z.string().optional(),
-  address: z.string().optional(),
-  profileImage: z.string().optional(),
+  sectors: z.array(z.nativeEnum(SectorEnum)).nullish(),
+  bio: z.string().nullish(),
+  phoneNumber: z.string().nullish(),
+  address: z.string().nullish(),
+  profileImage: z.string().nullish(),
 });
 
 // Tender Schema

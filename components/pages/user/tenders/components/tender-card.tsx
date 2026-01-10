@@ -3,18 +3,20 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, differenceInDays } from 'date-fns';
+import { SectorEnum } from "@prisma/client";
+import { TenderStatus } from "@/constant/text";
 
 interface TenderCardProps {
   companyId: string;
   tenderId: string;
   companyTitle: string;
   profileImage: string;
-  sectors: string[];
-  startingDate: string;
-  endDate: string;
+  sectors: (string | SectorEnum)[];
+  startingDate: string | Date;
+  endDate: string | Date;
   tenderTitle: string;
   summary: string;
-  status: 'open' | 'closed' | 'awarded'|"done";
+  status: TenderStatus | string;
   address: string;
 }
 
@@ -31,8 +33,8 @@ const TenderCard: React.FC<TenderCardProps> = ({
   status,
   address
 }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateValue: string | Date) => {
+    const date = new Date(dateValue);
     return format(date, 'dd MMM yy');
   };
 

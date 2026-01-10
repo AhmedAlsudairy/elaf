@@ -1,9 +1,9 @@
-import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
+import { getCurrentCompanyProfile } from '@/actions/neon/company/get-current-company-profile';
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import Link from 'next/link';
-import { createOrGetChatRoom } from '@/actions/supabase/chats';
-import { getCompanyProfileById } from '@/actions/supabase/gett-company-profile-by-id';
+import { createOrGetChatRoom } from '@/actions/neon/chat/chats';
+import { getCompanyProfileById } from '@/actions/neon/company/gett-company-profile-by-id';
 import { notFound, redirect } from 'next/navigation';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,18 +12,19 @@ import { Mail, Phone, MapPin, Globe, Building } from "lucide-react";
 export default async function CompanyProfilePage({ 
   params 
 }: { 
-  params: { id: string } 
+  params: Promise<{ id: string }>
 }) {
-  const company = await getCompanyProfileById(params.id);
+  const { id } = await params;
+  const company = await getCompanyProfileById(id);
 
   if (!company) {
     notFound();
   }
 const currentProfile = await getCurrentCompanyProfile();
 console.log('AAAAAAAAAAAAcurrentProfile:', currentProfile);
-console.log('params.id:', params.id);
-console.log('canChat:', currentProfile && currentProfile.id !== params.id);
-const canChat = currentProfile && currentProfile.id !== params.id;
+console.log('params.id:', id);
+console.log('canChat:', currentProfile && currentProfile.id !== id);
+const canChat = currentProfile && currentProfile.id !== id;
 
 
   return (
@@ -32,19 +33,19 @@ const canChat = currentProfile && currentProfile.id !== params.id;
         {/* Header */}
         <div className="flex items-start gap-6 mb-6">
           <Avatar className="w-24 h-24">
-            {company.profile_image ? (
-              <AvatarImage src={company.profile_image} alt={company.company_title} />
+            {company.profileImage ? (
+              <AvatarImage src={company.profileImage} alt={company.companyTitle} />
             ) : (
               <AvatarFallback className="text-2xl">
-                {company.company_title.slice(0, 2).toUpperCase()}
+                {company.companyTitle.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             )}
           </Avatar>
           
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{company.company_title}</h1>
-            {company.company_number && (
-              <p className="text-gray-600 mb-2">Company #: {company.company_number}</p>
+            <h1 className="text-3xl font-bold mb-2">{company.companyTitle}</h1>
+            {company.companyNumber && (
+              <p className="text-gray-600 mb-2">Company #: {company.companyNumber}</p>
             )}
           </div>
         </div>
@@ -63,15 +64,15 @@ const canChat = currentProfile && currentProfile.id !== params.id;
           
           <div className="flex items-center gap-2 text-gray-700">
             <Mail className="w-5 h-5 text-blue-600" />
-            <a href={`mailto:${company.company_email}`} className="hover:underline">
-              {company.company_email}
+            <a href={`mailto:${company.companyEmail}`} className="hover:underline">
+              {company.companyEmail}
             </a>
           </div>
 
-          {company.phone_number && (
+          {company.phoneNumber && (
             <div className="flex items-center gap-2 text-gray-700">
               <Phone className="w-5 h-5 text-blue-600" />
-              <span>{company.phone_number}</span>
+              <span>{company.phoneNumber}</span>
             </div>
           )}
 
@@ -82,11 +83,11 @@ const canChat = currentProfile && currentProfile.id !== params.id;
             </div>
           )}
 
-          {company.company_website && (
+          {company.companyWebsite && (
             <div className="flex items-center gap-2 text-gray-700">
               <Globe className="w-5 h-5 text-blue-600" />
-              <a href={company.company_website} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                {company.company_website}
+              <a href={company.companyWebsite} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                {company.companyWebsite}
               </a>
             </div>
           )}
@@ -97,10 +98,10 @@ const canChat = currentProfile && currentProfile.id !== params.id;
           'use server'
           const chatRoom = await createOrGetChatRoom(
             currentProfile!.id,
-            params.id
+            id
           );
           if (chatRoom) {
-            redirect(`/chats/${chatRoom.chat_room_id}`);
+            redirect(`/chats/${chatRoom.id}`); // Assuming chatRoom.id
           }
         }}>
           <Button type="submit" className="flex items-center gap-2">

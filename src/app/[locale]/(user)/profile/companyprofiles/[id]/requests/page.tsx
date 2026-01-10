@@ -3,26 +3,25 @@
 import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
-import { getTenderRequestsByCompanyProfileId } from '@/actions/supabase/get-tender-request-by-company-id';
+import { getTenderRequestsByCompanyProfileId } from '@/actions/neon/request/get-tender-request-by-company-id';
 import { Loader2 } from 'lucide-react';
 import TenderRequestCard from '@/components/pages/user/tenders/requesttender/request-tender-card';
 import { currencyT } from '@/types';
+import { Currency } from "@prisma/client";
 
 const ITEMS_PER_PAGE = 9; // Adjust this number as needed
 
 interface TenderRequest {
   id: string;
-  title: string;
-  summary: string;
-  bid_price: number;
-  currency: currencyT;
-  pdf_url: string;
-  status: 'pending' | 'accepted' | 'rejected' |"done";
+  status: string;
+  price: number | null;
   tender: {
-    tender_id: string;
-    status: 'open' | 'closed' | 'awarded';  
-    end_date: string;
-
+    id: string;
+    title: string;
+    summary: string;
+    pdfUrl: string;
+    endDate: Date;
+    currency: Currency;
   };
 }
 
@@ -34,7 +33,7 @@ interface ApiResponse {
   error?: string;
 }
 
-const TenderRequestsPage = ({ params }: { params: { companyId: string } }) => {
+const TenderRequestsPage = () => {
   const { ref, inView } = useInView();
 
   const fetchTenderRequests = async ({ pageParam = 0 }): Promise<ApiResponse> => {
@@ -79,15 +78,15 @@ const TenderRequestsPage = ({ params }: { params: { companyId: string } }) => {
             {page.data.map((tenderRequest: TenderRequest) => (
               <TenderRequestCard
                 key={tenderRequest.id}
-                title={tenderRequest.title}
-                summary={tenderRequest.summary}
-                price={tenderRequest.bid_price}
-                currency={tenderRequest.currency}
-                tenderId={tenderRequest.tender.tender_id}
-                pdfUrl={tenderRequest.pdf_url}
-                tenderRequestStatus={tenderRequest.status}
-                tenderStatus={tenderRequest.tender.status}
-                endDate={tenderRequest.tender.end_date}
+                title={tenderRequest.tender.title}
+                summary={tenderRequest.tender.summary}
+                price={tenderRequest.price ?? 0}
+                currency={tenderRequest.tender.currency as currencyT}
+                tenderId={tenderRequest.tender.id}
+                pdfUrl={tenderRequest.tender.pdfUrl}
+                tenderRequestStatus={tenderRequest.status as any}
+                tenderStatus={new Date(tenderRequest.tender.endDate) > new Date() ? 'open' : 'closed'}
+                endDate={tenderRequest.tender.endDate}
 
               />
             ))}

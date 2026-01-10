@@ -8,9 +8,8 @@ import { companySchema } from '@/schema';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import CompanyForm from '@/components/pages/user/profile/forms/components/company-profile-form';
-import {createCompanyProfile } from '@/actions/supabase/add-company-profile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { addCompany } from '@/actions/supabase/add-company-profile';
+import { addCompany } from '@/actions/neon/company/add-company-profile';
 
 type CompanyFormData = z.infer<typeof companySchema>;
 

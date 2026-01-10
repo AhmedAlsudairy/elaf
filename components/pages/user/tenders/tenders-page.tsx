@@ -2,7 +2,7 @@
 import { Metadata, ResolvingMetadata } from 'next'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { getTenders } from '@/actions/supabase/get-tenders'
+import { getTenders } from '@/actions/neon/tender/get-tenders'
 import { SectorEnum, TenderStatus } from '@/constant/text'
 import { SearchResult, Tender } from '@/types'
 import TenderInfiniteScrollList from './components/tender-list'
@@ -18,15 +18,15 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const initialTenders = await fetchInitialTenders()
-  const sectors = Array.from(new Set(initialTenders.flatMap(tender => tender.tender_sectors))).join(', ')
+  const sectors = Array.from(new Set(initialTenders.flatMap(tender => tender.tenderSectors))).join(', ')
   const previousImages = (await parent).openGraph?.images || []
 
   return {
     title: `Browse ${initialTenders.length}+ Active Tenders`,
-    description: `Explore tenders from various sectors including ${sectors}. Find opportunities in ${initialTenders[0]?.address || 'multiple locations'}.`,
+    description: `Explore tenders from various sectors including ${sectors}. Find opportunities in ${initialTenders[0]?.companyTitle || 'multiple locations'}.`,
     openGraph: {
       title: `Tender Opportunities in ${sectors}`,
-      description: `Discover ${initialTenders.length}+ active tenders. From ${initialTenders[0]?.company_title || 'top companies'} and more.`,
+      description: `Discover ${initialTenders.length}+ active tenders. From ${initialTenders[0]?.companyTitle || 'top companies'} and more.`,
       images: ['/tender-opportunities-og-image.jpg', ...previousImages],
     },
     keywords: ['tenders', 'business opportunities', ...sectors.split(', ')],

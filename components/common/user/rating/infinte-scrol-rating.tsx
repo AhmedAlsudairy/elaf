@@ -5,7 +5,7 @@ import { useInView } from 'react-intersection-observer';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, StarHalf } from 'lucide-react';
-import { getCompanyRatingsWithProfiles } from '@/actions/supabase/add-rating';
+import { getCompanyRatingsWithProfiles } from '@/actions/neon/rating/add-rating';
 
 interface RatingWithProfile {
   id: string;

@@ -1,5 +1,6 @@
 import Posts from "@/components/pages/user/posts/posts-page";
-import { prisma } from '@/lib/prisma'import { redirect } from "next/navigation";
+import { prisma } from '@/lib/prisma'
+import { redirect } from "next/navigation";
 
 
 

@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ==================== ENUMS ====================
@@ -121,6 +120,22 @@ model Company {
   // NEW: Social Media Relations
   posts                    Post[]        // Company creates posts
   
+  // Custom Sections
+  customSections           CustomSection[]
+
+  // Ratings Relations
+  tenderRequests           TenderRequest[]
+  givenRatings             CompanyRating[] @relation("GivenRatings")
+  receivedRatings          CompanyRating[] @relation("ReceivedRatings")
+  
+  // Rating Aggregates
+  avgQuality               Float         @default(0) @map("avg_quality")
+  avgCommunication         Float         @default(0) @map("avg_communication")
+  avgExperience            Float         @default(0) @map("avg_experience")
+  avgDeadline              Float         @default(0) @map("avg_deadline")
+  avgOverallRating         Float         @default(0) @map("avg_overall_rating")
+  numberOfRatings          Int           @default(0) @map("number_of_ratings")
+  
   @@index([companyEmail])
   @@map("companies")
 }
@@ -147,6 +162,8 @@ model Tender {
   user            UserProfile?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   customFields    CustomField[]
   chatRooms       ChatRoom[]
+  requests        TenderRequest[]
+  ratings         CompanyRating[]
   
   @@index([companyId])
   @@index([userId])
@@ -358,4 +375,65 @@ model Notification {
   @@index([userId, read]) // Fetch unread notifications
   @@index([createdAt])
   @@map("notifications")
+}
+
+// ==================== NEW: RATING MODELS ====================
+
+model CompanyRating {
+  id              String   @id @default(uuid())
+  ratingCompanyId String   @map("rating_company_id")
+  ratedCompanyId  String   @map("rated_company_id")
+  tenderId        String   @map("tender_id")
+  tenderRequestId String   @map("tender_request_id")
+  quality         Int
+  communication   Int
+  experience      Int
+  deadline        Int
+  overallRating   Float    @map("overall_rating") 
+  comment         String?  @db.Text
+  isAnonymous     Boolean  @map("anonymous")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  ratingCompany   Company       @relation("GivenRatings", fields: [ratingCompanyId], references: [id])
+  ratedCompany    Company       @relation("ReceivedRatings", fields: [ratedCompanyId], references: [id])
+  tender          Tender        @relation(fields: [tenderId], references: [id])
+  tenderRequest   TenderRequest @relation(fields: [tenderRequestId], references: [id])
+
+  @@map("company_ratings")
+}
+
+model TenderRequest {
+  id               String   @id @default(uuid())
+  tenderId         String   @map("tender_id")
+  companyId        String   @map("company_profile_id")
+  status           String   @default("PENDING") 
+  price            Float?
+  days             Int?
+  description      String?  @db.Text
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt      @map("updated_at")
+
+  tender           Tender        @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  company          Company       @relation(fields: [companyId], references: [id]) 
+
+  ratings          CompanyRating[]
+
+  @@map("tender_requests")
+}
+model CustomSection {
+  id               String   @id @default(uuid())
+  title            String
+  description      String   @db.Text
+  fileUrl          String?  @map("file_url")
+  tabName          String   @map("tab_name")
+  companyProfileId String   @map("company_profile_id")
+  
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  company          Company  @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+
+  @@index([companyProfileId])
+  @@map("custom_sections")
 }

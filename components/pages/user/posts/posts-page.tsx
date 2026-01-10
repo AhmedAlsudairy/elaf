@@ -2,7 +2,8 @@
 
 // import { protectedRoute } from "@/actions/supabase/test";
 
-import { prisma } from '@/lib/prisma'import { redirect } from "next/navigation";
+import { prisma } from '@/lib/prisma'
+import { redirect } from "next/navigation";
 
 const  Posts = async() => {
 

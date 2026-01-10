@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PDFUpload from '@/components/common/pdf-upload';
 import type {  CustomSection, CustomSectionProps } from '@/types';
 import { FileText, Link } from "lucide-react";
-import { Section } from '@/actions/supabase/get-sections';
+import { Section } from '@/actions/neon/section/get-sections';
 
 export function CustomSection({ section, onUpdate, isEditing }: CustomSectionProps) {
   const handleChange = (field: keyof CustomSection, value: string) => {
@@ -39,9 +39,9 @@ export function CustomSection({ section, onUpdate, isEditing }: CustomSectionPro
             <div>
               <Label>PDF File</Label>
               <PDFUpload
-                onChange={(url) => handleChange('file_url', url)}
-                onRemove={() => handleChange('file_url', '')}
-                value={section.file_url ? [section.file_url] : []}
+                onChange={(url) => handleChange('fileUrl', url)}
+                onRemove={() => handleChange('fileUrl', '')}
+                value={section.fileUrl ? [section.fileUrl] : []}
                 bucketName="profile"
               />
             </div>
@@ -60,10 +60,10 @@ export function CustomSection({ section, onUpdate, isEditing }: CustomSectionPro
         <div className="prose max-w-none">
           <p>{section.description}</p>
         </div>
-        {section.file_url && (
+        {section.fileUrl && (
           <div className="mt-4">
             <a 
-              href={section.file_url} 
+              href={section.fileUrl} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center text-primary hover:underline"

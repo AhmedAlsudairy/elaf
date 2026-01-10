@@ -13,14 +13,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { UserMenuProps } from '@/types';
-import { SignOut } from '@/actions/supabase/signout';
+import { useClerk } from '@clerk/nextjs';
 
 export const ProfileMenu = ({ userProfile, companyProfile, isMobile, onMenuItemClick, onSignOut }: UserMenuProps) => {
   const t = useTranslations('Navbar');
   const router = useRouter();
+  const { signOut } = useClerk();
 
   const handleSignOut = async () => {
-    await SignOut();
+    await signOut();
     onSignOut(); // This will update the state in the Header component
     router.push('/'); // Redirect to home page
     router.refresh(); // Revalidate the current path

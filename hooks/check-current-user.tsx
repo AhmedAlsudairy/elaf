@@ -1,5 +1,5 @@
 'use client'
-import { isCurrentUserCompanyProfile } from '@/actions/supabase/is-current-company-profile';
+import { isCurrentUserCompanyProfile } from '@/actions/neon/company/is-current-company-profile';
 import { useState, useEffect } from 'react';
 
 export function useIsOwnerOfCompany(companyProfileId: string | undefined) {

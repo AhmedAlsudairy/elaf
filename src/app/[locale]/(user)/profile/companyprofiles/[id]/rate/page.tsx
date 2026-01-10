@@ -1,9 +1,10 @@
-import { getCompanyRatings } from "@/actions/supabase/add-rating";
+import { getCompanyRatings } from "@/actions/neon/rating/add-rating";
 import InfiniteScrollRatings from "@/components/common/user/rating/infinte-scrol-rating";
 import CompanyRatingHeader from "@/components/common/user/rating/rating-header";
 
-const Page = async ({ params }: { params: { companyId: string } }) => {
-    const ratings = await getCompanyRatings(params.companyId);
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+    const ratings = await getCompanyRatings(id);
 
     return (
         <div className="bg-gray-50 min-h-screen">
@@ -16,7 +17,7 @@ const Page = async ({ params }: { params: { companyId: string } }) => {
                 
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h2 className="text-2xl font-semibold text-gray-800 mb-6">All Reviews</h2>
-                    <InfiniteScrollRatings companyId={params.companyId} />
+                    <InfiniteScrollRatings companyId={id} />
                 </div>
             </div>
         </div>

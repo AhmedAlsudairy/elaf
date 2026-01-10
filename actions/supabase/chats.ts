@@ -1,9 +1,9 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { getCurrentCompanyProfile } from "./get-current-company-profile";
 import { sendEmail } from "@/lib/utils/resend/send-emails";
 import { pusherServer } from "@/lib/pusher-server";
+import { getCurrentCompanyProfile } from '../neon/company/get-current-company-profile';
 
 interface MessageWithCompany {
   id: string;

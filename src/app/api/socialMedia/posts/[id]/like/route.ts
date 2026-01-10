@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // POST /api/posts/[id]/like - Toggle like
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -19,7 +17,7 @@ export async function POST(
       );
     }
 
-    const postId = params.id;
+    const { id: postId } = await params;
 
     // Get user profile
     const userProfile = await prisma.userProfile.findUnique({
@@ -89,7 +87,7 @@ export async function POST(
 // DELETE /api/posts/[id]/like - Unlike (alternative)
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -101,7 +99,7 @@ export async function DELETE(
       );
     }
 
-    const postId = params.id;
+    const { id: postId } = await params;
 
     const userProfile = await prisma.userProfile.findUnique({
       where: { clerkUserId: userId },

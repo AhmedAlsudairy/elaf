@@ -19,9 +19,9 @@ import {
 import { currencyT } from "@/types";
 
 import { useToast } from "@/components/ui/use-toast";
-import { addRating } from "@/actions/supabase/add-rating";
+import { addRating } from "@/actions/neon/rating/add-rating";
 import TenderCompletionButton from "@/components/common/user/rating/tender-req-rating";
-import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
+import { getCurrentCompanyProfile } from "@/actions/neon/company/get-current-company-profile";
 
 enum TenderRequestStatusEnum {
   Pending = "pending",
@@ -37,8 +37,10 @@ export interface TenderRequest {
   bid_price: number;
   title: string;
   summary: string;
+  days?: number;
+  description?: string;
   pdf_url?: string;
-  status: TenderRequestStatusEnum;
+  status: TenderRequestStatusEnum | string;
   created_at: string;
   updated_at: string;
   company_profile: {
@@ -282,7 +284,7 @@ const TenderRequestCard: React.FC<TenderRequestCardProps> = ({
             </a>
           )}
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-            {getStatusBadge(request.status)}
+            {getStatusBadge(request.status as TenderRequestStatusEnum)}
             {showAcceptButton &&
               request.status === TenderRequestStatusEnum.Pending && (
                 <Button

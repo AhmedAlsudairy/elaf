@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProfileInfo } from '../company-info';
 import { CompanyProfile } from '@/types';
-import { updateProfile } from '@/actions/supabase/update-company-profile';
+import { updateProfile } from '@/actions/neon/company/update-company-profile';
 import { useReusableToast } from '@/components/common/success-toast';
 import { useIsOwnerOfCompany } from '@/hooks/check-current-user';
 import { ProfileHeader } from '../profile-header';
@@ -16,7 +16,7 @@ export function ProfileContent({ profile: initialProfile }: ProfileContentProps)
   const [profile, setProfile] = useState<CompanyProfile>(initialProfile);
   const [isLoading, setIsLoading] = useState(false);
   const showToast = useReusableToast();
-  const { isOwner } = useIsOwnerOfCompany(profile.company_profile_id);
+  const { isOwner } = useIsOwnerOfCompany(profile.companyProfileId ?? undefined);
 
   const handleSave = async () => {
     if (!isOwner) return;

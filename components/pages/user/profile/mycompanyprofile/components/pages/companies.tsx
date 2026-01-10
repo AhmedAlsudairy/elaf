@@ -40,7 +40,7 @@ interface CompanyProfilesError {
 type CompanyProfilesResult = CompanyProfilesSuccess | CompanyProfilesError;
 
 // Server action to fetch company profiles
-import { getCompanyProfiles } from '@/actions/supabase/get-compamies-profile';
+import { getCompanyProfiles } from '@/actions/neon/company/get-compamies-profile';
 
 // Helper function to fetch company profiles using the server action
 const fetchCompanyProfiles = async ({ pageParam = 1, searchTerm = '', pageSize = 12 }) => {

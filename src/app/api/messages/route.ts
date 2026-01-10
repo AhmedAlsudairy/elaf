@@ -14,11 +14,11 @@ export async function POST(req: Request) {
 
     const message = await prisma.message.create({
       data: {
-        chat_room_id,
+        chatRoomId: chat_room_id,
         content,
-        sender_company_profile_id,
-        receiver_company_profile_id,
-        read_status: "unread",
+        senderCompanyProfileId: sender_company_profile_id,
+        receiverCompanyProfileId: receiver_company_profile_id,
+        readStatus: false,
       },
     });
 

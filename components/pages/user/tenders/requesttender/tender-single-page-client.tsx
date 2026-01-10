@@ -1,18 +1,6 @@
 import { currencyT } from "@/types";
 import SingleTenderClientComponent from "../components/tender-single-page";
-
-enum SectorEnum {
-  Technology = 'Technology',
-  Finance = 'Finance',
-  Healthcare = 'Healthcare',
-  Education = 'Education',
-  Manufacturing = 'Manufacturing',
-  Retail = 'Retail',
-  RealEstate = 'RealEstate',
-  Transportation = 'Transportation',
-  Energy = 'Energy',
-  Entertainment = 'Entertainment'
-}
+import { SectorEnum } from "@prisma/client";
 
 enum TenderStatusEnum {
   Open = 'open',
@@ -21,27 +9,27 @@ enum TenderStatusEnum {
 }
 
 interface Company {
-  company_profile_id: string;
-  company_title: string;
-  company_email: string;
-  profile_image: string;
+  companyProfileId: string | null;
+  companyTitle: string;
+  companyEmail: string;
+  profileImage: string | null;
 }
 
 interface Tender {
-  tender_id: string;
+  id: string;
   title: string;
   summary: string;
-  pdf_url: string;
-  end_date: string | null;
-  status: TenderStatusEnum;
+  pdfUrl: string;
+  endDate: Date | string | null;
+  status?: any; // Made optional
   terms: string;
   currency: currencyT;
-  scope_of_works: string;
-  tender_sectors: SectorEnum[];
-  created_at: string | null;
-  average_price?: number;
-  maximum_price?: number;
-  minimum_price?: number;
+  scopeOfWorks: string;
+  tenderSectors: SectorEnum[];
+  createdAt: Date | string | null;
+  averagePrice?: number;
+  maximumPrice?: number;
+  minimumPrice?: number;
 }
 
 interface SingleTenderPageProps {
@@ -50,8 +38,14 @@ interface SingleTenderPageProps {
 }
 
 const SingleTenderPage: React.FC<SingleTenderPageProps> = ({ tender, company }) => {
+  const mappedTender = {
+    ...tender,
+    tenderId: tender.id,
+    status: tender.status,    endDate: tender.endDate instanceof Date ? tender.endDate.toISOString() : tender.endDate,
+    createdAt: tender.createdAt instanceof Date ? tender.createdAt.toISOString() : tender.createdAt,  };
+
   return (
-    <SingleTenderClientComponent tender={tender} company={company} />
+    <SingleTenderClientComponent tender={mappedTender} company={company} />
   );
 };
 

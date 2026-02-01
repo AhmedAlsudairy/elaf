@@ -38,7 +38,7 @@ enum Currency {
   AED
 }
 
-enum PDFChoice {
+enum PDFChoice {  
   upload
   generate
 }

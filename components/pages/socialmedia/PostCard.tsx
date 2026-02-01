@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import{Heart, MessageCircle, Share2, Bookmark, MoreHorizontal} from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CommentSection from "./CommentSection";
 
 interface PostCardProps {
   post: {
@@ -49,9 +52,13 @@ export default function PostCard({
   onShare,
   onBookmark,
 }: PostCardProps) {
+  const params = useParams();
+  const locale = params.locale as string;
+  
   const [liked, setLiked] = useState(isLiked);
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [showComments, setShowComments] = useState(false);
 
   const handleLike = () => {
     setLiked(!liked);
@@ -64,22 +71,31 @@ export default function PostCard({
     onBookmark?.();
   };
 
+  const handleCommentClick = () => {
+    setShowComments(!showComments);
+    onComment?.();
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      {/* Header */}
+      {/* Header - CLICKABLE */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={post.company.profileImage} alt={post.company.companyTitle} />
-            <AvatarFallback>{post.company.companyTitle[0]}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-semibold text-gray-900">{post.company.companyTitle}</h3>
-            <p className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-            </p>
+        <Link href={`/${locale}/profile/${post.company.id}`}>
+          <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 -ml-2 -mt-2 p-2 rounded-lg transition-colors">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={post.company.profileImage} alt={post.company.companyTitle} />
+              <AvatarFallback>{post.company.companyTitle[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-semibold text-gray-900 hover:underline">
+                {post.company.companyTitle}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+              </p>
+            </div>
           </div>
-        </div>
+        </Link>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -163,7 +179,7 @@ export default function PostCard({
           </button>
 
           <button
-            onClick={onComment}
+            onClick={handleCommentClick}
             className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
           >
             <MessageCircle className="h-5 w-5" />
@@ -186,6 +202,14 @@ export default function PostCard({
           <Bookmark className={`h-5 w-5 ${bookmarked ? "fill-yellow-500 text-yellow-500" : ""}`} />
         </button>
       </div>
+
+      {/* Comment Section */}
+      {showComments && (
+        <CommentSection
+          postId={post.id}
+          initialCommentsCount={post.commentsCount}
+        />
+      )}
     </div>
   );
 }

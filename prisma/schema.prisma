@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ==================== ENUMS ====================
@@ -83,7 +84,8 @@ model UserProfile {
   comments              Comment[]
   shares                Share[]
   bookmarks             Bookmark[]
-  notifications         Notification[]
+  notifications         Notification[] @relation("NotificationReceiver")
+  triggeredNotifications Notification[] @relation("NotificationActor")
   
   @@index([companyId])
   @@index([clerkUserId])
@@ -266,6 +268,7 @@ model Post {
   comments      Comment[]
   shares        Share[]
   bookmarks     Bookmark[]
+  notifications Notification[]
   
   @@index([companyId])
   @@index([postType])
@@ -304,7 +307,7 @@ model Comment {
   user     UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
   parent   Comment?     @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
   replies  Comment[]    @relation("CommentReplies") // Nested comments
-  
+  notifications Notification[]
   @@index([postId])
   @@index([userId])
   @@index([parentCommentId])
@@ -357,21 +360,24 @@ model Bookmark {
   @@map("bookmarks")
 }
 
-// Notification - Real-time updates via Pusher
+
 model Notification {
   id        String           @id @default(uuid())
-  userId    String           @map("user_id") // Who receives notification
+  userId    String           @map("user_id")
   type      NotificationType
-  content   String           // e.g., "John liked your post"
+  content   String
   postId    String?          @map("post_id")
   commentId String?          @map("comment_id")
-  actorId   String           @map("actor_id") // Who triggered it (UserProfile.id)
+  actorId   String           @map("actor_id")
   read      Boolean          @default(false)
   createdAt DateTime         @default(now()) @map("created_at")
   
-  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      UserProfile @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
+  actor     UserProfile @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  post      Post?       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   Comment?    @relation(fields: [commentId], references: [id], onDelete: Cascade)
   
-  @@index([userId, read]) // Fetch unread notifications
+  @@index([userId, read])
   @@index([createdAt])
   @@map("notifications")
 }

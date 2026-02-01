@@ -45,7 +45,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Company not found</h1>
-          <p className="text-gray-500 mt-2">This company doesn't exist.</p>
+          <p className="text-gray-500 mt-2">This company does not exist.</p>
         </div>
       </div>
     );
@@ -109,7 +109,7 @@ export default async function CompanyProfilePage({ params }: PageProps) {
   });
 
   // Fetch saved posts (only if own company)
-  let savedPosts = [];
+  let savedPosts: any[] = [];
   if (isOwnCompany) {
     const bookmarks = await prisma.bookmark.findMany({
       where: { userId: currentUser.id },

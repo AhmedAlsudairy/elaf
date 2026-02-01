@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "@prisma/client";
 import { pusherServer } from "@/lib/pusher-server";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
 
 // GET /api/socialMedia/posts/[id]/comments
 export async function GET(
@@ -61,7 +60,7 @@ export async function POST(
 
     const userProfile = await prisma.userProfile.findUnique({
       where: { clerkUserId: userId },
-      select: { id: true },
+      select: { id: true, name:true },
     });
 
     if (!userProfile) {
@@ -95,7 +94,7 @@ export async function POST(
 if (post) {
   const recipients = await prisma.userProfile.findMany({
     where: { companyId: post.companyId, id: { not: userProfile.id } },
-    select: { id: true },
+    select: { id: true , name: true },
   });
     for (const recipient of recipients) {
     const notification = await prisma.notification.create({

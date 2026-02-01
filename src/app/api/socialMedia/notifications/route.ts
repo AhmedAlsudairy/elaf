@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient, NotificationType } from "@prisma/client";
-import { pusherServer } from "@/lib/pusher";
-
-const prisma = new PrismaClient();
-
-// GET /api/notifications - fetch all notifications for the logged-in user
+import { pusherServer } from "@/lib/pusher-server";
+import {prisma} from "@/lib/prisma";
+ 
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -14,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Find the logged-in user's profile
+ 
     const userProfile = await prisma.userProfile.findUnique({
       where: { clerkUserId: userId },
       select: { id: true },

@@ -53,7 +53,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = React.memo(({ chatRooms, curre
                     <h3 className="font-semibold text-gray-900 truncate">{room.other_company_profile.company_title}</h3>
                     {room.last_message && (
                       <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
-                        {format(new Date(room.last_message.created_at || room.last_message.createdAt), "HH:mm")}
+                        {format(new Date(room.last_message.created_at), "HH:mm")}
                       </span>
                     )}
                   </div>

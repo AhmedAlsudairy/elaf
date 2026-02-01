@@ -42,9 +42,9 @@ interface TenderRequestFormProps {
   onSubmit: (data: TenderRequestFormValues, pdfBlob?: Blob) => Promise<void>;
   tenderId: string;
   companyProfile: {
-    company_profile_id: string;
-    company_title: string;
-    profile_image: string;
+    companyProfileId: string | null;
+    companyTitle: string;
+    profileImage: string | null;
   };
   tenderTitle: string;
   tenderCurrency: z.infer<typeof tenderRequestSchema>['currency'];
@@ -91,16 +91,17 @@ export function TenderRequestForm({
         <PDFDocument
           data={{
             ...methods.getValues(),
-            tender_id: tenderId,
-            content_sections: contentSections,
-            company_name: companyProfile.company_title,
-            is_tender_request: true,
-            custom_fields: [],
-            end_date: new Date(),
+            tenderId: tenderId,
+            contentSections: contentSections,
+            companyName: companyProfile.companyTitle,
+            isTenderRequest: true,
+            customFields: [],
+            endDate: new Date(),
             terms: "",
-            scope_of_works: "",
+            scopeOfWorks: "",
+            bidPrice: methods.getValues().bid_price,
           }}
-          companyLogo={companyProfile.profile_image}
+          companyLogo={companyProfile.profileImage ?? ""}
           elafLogo={ELAF_LOGO_PNG_URL}
         />
       ).toBlob();
@@ -423,16 +424,17 @@ export function TenderRequestForm({
                   <PDFDocument
                     data={{
                       ...methods.getValues(),
-                      tender_id: tenderId,
-                      content_sections: contentSections,
-                      company_name: companyProfile.company_title,
-                      is_tender_request: true,
-                      custom_fields: [],
-                      end_date: new Date(),
+                      tenderId: tenderId,
+                      contentSections: contentSections,
+                      companyName: companyProfile.companyTitle,
+                      isTenderRequest: true,
+                      customFields: [],
+                      endDate: new Date(),
                       terms: "",
-                      scope_of_works: "",
+                      scopeOfWorks: "",
+                      bidPrice: methods.getValues().bid_price,
                     }}
-                    companyLogo={companyProfile.profile_image}
+                    companyLogo={companyProfile.profileImage ?? ELAF_LOGO_PNG_URL}
                     elafLogo={ELAF_LOGO_PNG_URL}
                   />
                 </PDFViewer>

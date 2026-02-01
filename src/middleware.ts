@@ -30,7 +30,7 @@ export default clerkMiddleware(async (auth, request) => {
   if (isStaticAsset(request.nextUrl.pathname)) return NextResponse.next();
 
   let response = intlMiddleware(request);
-  const { userId } = auth();
+  const { userId } = await auth();
 
   const locale = request.nextUrl.pathname.split("/")[1];
   const isValidLocale = ["en", "ar"].includes(locale);

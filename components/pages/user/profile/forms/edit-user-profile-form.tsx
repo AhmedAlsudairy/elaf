@@ -3,8 +3,8 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { userProfileSchema } from '@/schema';
-import { updateUserProfile } from '@/actions/supabase/update-user-form';
-import { getCurrentUserProfile } from '@/actions/supabase/get-current-user-profile';
+import { updateUserProfile } from '@/actions/neon/user/update-user-form';
+import { getCurrentUserProfile } from '@/actions/neon/user/get-current-user-profile';
 import UserProfileForm from '@/components/pages/user/profile/forms/components/user-profile-form';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
@@ -20,12 +20,12 @@ const EditUserProfilePage = () => {
     defaultValues: {
       name: '',
       email: '',
-      phone_number: '',
+      phoneNumber: '',
       address: '',
       role: '',
-      company_that_worked_with: '',
+      companyThatWorkedWith: '',
       bio: '',
-      profile_image: '',
+      profileImage: '',
     },
   });
 
@@ -37,12 +37,12 @@ const EditUserProfilePage = () => {
           form.reset({
             name: userProfile.name || '',
             email: userProfile.email || '',
-            phone_number: userProfile.phone_number || '',
+            phoneNumber: userProfile.phoneNumber || '',
             address: userProfile.address || '',
             role: userProfile.role || '',
-            company_that_worked_with: userProfile.company_that_worked_with || '',
+            companyThatWorkedWith: userProfile.companyThatWorkedWith || '',
             bio: userProfile.bio || '',
-            profile_image: userProfile.profile_image || '',
+            profileImage: userProfile.profileImage || '',
           });
         }
       } catch (error) {

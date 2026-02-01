@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, FileText, DollarSign, Building } from "lucide-react";
-import { RequestSummary } from '@/actions/supabase/get-request-summary';
+import { RequestSummary } from '@/actions/neon/request/get-request-summary';
 import { currencyT } from '@/types';
 
 interface RequestSummaryCardProps {

@@ -8,31 +8,32 @@ import { Form } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { TenderFormStep1 } from '@/components/pages/user/tenders/components/tender-step-one'
 import { TenderFormStep2 } from '@/components/pages/user/tenders/components/tender-step-two'
-import { addTenderStepOne } from '@/actions/supabase/add-tender'
-import { updateTenderStepTwo } from '@/actions/supabase/add-tender-step-two'
+import { addTenderStepOne } from '@/actions/neon/tender/add-tender'
+import { updateTenderStepTwo } from '@/actions/neon/tender/add-tender-step-two'
 import { TenderSchema, TenderFormValues } from '@/schema'
-import { toast } from 'sonner'
+import { useToast } from '@/components/ui/use-toast'
 import { ClipLoader } from 'react-spinners'
 
 export default function AddTenderPage() {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [tenderId, setTenderId] = useState<string | null>(null)
-  const [companyLogo, setCompanyLogo] = useState<string>('')
+  const { toast } = useToast()
   const router = useRouter()
+  const [companyLogo, setCompanyLogo] = useState<string>('')
 
   const form = useForm<TenderFormValues>({
     resolver: zodResolver(TenderSchema),
     defaultValues: {
       title: '',
       summary: '',
-      tender_sectors: [],
+      tenderSectors: [],
       currency: 'OMR',
-      pdf_url: '',
-      end_date: new Date(),
+      pdfUrl: '',
+      endDate: new Date(),
       terms: '',
-      scope_of_works: '',
-      pdf_choice: 'upload',
+      scopeOfWorks: '',
+      pdfChoice: 'upload',
     },
   })
 
@@ -42,18 +43,21 @@ export default function AddTenderPage() {
       const result = await addTenderStepOne({
         title: data.title,
         summary: data.summary,
-        tender_sectors: data.tender_sectors,
+        tenderSectors: data.tenderSectors,
         currency: data.currency,
-        end_date: data.end_date,
+        endDate: data.endDate,
         terms: data.terms,
-        scope_of_works: data.scope_of_works,
+        scopeOfWorks: data.scopeOfWorks,
       })
       
       setTenderId(result.id)
-      toast.success('Step 1 completed!')
+      toast({ description: 'Step 1 completed!' })
       setStep(2)
     } catch (error) {
-      toast.error('Failed to save tender')
+      toast({ 
+        description: 'Failed to save tender', 
+        variant: 'destructive' 
+      })
       console.error(error)
     } finally {
       setIsLoading(false)
@@ -62,21 +66,27 @@ export default function AddTenderPage() {
 
   const handleStepTwo = async (data: TenderFormValues) => {
     if (!tenderId) {
-      toast.error('Tender ID not found')
+      toast({
+        description: 'Tender ID not found',
+        variant: 'destructive'
+      })
       return
     }
 
     try {
       setIsLoading(true)
       await updateTenderStepTwo({
-        pdf_url: data.pdf_url,
-        tender_id: tenderId,
+        pdfUrl: data.pdfUrl,
+        tenderId: tenderId,
       })
       
-      toast.success('Tender created successfully!')
+      toast({ description: 'Tender created successfully!' })
       router.push('/tenders')
     } catch (error) {
-      toast.error('Failed to upload PDF')
+      toast({
+        description: 'Failed to upload PDF',
+        variant: 'destructive'
+      })
       console.error(error)
     } finally {
       setIsLoading(false)
@@ -132,7 +142,7 @@ export default function AddTenderPage() {
                 >
                   Back
                 </Button>
-                <Button type="submit" disabled={isLoading || !form.watch('pdf_url')}>
+                <Button type="submit" disabled={isLoading || !form.watch('pdfUrl')}>
                   {isLoading ? (
                     <>
                       <ClipLoader color="#FFFFFF" size={20} className="mr-2" />

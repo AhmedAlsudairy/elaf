@@ -6,10 +6,11 @@ export const metadata: Metadata = {
   description: "Elaf tender platform main page",
 };
 
-const Page = ({ searchParams }: { searchParams: { msg: string | undefined } }) => {
+const Page = async ({ searchParams }: { searchParams: Promise<{ msg: string | undefined }> }) => {
+  const resolvedSearchParams = await searchParams;
   return (
     <>
-      <LandingPage searchParams={searchParams} />
+      <LandingPage searchParams={resolvedSearchParams} />
     </>
   );
 }

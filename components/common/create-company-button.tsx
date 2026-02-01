@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Plus, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { getCurrentCompanyProfile } from '@/actions/supabase/get-current-company-profile';
+import { getCurrentCompanyProfile } from '@/actions/neon/company/get-current-company-profile';
 
 interface CreateCompanyButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'link';

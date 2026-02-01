@@ -7,22 +7,22 @@ import { SectorEnum } from '@/constant/text';
 import { CompanyProfile } from '@/types';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { addCompany } from '@/actions/supabase/add-company-profile';
+import { addCompany } from '@/actions/neon/company/add-company-profile';
 
 export default function AddCompanyPage() {
   const router = useRouter();
   const form = useForm<CompanyProfile>({
     resolver: zodResolver(companySchema),
     defaultValues: {
-      company_title: '',
-      company_email: '',
-      company_number: '',
-      company_website: '',
-      phone_number: '',
+      companyTitle: '',
+      companyEmail: '',
+      companyNumber: '',
+      companyWebsite: '',
+      phoneNumber: '',
       address: '',
       sectors: [],
       bio: '',
-      profile_image: '',
+      profileImage: '',
     },
   });
 
@@ -31,17 +31,9 @@ export default function AddCompanyPage() {
   const onSubmit = async (data: CompanyProfile) => {
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === 'sectors' && Array.isArray(value)) {
-          formData.append(key, JSON.stringify(value));
-        } else if (value !== undefined && value !== null) {
-          formData.append(key, value.toString());
-        }
-      });
-      const result = await addCompany(formData);
+      const result = await addCompany(data);
       if (result.success && result.data) {
-        router.push(`/profile/companyprofiles/${result.data.company_profile_id}`);
+        router.push(`/profile/companyprofiles/${result.data.id}`);
       } else {
         throw new Error('Failed to create company profile');
       }

@@ -86,7 +86,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
    
       <FormField
         control={form.control}
-        name="end_date"
+        name="endDate"
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>End Date and Time</FormLabel>
@@ -188,7 +188,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
       <div className="col-span-1 md:col-span-2">
         <FormField
           control={form.control}
-          name="scope_of_works"
+          name="scopeOfWorks"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Scope of Works</FormLabel>
@@ -204,7 +204,7 @@ export function TenderFormStep1({ form, isLoading }: TenderFormStep1Props) {
       <div className="col-span-1 md:col-span-2">
         <FormField
           control={form.control}
-          name="tender_sectors"
+          name="tenderSectors"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Sectors</FormLabel>

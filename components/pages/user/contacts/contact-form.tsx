@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { sendContactForm } from "@/actions/supabase/send-contact-email";
+import { sendContactForm } from "@/actions/neon/common/send-contact-email";
 
 export const ContactForm = () => {
   const [formData, setFormData] = useState({

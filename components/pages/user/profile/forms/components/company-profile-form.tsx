@@ -129,7 +129,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               <FormItem>
                 <Label className="text-sm font-medium">Company Number</Label>
                 <FormControl>
-                  <Input placeholder="12345678" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                   <Input placeholder="12345678" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -142,7 +142,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               <FormItem>
                 <Label className="text-sm font-medium">Company Website</Label>
                 <FormControl>
-                  <Input placeholder="https://www.example.com" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                  <Input placeholder="https://www.example.com" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -155,7 +155,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               <FormItem>
                 <Label className="text-sm font-medium">Phone Number</Label>
                 <FormControl>
-                  <Input placeholder="+1 (555) 123-4567" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                   <Input placeholder="+1 (555) 123-4567" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -168,7 +168,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               <FormItem>
                 <Label className="text-sm font-medium">Address</Label>
                 <FormControl>
-                  <Input placeholder="123 Business Ave, City, Country" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                  <Input placeholder="123 Business Ave, City, Country" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -204,7 +204,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
             <FormItem>
               <Label className="text-sm font-medium">Company Bio</Label>
               <FormControl>
-                <Textarea placeholder="Tell us about your company" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                <Textarea placeholder="Tell us about your company" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ImagePlus, Trash, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
-import { uploadImage, deleteImage } from '@/actions/supabase/upload-image';
+import { uploadImage, deleteImage } from '@/actions/neon/common/upload-image';
 
 interface ImageUploadProps {
   disabled?: boolean;

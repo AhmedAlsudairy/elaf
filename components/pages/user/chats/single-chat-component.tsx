@@ -22,9 +22,9 @@ import {
   Menu,
   Loader2,
 } from "lucide-react";
-import { fetchTenderData } from "@/actions/supabase/get-tender";
+import { fetchTenderData } from "@/actions/neon/tender/get-tender";
 import PDFUpload from "@/components/common/pdf-upload";
-import { getReadStatus, sendMessage, getMessages } from "@/actions/supabase/chats";
+import { sendMessage, getMessages } from "@/actions/neon/chat/chats";
 import { useQuery } from '@tanstack/react-query';
 import { useSubscribeToChat } from "@/hooks/messages subs-hook";
 
@@ -115,7 +115,16 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               try {
                 const result = await getMessages(chatRoomId, 1, 0);
                 if (result.chatRoomDetails) {
-                  setChatRoomDetails(result.chatRoomDetails);
+                  setChatRoomDetails({
+                    id: result.chatRoomDetails.id,
+                    tender_id: result.chatRoomDetails.tenderId,
+                    initiator_company_profile_id: result.chatRoomDetails.initiatorCompanyProfileId,
+                    recipient_company_profile_id: result.chatRoomDetails.recipientCompanyProfileId,
+                    initiator_company_title: result.chatRoomDetails.initiator_company_title,
+                    initiator_company_image: result.chatRoomDetails.initiator_company_image,
+                    recipient_company_title: result.chatRoomDetails.recipient_company_title,
+                    recipient_company_image: result.chatRoomDetails.recipient_company_image,
+                  });
                 }
               } catch (error) {
                 console.error("Error fetching chat room details:", error);
@@ -135,7 +144,14 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
       if (lastTenderMessage?.tender_id) {
         try {
           const result = await fetchTenderData(lastTenderMessage.tender_id);
-          setTenderInfo(result.tender);
+          if (result.tender) {
+            setTenderInfo({
+              tender_id: result.tender.id,
+              title: result.tender.title,
+              status: "Active",
+              end_date: result.tender.endDate ? new Date(result.tender.endDate).toISOString() : null,
+            });
+          }
         } catch (error) {
           console.error("Error fetching tender info:", error);
         }
@@ -167,9 +183,9 @@ const handleSendMessage = async () => {
   setIsSendingMessage(true);
 
         const receiverCompanyProfileId =
-          chatRoomDetails.initiatorCompanyProfileId === currentCompanyProfile.company_profile_id
-            ? chatRoomDetails.recipientCompanyProfileId
-            : chatRoomDetails.initiatorCompanyProfileId;
+          chatRoomDetails.initiator_company_profile_id === currentCompanyProfile.company_profile_id
+            ? chatRoomDetails.recipient_company_profile_id
+            : chatRoomDetails.initiator_company_profile_id;
 
   console.log('8. receiverCompanyProfileId:', receiverCompanyProfileId);
 
@@ -252,7 +268,7 @@ const handleSendMessage = async () => {
   };
 
   const renderMessage = (message: Message) => {
-    const isSender = message.senderCompanyProfileId === currentCompanyProfile?.company_profile_id;
+    const isSender = message.sender_company_profile_id === currentCompanyProfile?.company_profile_id;
     const messageClassName = `flex ${isSender ? 'justify-end' : 'justify-start'} mb-4`;
     const bubbleClassName = `rounded-lg p-3 ${
       isSender ? 'bg-blue-500 text-white' : 'bg-gray-100 text-black'
@@ -283,9 +299,9 @@ const handleSendMessage = async () => {
               )}
             </div>
             <div className="flex items-center mt-1 text-xs text-gray-500">
-              <span>{message.sender_name || message.senderCompany?.companyTitle || 'Unknown'}</span>
+              <span>{message.sender_name || message.company_title || 'Unknown'}</span>
               <span className="mx-1">•</span>
-              <span>{format(new Date(message.created_at || message.createdAt), "HH:mm")}</span>
+              <span>{format(new Date(message.created_at), "HH:mm")}</span>
             </div>
           </div>
         </div>

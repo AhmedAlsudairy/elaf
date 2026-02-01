@@ -37,7 +37,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
   onBack,
   isSubmitting
 }) => {
-  const [avatarUrls, setAvatarUrls] = React.useState<string[]>(initialData?.profile_image ? [initialData.profile_image] : []);
+  const [avatarUrls, setAvatarUrls] = React.useState<string[]>(initialData?.profileImage ? [initialData.profileImage] : []);
   const showToast = useReusableToast();
 
   React.useEffect(() => {
@@ -50,12 +50,12 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
 
   const handleAvatarChange = (url: string) => {
     setAvatarUrls([url]);
-    form.setValue("profile_image", url);
+    form.setValue("profileImage", url);
   };
 
   const handleAvatarRemove = (url: string) => {
     setAvatarUrls(avatarUrls.filter((u) => u !== url));
-    form.setValue("profile_image", "");
+    form.setValue("profileImage", "");
   };
 
   const onSubmitWithToast: SubmitHandler<UserProfileFormData> = async (data) => {
@@ -72,7 +72,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
       <form onSubmit={form.handleSubmit(onSubmitWithToast)} className="space-y-6">
         <FormField
           control={form.control}
-          name="profile_image"
+          name="profileImage"
           render={({ field }) => (
             <FormItem>
               <Label className="text-sm font-medium">Profile Image</Label>
@@ -118,7 +118,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
           />
           <FormField
             control={form.control}
-            name="phone_number"
+            name="phoneNumber"
             render={({ field }) => (
               <FormItem>
                 <Label className="text-sm font-medium">Phone Number</Label>
@@ -157,7 +157,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({
           />
           <FormField
             control={form.control}
-            name="company_that_worked_with"
+            name="companyThatWorkedWith"
             render={({ field }) => (
               <FormItem>
                 <Label className="text-sm font-medium">Companies Worked With</Label>

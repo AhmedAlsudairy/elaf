@@ -16,7 +16,7 @@ import PDFDocument from '@/components/common/pdf-generate';
 import { Trash2, Plus, FileUp, Upload } from 'lucide-react';
 import { TenderFormValues } from '@/schema';
 import { ELAF_LOGO_PNG_URL } from '@/constant/svg';
-import supabaseClient from '@/lib/utils/supabase/supabase-call-client';
+import { uploadImage } from '@/actions/neon/common/upload-image';
 
 type TenderFormStep2Props = {
   form: UseFormReturn<TenderFormValues>;
@@ -51,29 +51,19 @@ const PDFUpload: React.FC<{
     try {
       setUploading(true);
 
-      const fileName = `${Math.random()}.pdf`;
-      const filePath = `${fileName}`;
+      const formData = new FormData();
+      formData.append('file', file as File); // uploadImage expects 'file'
 
-      let { error: uploadError } = await supabaseClient.storage
-        .from(bucketName)
-        .upload(filePath, file);
+      const { url } = await uploadImage(formData);
 
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabaseClient.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
-
-      onChange(publicUrl);
+      onChange(url);
     } catch (error) {
       console.error('Error uploading PDF:', error);
       alert('Error uploading PDF!');
     } finally {
       setUploading(false);
     }
-  }, [bucketName, onChange]);
+  }, [onChange]);
 
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -186,12 +176,19 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
   };
 
   const generatePDF = async () => {
+    const values = form.getValues();
     const blob = await pdf(
       <PDFDocument 
         data={{
-          ...form.getValues(),
-          tender_id: tenderId || '',
-          content_sections: contentSections
+          title: values.title,
+          summary: values.summary,
+          endDate: values.endDate,
+          terms: values.terms,
+          scopeOfWorks: values.scopeOfWorks,
+          customFields: values.customFields,
+          tenderId: tenderId || '',
+          contentSections: contentSections,
+          currency: values.currency,
         }} 
         companyLogo={companyLogo}
         elafLogo={ELAF_LOGO_PNG_URL}
@@ -205,7 +202,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
     <div className="space-y-6">
       <FormField
         control={form.control}
-        name="pdf_url"
+        name="pdfUrl"
         render={({ field }) => (
           <FormItem>
             <FormLabel>PDF Upload</FormLabel>
@@ -312,7 +309,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
         </Button>
         <FormField
           control={form.control}
-          name="pdf_url"
+          name="pdfUrl"
           render={({ field }) => (
             <FormItem>
               <FormControl>
@@ -342,8 +339,8 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
                 <PDFDocument 
                   data={{
                     ...form.getValues(),
-                    tender_id: tenderId || '',
-                    content_sections: contentSections
+                    tenderId: tenderId || '',
+                    contentSections: contentSections
                   }} 
                   companyLogo={companyLogo}
                   elafLogo={ELAF_LOGO_PNG_URL}
@@ -356,7 +353,7 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
               </Button>
               <FormField
                 control={form.control}
-                name="pdf_url"
+                name="pdfUrl"
                 render={({ field }) => (
                   <FormItem className="w-full sm:w-auto">
                     <FormControl>

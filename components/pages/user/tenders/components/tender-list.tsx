@@ -4,7 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { ClipLoader } from 'react-spinners';
 
 import { Button } from "@/components/ui/button";
-import { getTenders } from '@/actions/supabase/get-tenders';
+import { getTenders } from '@/actions/neon/tender/get-tenders';
 import ComprehensiveTenderSearch from './tender-search';
 import TenderCard from './tender-card';
 import { SearchParams, SearchResult, Tender } from '@/types';
@@ -87,13 +87,13 @@ const TenderInfiniteScrollList: React.FC = () => {
                 {page.success.map((tender: Tender) => (
                   <TenderCard
                     key={tender.id}
-                    companyId={tender.company_profile_id}
-                    tenderId={tender.tender_id}
-                    companyTitle={tender.company_title}
-                    profileImage={tender.profile_image}
-                    sectors={tender.tender_sectors}
-                    startingDate={tender.created_at}
-                    endDate={tender.end_date}
+                    companyId={tender.companyProfileId}
+                    tenderId={tender.id}
+                    companyTitle={tender.companyTitle}
+                    profileImage={tender.profileImage}
+                    sectors={tender.tenderSectors}
+                    startingDate={tender.createdAt}
+                    endDate={tender.endDate}
                     tenderTitle={tender.title}
                     summary={tender.summary}
                     status={tender.status}

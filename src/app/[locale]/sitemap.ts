@@ -12,7 +12,7 @@ const staticRoutes = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const headersList = headers()
+    const headersList = await headers()
     const host = headersList.get('host') as string;
     const protocol = headersList.get('x-forwarded-proto') || 'http';
     const tld = extractTLD((headersList.get('host') || headersList.get('x-forwarded-host')) as string);

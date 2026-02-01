@@ -27,37 +27,25 @@ import {
 import TenderInfo from "./tender-info";
 import TenderContent from "./tender-content";
 import CompanyCard from "./company-card";
-import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
-import { addTenderRequest } from "@/actions/supabase/add-tender-request";
+import { getCurrentCompanyProfile } from "@/actions/neon/company/get-current-company-profile";
+import { addTenderRequest } from "@/actions/neon/request/add-tender-request";
 import { useIsOwnerOfCompany } from "@/hooks/check-current-user";
 import CompanyOwnerTenderDetails from "./price-summary";
 import { format } from "date-fns";
 import {
   getRequestSummaries,
   RequestSummary,
-} from "@/actions/supabase/get-request-summary";
+} from "@/actions/neon/request/get-request-summary";
 import RequestSummaryCard from "../requesttender/request-summary-card";
 import TenderRequestList from "../requesttender/tender-req-list-main";
 import TenderRequestForm, {
   tenderRequestSchema,
 } from "../requesttender/request-tender-form";
-import { acceptTenderRequest } from "@/actions/supabase/accept-tender-request";
+import { acceptTenderRequest } from "@/actions/neon/request/accept-tender-request";
 import { z } from "zod";
-import { createOrGetChatRoom } from "@/actions/supabase/chats";
+import { createOrGetChatRoom } from "@/actions/neon/chat/chats";
 import { useRouter } from "next/navigation";
-
-enum SectorEnum {
-  Technology = "Technology",
-  Finance = "Finance",
-  Healthcare = "Healthcare",
-  Education = "Education",
-  Manufacturing = "Manufacturing",
-  Retail = "Retail",
-  RealEstate = "RealEstate",
-  Transportation = "Transportation",
-  Energy = "Energy",
-  Entertainment = "Entertainment",
-}
+import { SectorEnum } from "@prisma/client";
 
 enum TenderStatusEnum {
   Open = "open",
@@ -67,27 +55,27 @@ enum TenderStatusEnum {
 }
 
 interface Company {
-  company_profile_id: string;
-  company_title: string;
-  company_email: string;
-  profile_image: string;
+  companyProfileId: string | null;
+  companyTitle: string;
+  companyEmail: string;
+  profileImage: string | null;
 }
 
 interface Tender {
-  tender_id: string;
+  tenderId: string;
   title: string;
   summary: string;
-  pdf_url: string;
-  end_date: string | null;
+  pdfUrl: string;
+  endDate: string | null;
   status: TenderStatusEnum;
   terms: string;
-  scope_of_works: string;
-  tender_sectors: SectorEnum[];
-  created_at: string | null;
+  scopeOfWorks: string;
+  tenderSectors: SectorEnum[];
+  createdAt: string | null;
   currency: z.infer<typeof tenderRequestSchema>["currency"];
-  average_price?: number;
-  maximum_price?: number;
-  minimum_price?: number;
+  averagePrice?: number;
+  maximumPrice?: number;
+  minimumPrice?: number;
 }
 
 interface SingleTenderClientComponentProps {
@@ -108,7 +96,7 @@ const SingleTenderClientComponent: React.FC<
 
   const { toast } = useToast();
   const { isOwner, isLoading } = useIsOwnerOfCompany(
-    company.company_profile_id
+    company.companyProfileId ?? undefined
   );
   const queryClient = useQueryClient();
   const [requestSummaries, setRequestSummaries] = useState<RequestSummary[]>(
@@ -127,7 +115,7 @@ const SingleTenderClientComponent: React.FC<
     if (isOwner && !isLoadingSummaries) {
       setIsLoadingSummaries(true);
       try {
-        const result = await getRequestSummaries(tender.tender_id, page);
+        const result = await getRequestSummaries(tender.tenderId, page);
         if (result.success && result.data) {
           setRequestSummaries((prev) => [...prev, ...result.data]);
           setPage((prev) => prev + 1);
@@ -143,7 +131,7 @@ const SingleTenderClientComponent: React.FC<
         setIsLoadingSummaries(false);
       }
     }
-  }, [isOwner, tender.tender_id, page, isLoadingSummaries]);
+  }, [isOwner, tender.tenderId, page, isLoadingSummaries]);
 
   useEffect(() => {
     if (isOwner) {
@@ -163,7 +151,7 @@ const SingleTenderClientComponent: React.FC<
   const handleTenderRequestSubmit = useCallback(
     async (formData: any, pdfBlob?: Blob) => {
       try {
-        const result = await addTenderRequest(tender.tender_id, formData);
+        const result = await addTenderRequest(tender.tenderId, formData);
         if (result.success) {
           toast({
             title: "Success",
@@ -188,13 +176,13 @@ const SingleTenderClientComponent: React.FC<
         });
       }
     },
-    [tender.tender_id, toast]
+    [tender.tenderId, toast]
   );
 
   const handleAcceptRequest = useCallback(
     async (requestId: string) => {
       try {
-        const result = await acceptTenderRequest(requestId, tender.tender_id);
+        const result = await acceptTenderRequest(requestId, tender.tenderId);
         if (result.success) {
           toast({
             title: "Request Accepted",
@@ -225,28 +213,38 @@ const SingleTenderClientComponent: React.FC<
         });
       }
     },
-    [tender.tender_id, toast, requestSummaries, loadMoreSummaries]
+    [tender.tenderId, toast, requestSummaries, loadMoreSummaries]
   );
 
   const handleOpenChatRoom = useCallback(async () => {
-    if (!currentCompanyProfile) {
+    if (!currentCompanyProfile?.companyProfileId) {
       toast({
         title: "Error",
-        description: "Unable to fetch your company profile. Please try again.",
+        description: "Unable to find your company profile ID. Please try again.",
         variant: "destructive",
       });
       return;
     }
+
+    if (!company.companyProfileId) {
+       toast({
+        title: "Error",
+        description: "Target company profile ID not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoadingChat(true);
 
     try {
       const result = await createOrGetChatRoom(
-        currentCompanyProfile.company_profile_id,
-        company.company_profile_id,
-        tender.tender_id
+        currentCompanyProfile.companyProfileId,
+        company.companyProfileId,
+        tender.tenderId
       );
-      if (result && result.chat_room_id) {
-        router.push(`/chats/${result.chat_room_id}`);
+      if (result && result.id) {
+        router.push(`/chats/${result.id}`);
       } else {
         toast({
           title: "Error",
@@ -266,8 +264,8 @@ const SingleTenderClientComponent: React.FC<
     }
   }, [
     currentCompanyProfile,
-    company.company_profile_id,
-    tender.tender_id,
+    company.companyProfileId,
+    tender.tenderId,
     router,
     toast,
   ]);
@@ -382,21 +380,21 @@ const SingleTenderClientComponent: React.FC<
               <TenderInfo
                 icon={<Calendar className="w-5 h-5 text-gray-500" />}
                 label="End Date"
-                value={formatDate(tender.end_date)}
+                value={formatDate(tender.endDate)}
               />
               <TenderInfo
                 icon={<Clock className="w-5 h-5 text-gray-500" />}
                 label="Created"
-                value={formatDate(tender.created_at)}
+                value={formatDate(tender.createdAt)}
               />
 
-              {tender.pdf_url && (
+              {tender.pdfUrl && (
                 <TenderInfo
                   icon={<FileText className="w-5 h-5 text-gray-500" />}
                   label="PDF"
                   value={
                     <a
-                      href={tender.pdf_url}
+                      href={tender.pdfUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
@@ -416,7 +414,7 @@ const SingleTenderClientComponent: React.FC<
               {showScopeOfWork && (
                 <TenderContent
                   title="Scope of Work"
-                  content={tender.scope_of_works}
+                  content={tender.scopeOfWorks}
                 />
               )}
 
@@ -430,7 +428,7 @@ const SingleTenderClientComponent: React.FC<
               )}
 
               <div className="flex flex-wrap gap-2 mt-4">
-                {tender.tender_sectors.map((sector, index) => (
+                {tender.tenderSectors.map((sector, index) => (
                   <Badge
                     key={index}
                     className="px-3 py-1 text-sm"
@@ -463,7 +461,7 @@ const SingleTenderClientComponent: React.FC<
                         {companyProfile ? (
                           <TenderRequestForm
                             onSubmit={handleTenderRequestSubmit}
-                            tenderId={tender.tender_id}
+                            tenderId={tender.tenderId}
                             companyProfile={companyProfile}
                             tenderTitle={tender.title}
                             tenderCurrency={tender.currency}
@@ -489,7 +487,7 @@ const SingleTenderClientComponent: React.FC<
               </CardHeader>
               <CardContent>
                 <TenderRequestList
-                  tenderId={tender.tender_id}
+                  tenderId={tender.tenderId}
                   onAccept={handleAcceptRequest}
                   acceptedRequestId={acceptedRequest?.id}
                   tenderCurrency={tender.currency}

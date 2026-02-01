@@ -9,25 +9,25 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Mail, Edit, Building, LogOut, Briefcase, Info, UserCircle } from 'lucide-react';
-import { SignOut } from '@/actions/supabase/signout';
+import { SignOutButton, useClerk } from "@clerk/nextjs";
 import { useToast } from "@/components/ui/use-toast";
 
 type UserProfile = {
   id: string;
   email: string;
   name: string;
-  profile_image?: string;
+  profileImage?: string;
   role?: string;
-  phone_number?: string;
+  phoneNumber?: string;
   address?: string;
   bio?: string;
-  company_that_worked_with?: string;
+  companyThatWorkedWith?: string;
 };
 
 type CompanyProfile = {
   id?: string;
-  company_profile_id?: string;
-  company_title?: string;
+  companyProfileId?: string;
+  companyTitle?: string;
   // Add other company profile fields as needed
 };
 
@@ -38,6 +38,7 @@ type UserProfileClientProps = {
 
 const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfile, initialCompanyProfile }) => {
   const router = useRouter();
+  const { signOut } = useClerk();
   const { toast } = useToast();
 
   const handleEdit = () => {
@@ -45,7 +46,7 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
   };
 
   const handleCompanyProfileClick = () => {
-    const companyId = initialCompanyProfile?.id || initialCompanyProfile?.company_profile_id;
+    const companyId = initialCompanyProfile?.id || initialCompanyProfile?.companyProfileId;
     router.push(companyId 
       ? `/profile/companyprofiles/${companyId}`
       : "/profile/companyprofiles/new"
@@ -54,7 +55,7 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
 
   const handleSignOut = async () => {
     try {
-      await SignOut();
+      await signOut();
       router.push('/');
       router.refresh();
     } catch (error) {
@@ -78,9 +79,9 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
       <CardHeader className="relative pb-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
           <Avatar className="w-24 h-24 sm:w-32 sm:h-32 ring-2 ring-primary">
-            {initialUserProfile.profile_image ? (
+            {initialUserProfile.profileImage ? (
               <Image 
-                src={initialUserProfile.profile_image}
+                src={initialUserProfile.profileImage}
                 alt={initialUserProfile.name}
                 width={128}
                 height={128}
@@ -111,9 +112,9 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.email}</span>
         </div>
-        {initialUserProfile.phone_number && (
+        {initialUserProfile.phoneNumber && (
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.phone_number}</span>
+            <Phone className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.phoneNumber}</span>
           </div>
         )}
         {initialUserProfile.address && (
@@ -126,9 +127,9 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
             <UserCircle className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.role}</span>
           </div>
         )}
-        {initialUserProfile.company_that_worked_with && (
+        {initialUserProfile.companyThatWorkedWith && (
           <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.company_that_worked_with}</span>
+            <Briefcase className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.companyThatWorkedWith}</span>
           </div>
         )}
         {initialUserProfile.bio && (
@@ -148,14 +149,15 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
             {initialCompanyProfile ? "My Company" : "Create New Company Profile"}
           </Button>
           
-          <Button
-            onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2"
-            variant="destructive"
-          >
-            <LogOut className="w-5 h-5" />
-            Sign Out
-          </Button>
+          <SignOutButton>
+            <Button
+              className="w-full flex items-center justify-center gap-2"
+              variant="destructive"
+            >
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </Button>
+          </SignOutButton>
         </div>
       </CardContent>
     </Card>

@@ -1,30 +1,29 @@
 // lib/prisma.ts
-import { Pool, neonConfig } from '@neondatabase/serverless'
+import { neonConfig } from '@neondatabase/serverless'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { PrismaClient } from '@prisma/client'
 
-// Only set up WebSocket for Node.js server environment
-// Skip for Edge runtime where native fetch is used
-if (typeof globalThis.WebSocket === 'undefined') {
-  // Dynamic import to avoid issues in Edge runtime
+// Configure Neon connection
+neonConfig.poolQueryViaFetch = true
+
+// Only configure WebSocket if not in Edge Runtime
+if (typeof globalThis.WebSocket !== 'undefined') {
   try {
-    // Use undici WebSocket which is more compatible
-    neonConfig.webSocketConstructor = require('ws')
+    const ws = require('ws')
+    neonConfig.webSocketConstructor = ws
   } catch {
-    // If ws fails, Neon will use fetch-based approach
-    console.warn('WebSocket not available, using HTTP fallback')
+    // Fallback to fetch-based approach if ws is not available
+    console.warn('WebSocket not available, using fetch-based queries')
   }
 }
 
-// Use pooled connection for better performance
-neonConfig.poolQueryViaFetch = true
-neonConfig.useSecureWebSocket = true
-
 const connectionString = process.env.DATABASE_URL
 
-const pool = new Pool({ connectionString })
-const adapter = new PrismaNeon(pool)
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is not set')
+}
 
+const adapter = new PrismaNeon({ connectionString })
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
 export const prisma =

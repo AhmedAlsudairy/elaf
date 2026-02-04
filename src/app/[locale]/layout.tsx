@@ -12,6 +12,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Favicon from "/public/favicon.ico";
 import { ClerkProvider } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { ProfileCheck } from "@/components/common/user/profile-check";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,6 +42,21 @@ export default async function RootLayout({
   const messages = await getMessages({ locale });
   const direction = getLangDir(locale);
 
+  // Check if user has a profile (server-side)
+  let hasProfile = false;
+  try {
+    const { userId } = await auth();
+    if (userId) {
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { clerkUserId: userId },
+        select: { id: true },
+      });
+      hasProfile = !!userProfile;
+    }
+  } catch (error) {
+    console.error('Error checking user profile:', error);
+  }
+
   return (
     <ClerkProvider>
       <ReactQueryClientProvider>
@@ -48,7 +66,9 @@ export default async function RootLayout({
             <Analytics />
             <NextIntlClientProvider messages={messages}>
               <Header />
-              {children}
+              <ProfileCheck hasProfile={hasProfile}>
+                {children}
+              </ProfileCheck>
               <Footer />
               <Toaster />
             </NextIntlClientProvider>

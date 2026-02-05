@@ -34,83 +34,77 @@ export async function submitFinalForm(
 
     console.log('Data validated successfully');
 
-    // Use Prisma Transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Create User Profile
-      // Check if profile exists for this Clerk ID
-      const existingProfile = await tx.userProfile.findUnique({
-        where: { clerkUserId: user.id }
-      });
-
-      let newUserProfile;
-
-      if (existingProfile) {
-        // Update
-        newUserProfile = await tx.userProfile.update({
-            where: { id: existingProfile.id },
-            data: {
-                name: validatedUserProfile.name,
-                email: validatedUserProfile.email,
-                role: validatedUserProfile.role,
-                bio: validatedUserProfile.bio,
-                phoneNumber: validatedUserProfile.phoneNumber,
-                address: validatedUserProfile.address,
-                profileImage: validatedUserProfile.profileImage,
-                companyThatWorkedWith: validatedUserProfile.companyThatWorkedWith,
-            }
-        });
-      } else {
-        // Create
-        newUserProfile = await tx.userProfile.create({
-            data: {
-                clerkUserId: user.id,
-                name: validatedUserProfile.name,
-                email: validatedUserProfile.email,
-                role: validatedUserProfile.role,
-                bio: validatedUserProfile.bio,
-                phoneNumber: validatedUserProfile.phoneNumber,
-                address: validatedUserProfile.address,
-                profileImage: validatedUserProfile.profileImage,
-                companyThatWorkedWith: validatedUserProfile.companyThatWorkedWith,
-            }
-        });
-      }
-
-      let newCompany = null;
-
-      // 2. Create Company if provided
-      if (validatedCompany) {
-         newCompany = await tx.company.create({
-            data: {
-                companyTitle: validatedCompany.companyTitle,
-                companyEmail: validatedCompany.companyEmail,
-                companyWebsite: validatedCompany.companyWebsite ?? undefined,
-                companyNumber: validatedCompany.companyNumber ?? undefined,
-                sectors: validatedCompany.sectors ?? undefined,
-                bio: validatedCompany.bio ?? undefined,
-                phoneNumber: validatedCompany.phoneNumber ?? undefined,
-                address: validatedCompany.address ?? undefined,
-                profileImage: validatedCompany.profileImage ?? undefined,
-            }
-         });
-         
-         // Link user to company if needed
-         await tx.userProfile.update({
-            where: { id: newUserProfile.id },
-            data: { companyId: newCompany.id }
-         });
-      }
-
-      return { userProfile: newUserProfile, company: newCompany };
+    // 1. Create or Update User Profile
+    const existingProfile = await prisma.userProfile.findUnique({
+      where: { clerkUserId: user.id }
     });
 
-    console.log('Registration successful, data:', result);
+    let newUserProfile;
+
+    if (existingProfile) {
+      // Update existing profile
+      newUserProfile = await prisma.userProfile.update({
+        where: { id: existingProfile.id },
+        data: {
+          name: validatedUserProfile.name,
+          email: validatedUserProfile.email,
+          role: validatedUserProfile.role,
+          bio: validatedUserProfile.bio,
+          phoneNumber: validatedUserProfile.phoneNumber,
+          address: validatedUserProfile.address,
+          profileImage: validatedUserProfile.profileImage,
+          companyThatWorkedWith: validatedUserProfile.companyThatWorkedWith,
+        }
+      });
+    } else {
+      // Create new profile
+      newUserProfile = await prisma.userProfile.create({
+        data: {
+          clerkUserId: user.id,
+          name: validatedUserProfile.name,
+          email: validatedUserProfile.email,
+          role: validatedUserProfile.role,
+          bio: validatedUserProfile.bio,
+          phoneNumber: validatedUserProfile.phoneNumber,
+          address: validatedUserProfile.address,
+          profileImage: validatedUserProfile.profileImage,
+          companyThatWorkedWith: validatedUserProfile.companyThatWorkedWith,
+        }
+      });
+    }
+
+    let newCompany = null;
+
+    // 2. Create Company if provided
+    if (validatedCompany) {
+      newCompany = await prisma.company.create({
+        data: {
+          companyTitle: validatedCompany.companyTitle,
+          companyEmail: validatedCompany.companyEmail,
+          companyWebsite: validatedCompany.companyWebsite ?? undefined,
+          companyNumber: validatedCompany.companyNumber ?? undefined,
+          sectors: validatedCompany.sectors ?? undefined,
+          bio: validatedCompany.bio ?? undefined,
+          phoneNumber: validatedCompany.phoneNumber ?? undefined,
+          address: validatedCompany.address ?? undefined,
+          profileImage: validatedCompany.profileImage ?? undefined,
+        }
+      });
+      
+      // Link user to company
+      await prisma.userProfile.update({
+        where: { id: newUserProfile.id },
+        data: { companyId: newCompany.id }
+      });
+    }
+
+    console.log('Registration successful');
 
     return {
       success: true,
       message: 'Registration completed successfully',
-      userId: result.userProfile.id,
-      companyId: result.company?.id
+      userId: newUserProfile.id,
+      companyId: newCompany?.id
     }
   } catch (error) {
     console.error('Unexpected error during registration:', error)

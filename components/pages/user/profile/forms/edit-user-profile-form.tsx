@@ -59,9 +59,7 @@ const EditUserProfilePage = () => {
     setIsSubmitting(true);
     try {
       await updateUserProfile(data);
-      // Handle success (e.g., show a success message, redirect)
     } catch (error) {
-      // Handle error (e.g., show an error message)
       console.error('Failed to update profile:', error);
     } finally {
       setIsSubmitting(false);

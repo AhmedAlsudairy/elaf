@@ -1,4 +1,3 @@
-// app/[locale]/(user)/(routes)/profile/myprofile/page.tsx
 import { Suspense } from 'react';
 import { getCurrentUserProfile } from '@/actions/neon/user/get-current-user-profile';
 import { getCurrentCompanyProfile } from '@/actions/neon/company/get-current-company-profile';
@@ -6,7 +5,7 @@ import UserProfileClient from '@/components/pages/user/profile/userProfile/user-
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader } from '@/components/ui/loader';
 
-export const revalidate = 60; // Revalidate this page every 60 seconds
+export const revalidate = 60;
 
 type UserProfile = {
   id: string;
@@ -22,9 +21,7 @@ type UserProfile = {
 
 type CompanyProfile = {
   id?: string;
-  companyProfileId?: string;
   companyTitle?: string;
-  // Add other company profile fields as needed
 };
 
 function AlertMessage({ companyProfile }: { companyProfile: CompanyProfile | null }) {
@@ -58,22 +55,20 @@ export default async function UserProfilePage() {
     return <div>No user profile found.</div>;
   }
 
-  // Ensure all required fields are present and handle potential undefined values
   const safeUserProfile: UserProfile = {
     id: userProfileData.id,
     email: userProfileData.email || '',
     name: userProfileData.name || '',
-    profileImage: userProfileData.profileImage ?? undefined, 
-    role: userProfileData.role ?? undefined,
-    phoneNumber: userProfileData.phoneNumber ?? undefined, 
-    address: userProfileData.address ?? undefined,
-    bio: userProfileData.bio ?? undefined,
-    companyThatWorkedWith: userProfileData.companyThatWorkedWith ?? undefined, 
+    profileImage: userProfileData.profileImage,
+    role: userProfileData.role,
+    phoneNumber: userProfileData.phoneNumber,
+    address: userProfileData.address,
+    bio: userProfileData.bio,
+    companyThatWorkedWith: userProfileData.companyThatWorkedWith,
   };
 
   const safeCompanyProfile: CompanyProfile | null = companyProfileData ? {
     id: companyProfileData.id,
-    companyProfileId: companyProfileData.companyProfileId ?? undefined,
     companyTitle: companyProfileData.companyTitle,
   } : null;
 

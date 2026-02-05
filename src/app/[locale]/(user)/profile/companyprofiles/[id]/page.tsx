@@ -1,6 +1,6 @@
 import { getCurrentCompanyProfile } from '@/actions/neon/company/get-current-company-profile';
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Edit } from "lucide-react";
 import Link from 'next/link';
 import { createOrGetChatRoom } from '@/actions/neon/chat/chats';
 import { getCompanyProfileById } from '@/actions/neon/company/gett-company-profile-by-id';
@@ -20,34 +20,45 @@ export default async function CompanyProfilePage({
   if (!company) {
     notFound();
   }
-const currentProfile = await getCurrentCompanyProfile();
-console.log('AAAAAAAAAAAAcurrentProfile:', currentProfile);
-console.log('params.id:', id);
-console.log('canChat:', currentProfile && currentProfile.id !== id);
-const canChat = currentProfile && currentProfile.id !== id;
-
+  const currentProfile = await getCurrentCompanyProfile();
+  console.log('AAAAAAAAAAAAcurrentProfile:', currentProfile);
+  console.log('params.id:', id);
+  console.log('canChat:', currentProfile && currentProfile.id !== id);
+  const canChat = currentProfile && currentProfile.id !== id;
+  const isOwnProfile = currentProfile && currentProfile.id === id;
 
   return (
     <div className="container mx-auto p-8 max-w-4xl">
       <div className="bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
-        <div className="flex items-start gap-6 mb-6">
-          <Avatar className="w-24 h-24">
-            {company.profileImage ? (
-              <AvatarImage src={company.profileImage} alt={company.companyTitle} />
-            ) : (
-              <AvatarFallback className="text-2xl">
-                {company.companyTitle.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{company.companyTitle}</h1>
-            {company.companyNumber && (
-              <p className="text-gray-600 mb-2">Company #: {company.companyNumber}</p>
-            )}
+        <div className="flex items-start gap-6 mb-6 justify-between">
+          <div className="flex items-start gap-6">
+            <Avatar className="w-24 h-24">
+              {company.profileImage ? (
+                <AvatarImage src={company.profileImage} alt={company.companyTitle} />
+              ) : (
+                <AvatarFallback className="text-2xl">
+                  {company.companyTitle.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-2">{company.companyTitle}</h1>
+              {company.companyNumber && (
+                <p className="text-gray-600 mb-2">Company #: {company.companyNumber}</p>
+              )}
+            </div>
           </div>
+          
+          {isOwnProfile && (
+            <Link href={`/profile/companyprofiles/${id}/edit`}>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2">
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Bio */}

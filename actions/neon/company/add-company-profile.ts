@@ -41,66 +41,48 @@ export async function addCompany(data: CompanyFormData) {
       return { success: false, error: 'A company with this email already exists' }
     }
 
-    // ✅ Create company and link to user in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const company = await tx.company.create({
+    // ✅ Create company (without transaction to avoid timeout issues with Neon)
+    const company = await prisma.company.create({
+      data: {
+        companyTitle: validatedData.companyTitle,
+        companyEmail: validatedData.companyEmail,
+        companyWebsite: validatedData.companyWebsite || null,
+        companyNumber: validatedData.companyNumber || null,
+        bio: validatedData.bio || null,
+        sectors: validatedData.sectors || [],
+        phoneNumber: validatedData.phoneNumber || null,
+        address: validatedData.address || null,
+        profileImage: validatedData.profileImage || null,
+        companyProfileId: userId,
+      },
+    })
+
+    // Link to user profile
+    let userProfile = await prisma.userProfile.findUnique({
+      where: { clerkUserId: userId },
+    })
+
+    if (!userProfile) {
+      userProfile = await prisma.userProfile.create({
         data: {
-          companyTitle: validatedData.companyTitle,
-          companyEmail: validatedData.companyEmail,
-          companyWebsite: validatedData.companyWebsite || null,
-          companyNumber: validatedData.companyNumber || null,
-          bio: validatedData.bio || null,
-          sectors: validatedData.sectors || [],
-          phoneNumber: validatedData.phoneNumber || null,
-          address: validatedData.address || null,
-          profileImage: validatedData.profileImage || null,
-          companyProfileId: userId,
+          clerkUserId: userId,
+          email: userEmail,
+          name:
+            `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+            userEmail,
+          profileImage: user.imageUrl || null,
+          companyId: company.id,
         },
       })
-
-      let userProfile = await tx.userProfile.findUnique({
-        where: { clerkUserId: userId },
+    } else {
+      await prisma.userProfile.update({
+        where: { id: userProfile.id },
+        data: { companyId: company.id },
       })
-
-      if (!userProfile) {
-        userProfile = await tx.userProfile.create({
-          data: {
-            clerkUserId: userId,
-            email: userEmail,
-            name:
-              `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
-              userEmail,
-            profileImage: user.imageUrl || null,
-            companyId: company.id,
-          },
-        })
-      } else {
-        await tx.userProfile.update({
-          where: { id: userProfile.id },
-          data: { companyId: company.id },
-        })
-      }
-
-      return company
-    })
+    }
 
     revalidatePath('/')
     revalidatePath('/profile')
     revalidatePath('/chats')
 
-    return { success: true, data: result }
-  } catch (error) {
-    console.error('Error creating company:', error)
-
-    if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        error:
-          'Invalid form data: ' +
-          error.errors.map((e) => e.message).join(', '),
-      }
-    }
-
-    return { success: false, error: 'Failed to create company profile' }
-  }
-}
+    return { success: true, data: company }

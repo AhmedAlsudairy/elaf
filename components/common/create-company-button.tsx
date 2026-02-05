@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Plus, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { useUser } from '@clerk/nextjs';
 import { getCurrentCompanyProfile } from '@/actions/neon/company/get-current-company-profile';
 
 interface CreateCompanyButtonProps {
@@ -50,9 +51,9 @@ export function CreateOrViewCompanyButton({
 }: CreateCompanyButtonProps) {
   const router = useRouter();
   const locale = useLocale();
+  const { isSignedIn, isLoaded } = useUser();
   const [hasCompany, setHasCompany] = React.useState<boolean | null>(null);
   const [loading, setLoading] = React.useState(true);
-
   const [companyId, setCompanyId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -77,8 +78,19 @@ export function CreateOrViewCompanyButton({
         setLoading(false);
       }
     }
-    checkCompany();
-  }, []);
+    
+    // Only check company if user is signed in
+    if (isSignedIn) {
+      checkCompany();
+    } else {
+      setLoading(false);
+    }
+  }, [isSignedIn]);
+
+  // Don't show button if not signed in
+  if (!isLoaded || !isSignedIn) {
+    return null;
+  }
 
   const handleClick = () => {
     console.log('Button clicked - hasCompany:', hasCompany, 'companyId:', companyId, 'loading:', loading);

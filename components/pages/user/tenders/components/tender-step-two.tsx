@@ -11,12 +11,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PDFViewer, pdf } from '@react-pdf/renderer';
-import PDFDocument from '@/components/common/pdf-generate';
+import dynamic from 'next/dynamic';
 import { Trash2, Plus, FileUp, Upload } from 'lucide-react';
 import { TenderFormValues } from '@/schema';
 import { ELAF_LOGO_PNG_URL } from '@/constant/svg';
 import { uploadImage } from '@/actions/neon/common/upload-image';
+
+const TenderPDFPreview = dynamic(() => import('./tender-pdf-preview'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full flex items-center justify-center">Loading PDF Preview...</div>
+});
+
 
 type TenderFormStep2Props = {
   form: UseFormReturn<TenderFormValues>;
@@ -176,26 +181,53 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
   };
 
   const generatePDF = async () => {
-    const values = form.getValues();
-    const blob = await pdf(
-      <PDFDocument 
-        data={{
-          title: values.title,
-          summary: values.summary,
-          endDate: values.endDate,
-          terms: values.terms,
-          scopeOfWorks: values.scopeOfWorks,
-          customFields: values.customFields,
-          tenderId: tenderId || '',
-          contentSections: contentSections,
-          currency: values.currency,
-        }} 
-        companyLogo={companyLogo}
-        elafLogo={ELAF_LOGO_PNG_URL}
-      />
-    ).toBlob();
-    setGeneratedPdfBlob(blob);
-    setPreviewPDF(true);
+    try {
+      const values = form.getValues();
+      
+      // Validate required fields
+      if (!values.title || !values.summary) {
+        alert('Please fill in the title and summary before generating PDF');
+        return;
+      }
+
+      // Ensure endDate is a valid Date object
+      let validEndDate = new Date();
+      if (values.endDate) {
+        validEndDate = values.endDate instanceof Date ? values.endDate : new Date(values.endDate);
+      }
+
+      const pdfData = {
+        title: String(values.title || ''),
+        summary: String(values.summary || ''),
+        endDate: validEndDate,
+        terms: String(values.terms || ''),
+        scopeOfWorks: String(values.scopeOfWorks || ''),
+        customFields: Array.isArray(values.customFields) ? values.customFields : [],
+        tenderId: String(tenderId || ''),
+        contentSections: Array.isArray(contentSections) ? contentSections : [],
+        currency: (values.currency || 'OMR') as 'OMR' | 'EGP' | 'SAR' | 'AED',
+      };
+
+      console.log('Generating PDF with data:', pdfData);
+
+      // Dynamically import pdf function
+      const { pdf } = await import('@react-pdf/renderer');
+      const PDFDocComponent = (await import('@/components/common/pdf-generate')).default;
+
+      const blob = await pdf(
+        <PDFDocComponent 
+          data={pdfData} 
+          companyLogo={String(companyLogo || '')}
+          elafLogo={String(ELAF_LOGO_PNG_URL || '')}
+        />
+      ).toBlob();
+      
+      setGeneratedPdfBlob(blob);
+      setPreviewPDF(true);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please check the form data and try again.');
+    }
   };
 
   return (
@@ -335,17 +367,15 @@ export function TenderFormStep2({ form, companyLogo, tenderId }: TenderFormStep2
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full h-full max-w-4xl max-h-[90vh] overflow-auto flex flex-col">
             <div className="flex-grow">
-              <PDFViewer width="100%" height="100%">
-                <PDFDocument 
-                  data={{
+              <TenderPDFPreview 
+                data={{
                     ...form.getValues(),
                     tenderId: tenderId || '',
                     contentSections: contentSections
                   }} 
-                  companyLogo={companyLogo}
-                  elafLogo={ELAF_LOGO_PNG_URL}
-                />
-              </PDFViewer>
+                companyLogo={companyLogo} 
+                elafLogo={ELAF_LOGO_PNG_URL} 
+              />
             </div>
             <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 p-4">
               <Button type="button" onClick={() => setPreviewPDF(false)} className="w-full sm:w-auto">

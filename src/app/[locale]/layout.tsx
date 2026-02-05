@@ -60,8 +60,8 @@ export default async function RootLayout({
   return (
     <ClerkProvider>
       <ReactQueryClientProvider>
-        <html lang={locale} dir={direction}>
-          <body className={inter.className}>
+        <html lang={locale} dir={direction} suppressHydrationWarning>
+          <body className={inter.className} suppressHydrationWarning>
             <SpeedInsights />
             <Analytics />
             <NextIntlClientProvider messages={messages}>

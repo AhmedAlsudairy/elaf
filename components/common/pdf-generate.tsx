@@ -166,13 +166,13 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
     <View style={styles.header} fixed>
       <View style={styles.headerLeft}>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src={elafLogo} />
+          {elafLogo && <Image style={styles.logo} src={elafLogo} />}
         </View>
         <Text style={styles.metaData}>Tender ID: {data.tenderId}</Text>
       </View>
       <View style={styles.headerRight}>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src={companyLogo} />
+          {companyLogo && <Image style={styles.logo} src={companyLogo} />}
         </View>
         <Text style={styles.metaData}>Created At: {format(new Date(), 'PPP')}</Text>
         {data.companyName && (

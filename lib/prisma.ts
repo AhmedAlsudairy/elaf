@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client'
 neonConfig.poolQueryViaFetch = true
 
 // Only configure WebSocket if not in Edge Runtime
+/* 
 if (typeof globalThis.WebSocket !== 'undefined') {
   try {
     const ws = require('ws')
@@ -16,6 +17,7 @@ if (typeof globalThis.WebSocket !== 'undefined') {
     console.warn('WebSocket not available, using fetch-based queries')
   }
 }
+*/
 
 const connectionString = process.env.DATABASE_URL
 

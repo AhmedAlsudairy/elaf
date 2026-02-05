@@ -33,7 +33,7 @@
     "@radix-ui/react-switch": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.15",
-    "@react-pdf/renderer": "^3.4.4",
+    "@react-pdf/renderer": "^4.3.2",
     "@supabase/ssr": "0.5.0",
     "@supabase/supabase-js": "latest",
     "@tanstack/react-query": "^5.51.23",

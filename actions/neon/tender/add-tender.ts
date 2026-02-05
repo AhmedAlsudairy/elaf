@@ -40,11 +40,14 @@ export async function addTenderStepOne(formData: StepOneData) {
         currency: validatedData.currency,
         pdfUrl: '', // Will be updated in step 2
         pdfChoice: 'upload' // Default value
+      },
+      select: {
+        id: true,
       }
     })
 
     revalidatePath('/tenders')
-    return tender
+    return { id: tender.id }
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new Error("Invalid form data: " + JSON.stringify(error.errors))

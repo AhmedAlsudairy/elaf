@@ -19,7 +19,10 @@ export async function updateTenderStepTwo(formData: StepTwoData) {
     const updatedTender = await prisma.tender.update({
       where: { id: validatedData.tenderId },
       data: { pdfUrl: validatedData.pdfUrl },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        tenderSectors: true,
         company: {
           select: {
             users: {
@@ -35,7 +38,7 @@ export async function updateTenderStepTwo(formData: StepTwoData) {
       where: {
         sectors: { hasSome: updatedTender.tenderSectors }
       },
-      include: {
+      select: {
         users: { select: { email: true } }
       }
     })
@@ -54,7 +57,7 @@ export async function updateTenderStepTwo(formData: StepTwoData) {
     }
 
     revalidatePath('/tenders')
-    return updatedTender
+    return { success: true, id: updatedTender.id }
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new Error("Invalid form data: " + JSON.stringify(error.errors))

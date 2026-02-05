@@ -15,10 +15,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PDFViewer, pdf } from "@react-pdf/renderer";
-import PDFDocument from "@/components/common/pdf-generate";
+import dynamic from "next/dynamic";
 import { ELAF_LOGO_PNG_URL } from "@/constant/svg";
 import { Trash2, Plus } from "lucide-react";
+
+const PDFViewer = dynamic(() => import('@/components/common/pdf-viewer'), { 
+  ssr: false,
+  loading: () => <div className="h-full w-full flex items-center justify-center">Loading PDF Viewer...</div>
+});
+const PDFDocument = dynamic(() => import("@/components/common/pdf-generate"), { ssr: false });
 import PDFUpload from "@/components/common/pdf-upload";
 
 export const tenderRequestSchema = z.object({
@@ -87,8 +92,11 @@ export function TenderRequestForm({
   const generatePDF = async () => {
     setIsLoading(true);
     try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const PDFDocComponent = (await import("@/components/common/pdf-generate")).default;
+
       const blob = await pdf(
-        <PDFDocument
+        <PDFDocComponent
           data={{
             ...methods.getValues(),
             tenderId: tenderId,

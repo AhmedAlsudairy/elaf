@@ -99,7 +99,7 @@ export function TenderForm() {
         try {
           const stepTwoData = form.getValues();
           await updateTenderStepTwo({
-            pdfUrl: stepTwoData.pdfUrl,
+            pdfUrl: stepTwoData.pdfUrl || "",
             tenderId: tenderId!,
           });
           showToast("success", "Tender submitted successfully");

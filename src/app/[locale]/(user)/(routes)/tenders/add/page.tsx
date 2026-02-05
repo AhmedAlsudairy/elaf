@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
@@ -13,6 +13,7 @@ import { updateTenderStepTwo } from '@/actions/neon/tender/add-tender-step-two'
 import { TenderSchema, TenderFormValues } from '@/schema'
 import { useToast } from '@/components/ui/use-toast'
 import { ClipLoader } from 'react-spinners'
+import { getCurrentCompanyProfile } from '@/actions/neon/company/get-current-company-profile'
 
 export default function AddTenderPage() {
   const [step, setStep] = useState(1)
@@ -21,6 +22,20 @@ export default function AddTenderPage() {
   const { toast } = useToast()
   const router = useRouter()
   const [companyLogo, setCompanyLogo] = useState<string>('')
+
+  useEffect(() => {
+    const fetchCompanyLogo = async () => {
+      try {
+        const company = await getCurrentCompanyProfile()
+        if (company?.profileImage) {
+          setCompanyLogo(company.profileImage)
+        }
+      } catch (error) {
+        console.error('Error fetching company logo:', error)
+      }
+    }
+    fetchCompanyLogo()
+  }, [])
 
   const form = useForm<TenderFormValues>({
     resolver: zodResolver(TenderSchema),
@@ -34,6 +49,7 @@ export default function AddTenderPage() {
       terms: '',
       scopeOfWorks: '',
       pdfChoice: 'upload',
+      customFields: [],
     },
   })
 
@@ -76,7 +92,7 @@ export default function AddTenderPage() {
     try {
       setIsLoading(true)
       await updateTenderStepTwo({
-        pdfUrl: data.pdfUrl,
+        pdfUrl: data.pdfUrl || "",
         tenderId: tenderId,
       })
       

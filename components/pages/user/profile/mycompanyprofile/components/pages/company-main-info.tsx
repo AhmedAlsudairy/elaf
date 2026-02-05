@@ -1,6 +1,6 @@
 'use client'
 
-import { getCompanyProfileById } from "@/actions/supabase/gett-company-profile-by-id";
+import { getCompanyProfileById } from "@/actions/neon/company/gett-company-profile-by-id";
 import { ProfileContent } from "@/components/pages/user/profile/mycompanyprofile/components/pages/company-content";
 import { CompanyProfile } from "@/types";
 import { useEffect, useState } from "react";

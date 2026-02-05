@@ -15,10 +15,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PDFViewer, pdf } from "@react-pdf/renderer";
-import PDFDocument from "@/components/common/pdf-generate";
+import dynamic from "next/dynamic";
 import { ELAF_LOGO_PNG_URL } from "@/constant/svg";
 import { Trash2, Plus } from "lucide-react";
+
+const PDFViewer = dynamic(() => import('@/components/common/pdf-viewer'), { 
+  ssr: false,
+  loading: () => <div className="h-full w-full flex items-center justify-center">Loading PDF Viewer...</div>
+});
+const PDFDocument = dynamic(() => import("@/components/common/pdf-generate"), { ssr: false });
 import PDFUpload from "@/components/common/pdf-upload";
 
 export const tenderRequestSchema = z.object({
@@ -42,9 +47,9 @@ interface TenderRequestFormProps {
   onSubmit: (data: TenderRequestFormValues, pdfBlob?: Blob) => Promise<void>;
   tenderId: string;
   companyProfile: {
-    company_profile_id: string;
-    company_title: string;
-    profile_image: string;
+    companyProfileId: string | null;
+    companyTitle: string;
+    profileImage: string | null;
   };
   tenderTitle: string;
   tenderCurrency: z.infer<typeof tenderRequestSchema>['currency'];
@@ -87,20 +92,24 @@ export function TenderRequestForm({
   const generatePDF = async () => {
     setIsLoading(true);
     try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const PDFDocComponent = (await import("@/components/common/pdf-generate")).default;
+
       const blob = await pdf(
-        <PDFDocument
+        <PDFDocComponent
           data={{
             ...methods.getValues(),
-            tender_id: tenderId,
-            content_sections: contentSections,
-            company_name: companyProfile.company_title,
-            is_tender_request: true,
-            custom_fields: [],
-            end_date: new Date(),
+            tenderId: tenderId,
+            contentSections: contentSections,
+            companyName: companyProfile.companyTitle,
+            isTenderRequest: true,
+            customFields: [],
+            endDate: new Date(),
             terms: "",
-            scope_of_works: "",
+            scopeOfWorks: "",
+            bidPrice: methods.getValues().bid_price,
           }}
-          companyLogo={companyProfile.profile_image}
+          companyLogo={companyProfile.profileImage ?? ""}
           elafLogo={ELAF_LOGO_PNG_URL}
         />
       ).toBlob();
@@ -423,16 +432,17 @@ export function TenderRequestForm({
                   <PDFDocument
                     data={{
                       ...methods.getValues(),
-                      tender_id: tenderId,
-                      content_sections: contentSections,
-                      company_name: companyProfile.company_title,
-                      is_tender_request: true,
-                      custom_fields: [],
-                      end_date: new Date(),
+                      tenderId: tenderId,
+                      contentSections: contentSections,
+                      companyName: companyProfile.companyTitle,
+                      isTenderRequest: true,
+                      customFields: [],
+                      endDate: new Date(),
                       terms: "",
-                      scope_of_works: "",
+                      scopeOfWorks: "",
+                      bidPrice: methods.getValues().bid_price,
                     }}
-                    companyLogo={companyProfile.profile_image}
+                    companyLogo={companyProfile.profileImage ?? ELAF_LOGO_PNG_URL}
                     elafLogo={ELAF_LOGO_PNG_URL}
                   />
                 </PDFViewer>

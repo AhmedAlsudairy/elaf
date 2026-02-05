@@ -28,14 +28,14 @@ export function ProfileInfo({ profile, setProfile, isEditing }: ProfileInfoProps
   };
 
   const handleImageChange = (url: string) => {
-    setProfile(prev => ({ ...prev, profile_image: url }));
+    setProfile(prev => ({ ...prev, profileImage: url }));
   };
 
   const handleImageRemove = () => {
-    setProfile(prev => ({ ...prev, profile_image: undefined }));
+    setProfile(prev => ({ ...prev, profileImage: undefined }));
   };
 
-  const renderField = (icon: React.ReactNode, label: string, value: string | undefined, name: keyof CompanyProfile, type: string = "text") => {
+  const renderField = (icon: React.ReactNode, label: string, value: string | null | undefined, name: keyof CompanyProfile, type: string = "text") => {
     if (!isEditing) {
       return (
         <div className="flex items-center space-x-2 mb-4">
@@ -74,14 +74,14 @@ export function ProfileInfo({ profile, setProfile, isEditing }: ProfileInfoProps
             <div>
            
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderField(<Building2 className="h-4 w-4" />, "Company ", profile.company_title, "company_title")}
-                {renderField(<Building2 className="h-4 w-4" />, "Company Number", profile.company_number, "company_number")}
+                {renderField(<Building2 className="h-4 w-4" />, "Company ", profile.companyTitle, "companyTitle")}
+                {renderField(<Building2 className="h-4 w-4" />, "Company Number", profile.companyNumber, "companyNumber")}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {renderField(<Globe className="h-4 w-4" />, "Company Website", profile.company_website, "company_website")}
-              {renderField(<Mail className="h-4 w-4" />, "Company Email", profile.company_email, "company_email")}
-              {renderField(<Phone className="h-4 w-4" />, "Phone Number", profile.phone_number, "phone_number")}
+              {renderField(<Globe className="h-4 w-4" />, "Company Website", profile.companyWebsite, "companyWebsite")}
+              {renderField(<Mail className="h-4 w-4" />, "Company Email", profile.companyEmail, "companyEmail")}
+              {renderField(<Phone className="h-4 w-4" />, "Phone Number", profile.phoneNumber, "phoneNumber")}
               {renderField(<MapPin className="h-4 w-4" />, "Address", profile.address, "address")}
             </div>
             <div className="flex items-center space-x-2 mb-4">
@@ -109,7 +109,7 @@ export function ProfileInfo({ profile, setProfile, isEditing }: ProfileInfoProps
           Profile Image
         </Label>
         <ImageUpload
-          value={profile.profile_image ? [profile.profile_image] : []}
+          value={profile.profileImage ? [profile.profileImage] : []}
           disabled={!isEditing}
           onChange={handleImageChange}
           onRemove={handleImageRemove}
@@ -117,13 +117,13 @@ export function ProfileInfo({ profile, setProfile, isEditing }: ProfileInfoProps
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {renderField(<Building2 className="h-4 w-4" />, "Company Title", profile.company_title, "company_title")}
-        {renderField(<Building2 className="h-4 w-4" />, "Company Number", profile.company_number, "company_number")}
+        {renderField(<Building2 className="h-4 w-4" />, "Company Title", profile.companyTitle, "companyTitle")}
+        {renderField(<Building2 className="h-4 w-4" />, "Company Number", profile.companyNumber, "companyNumber")}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {renderField(<Globe className="h-4 w-4" />, "Company Website", profile.company_website, "company_website", "url")}
-        {renderField(<Mail className="h-4 w-4" />, "Company Email", profile.company_email, "company_email", "email")}
-        {renderField(<Phone className="h-4 w-4" />, "Phone Number", profile.phone_number, "phone_number", "tel")}
+        {renderField(<Globe className="h-4 w-4" />, "Company Website", profile.companyWebsite, "companyWebsite", "url")}
+        {renderField(<Mail className="h-4 w-4" />, "Company Email", profile.companyEmail, "companyEmail", "email")}
+        {renderField(<Phone className="h-4 w-4" />, "Phone Number", profile.phoneNumber, "phoneNumber", "tel")}
         {renderField(<MapPin className="h-4 w-4" />, "Address", profile.address, "address")}
       </div>
       <div>

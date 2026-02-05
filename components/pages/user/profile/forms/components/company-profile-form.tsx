@@ -34,7 +34,9 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
   onBack,
   isSubmitting
 }) => {
-  const [profileImageUrls, setProfileImageUrls] = React.useState<string[]>(initialData?.profile_image ? [initialData.profile_image] : []);
+  const [profileImageUrls, setProfileImageUrls] = React.useState<string[]>(
+    initialData?.profileImage ? [initialData.profileImage] : []
+  );
   const showToast = useReusableToast();
 
   React.useEffect(() => {
@@ -47,19 +49,21 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
 
   const handleProfileImageChange = (url: string) => {
     setProfileImageUrls([url]);
-    form.setValue("profile_image", url);
+    form.setValue("profileImage", url);
   };
 
   const handleProfileImageRemove = (url: string) => {
     setProfileImageUrls(profileImageUrls.filter((u) => u !== url));
-    form.setValue("profile_image", "");
+    form.setValue("profileImage", "");
   };
 
-  const sectorOptions: MultiSelectOption[] = Object.values(SectorEnum).map((sector) => ({
-    id: sector,
-    name: sector
-  }));
-
+      const sectorOptions: MultiSelectOption[] = Object.values(SectorEnum).map((sector) => ({
+        id: sector,
+        name: sector
+          .split('_')
+          .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+          .join(' ') 
+      }));
   const onSubmitWithToast: SubmitHandler<CompanyFormData> = async (data) => {
     try {
       await onSubmit(data);
@@ -74,7 +78,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
       <form onSubmit={form.handleSubmit(onSubmitWithToast)} className="space-y-6">
         <FormField
           control={form.control}
-          name="profile_image"
+          name="profileImage"
           render={({ field }) => (
             <FormItem>
               <Label className="text-sm font-medium">Company Logo</Label>
@@ -94,7 +98,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="company_title"
+            name="companyTitle"
             render={({ field }) => (
               <FormItem>
                 <Label className="text-sm font-medium">Company Title</Label>
@@ -105,12 +109,12 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               </FormItem>
             )}
           />
-            <FormField
+          <FormField
             control={form.control}
-            name="company_email"
+            name="companyEmail"
             render={({ field }) => (
               <FormItem>
-                <Label className="text-sm font-medium">Company email</Label>
+                <Label className="text-sm font-medium">Company Email</Label>
                 <FormControl>
                   <Input placeholder="example@email.com" {...field} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
@@ -120,12 +124,12 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
           />
           <FormField
             control={form.control}
-            name="company_number"
+            name="companyNumber"
             render={({ field }) => (
               <FormItem>
                 <Label className="text-sm font-medium">Company Number</Label>
                 <FormControl>
-                  <Input placeholder="12345678" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                   <Input placeholder="12345678" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -133,12 +137,12 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
           />
           <FormField
             control={form.control}
-            name="company_website"
+            name="companyWebsite"
             render={({ field }) => (
               <FormItem>
                 <Label className="text-sm font-medium">Company Website</Label>
                 <FormControl>
-                  <Input placeholder="https://www.example.com" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                  <Input placeholder="https://www.example.com" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -146,12 +150,12 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
           />
           <FormField
             control={form.control}
-            name="phone_number"
+            name="phoneNumber"
             render={({ field }) => (
               <FormItem>
                 <Label className="text-sm font-medium">Phone Number</Label>
                 <FormControl>
-                  <Input placeholder="+1 (555) 123-4567" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                   <Input placeholder="+1 (555) 123-4567" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -164,7 +168,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               <FormItem>
                 <Label className="text-sm font-medium">Address</Label>
                 <FormControl>
-                  <Input placeholder="123 Business Ave, City, Country" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                  <Input placeholder="123 Business Ave, City, Country" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -200,7 +204,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
             <FormItem>
               <Label className="text-sm font-medium">Company Bio</Label>
               <FormControl>
-                <Textarea placeholder="Tell us about your company" {...field} className="mt-1 w-full" disabled={isSubmitting} />
+                <Textarea placeholder="Tell us about your company" {...field} value={field.value ?? ""} className="mt-1 w-full" disabled={isSubmitting} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>

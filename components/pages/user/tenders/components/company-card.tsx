@@ -7,10 +7,10 @@ import { Briefcase, Mail } from 'lucide-react';
 import TenderInfo from './tender-info';
 
 interface Company {
-  company_profile_id: string;
-  company_title: string;
-  company_email: string;
-  profile_image: string;
+  companyProfileId: string | null;
+  companyTitle: string;
+  companyEmail: string;
+  profileImage: string | null;
 }
 
 interface CompanyCardProps {
@@ -25,24 +25,24 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => (
     <CardContent>
       <div className="flex items-center mb-4">
         <Avatar className="h-16 w-16 mr-4">
-          <AvatarImage src={company.profile_image} alt={company.company_title || 'Company'} />
-          <AvatarFallback>{company.company_title ? company.company_title.charAt(0) : 'C'}</AvatarFallback>
+          <AvatarImage src={company.profileImage ?? undefined} alt={company.companyTitle || 'Company'} />
+          <AvatarFallback>{company.companyTitle ? company.companyTitle.charAt(0) : 'C'}</AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="text-lg font-semibold">{company.company_title || 'Unknown Company'}</h3>
-          <p className="text-gray-600">{company.company_email || 'No email provided'}</p>
+          <h3 className="text-lg font-semibold">{company.companyTitle || 'Unknown Company'}</h3>
+          <p className="text-gray-600">{company.companyEmail || 'No email provided'}</p>
         </div>
       </div>
-      <TenderInfo icon={<Briefcase className="w-5 h-5 text-gray-500" />} label="ID" value={company.company_profile_id || 'Unknown'} />
-      {company.company_email && (
+      <TenderInfo icon={<Briefcase className="w-5 h-5 text-gray-500" />} label="ID" value={company.companyProfileId || 'Unknown'} />
+      {company.companyEmail && (
         <TenderInfo 
           icon={<Mail className="w-5 h-5 text-gray-500" />} 
           label="Email" 
-          value={<a href={`mailto:${company.company_email}`} className="text-blue-600 hover:underline">{company.company_email}</a>} 
+          value={<a href={`mailto:${company.companyEmail}`} className="text-blue-600 hover:underline">{company.companyEmail}</a>} 
         />
       )}
-      {company.company_profile_id && (
-        <Link href={`/profile/companyprofiles/${company.company_profile_id}`} passHref>
+      {company.companyProfileId && (
+        <Link href={`/profile/companyprofiles/${company.companyProfileId}`} passHref>
           <Button className="w-full mt-4">View Full Profile</Button>
         </Link>
       )}

@@ -3,8 +3,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useQuery, useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
 import { ClipLoader } from 'react-spinners';
-import { getChatRoomsForCurrentProfile, getMessages, markMessagesAsRead } from "@/actions/supabase/chats";
-import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
+import { getChatRoomsForCurrentProfile, getMessages, markMessagesAsRead } from "@/actions/neon/chat/chats";
+import { getCurrentCompanyProfile } from "@/actions/neon/company/get-current-company-profile";
 import ChatRoomComponent from '@/components/pages/user/chats/single-chat-component';
 import { useSubscribeToChat } from "@/hooks/messages subs-hook";
 import ChatRoomList from './chatr-list';
@@ -76,15 +76,16 @@ const ChatInterface: React.FC = () => {
 
     const fetchProfile = async () => {
       try {
-        const profileData = await getCurrentCompanyProfile();
-        if (profileData) {
-          setProfile({
-            company_title: profileData.company_title,
-            company_email: profileData.company_email,
-            company_profile_id: profileData.company_profile_id,
-            profile_image: profileData.profile_image,
-          });
-        }
+          const profileData = await getCurrentCompanyProfile();
+          console.log('profileData from getCurrentCompanyProfile:', profileData); 
+          if (profileData) {
+            setProfile({
+              company_title: profileData.companyTitle,      
+              company_email: profileData.companyEmail,      
+              company_profile_id: profileData.id,           
+              profile_image: profileData.profileImage || undefined,      
+            });
+          }
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
@@ -114,7 +115,27 @@ const ChatInterface: React.FC = () => {
     queryKey: ['chatRooms'],
     queryFn: async () => {
       const rooms = await getChatRoomsForCurrentProfile();
-      return rooms ?? [];
+      if (!rooms) return [];
+      
+      return rooms.map(room => ({
+        ...room,
+        last_message: room.last_message ? {
+          id: room.last_message.id,
+          chat_room_id: room.last_message.chatRoomId,
+          tender_id: room.last_message.tenderId || null,
+          content: room.last_message.content,
+          created_at: new Date(room.last_message.createdAt).toISOString(),
+          tender_request_id: null, // Message doesn't have this property in DB
+          pdf_url: room.last_message.pdfUrl,
+          sender_company_profile_id: room.last_message.senderCompanyProfileId,
+          receiver_company_profile_id: room.last_message.receiverCompanyProfileId,
+          read_status: room.last_message.readStatus ? "true" : "false",
+          sender_name: room.last_message.senderCompany.companyTitle,
+          sender_avatar: room.last_message.senderCompany.profileImage,
+          company_title: room.last_message.senderCompany.companyTitle,
+          company_image: room.last_message.senderCompany.profileImage
+        } : null
+      }));
     }
   });
 
@@ -130,7 +151,38 @@ const ChatInterface: React.FC = () => {
     queryKey: ['messages', currentChatRoomId],
     queryFn: async ({ pageParam }) => {
       if (!currentChatRoomId) throw new Error('No chat room selected');
-      return getMessages(currentChatRoomId, MESSAGES_PER_PAGE, pageParam);
+      const data = await getMessages(currentChatRoomId, MESSAGES_PER_PAGE, pageParam);
+
+      if (!data) return { messages: [], chatRoomDetails: null };
+
+      return {
+        messages: data.messages.map(msg => ({
+          id: msg.id,
+          chat_room_id: msg.chatRoomId,
+          tender_id: msg.tenderId || null,
+          content: msg.content,
+          created_at: new Date(msg.createdAt).toISOString(),
+          tender_request_id: null,
+          pdf_url: msg.pdfUrl,
+          sender_company_profile_id: msg.senderCompanyProfileId,
+          receiver_company_profile_id: msg.receiverCompanyProfileId,
+          read_status: msg.readStatus ? "true" : "false",
+          sender_name: msg.senderCompany.companyTitle,
+          sender_avatar: msg.senderCompany.profileImage,
+          company_title: msg.senderCompany.companyTitle,
+          company_image: msg.senderCompany.profileImage
+        })),
+        chatRoomDetails: data.chatRoomDetails ? {
+          id: data.chatRoomDetails.id,
+          tender_id: data.chatRoomDetails.tenderId,
+          initiator_company_profile_id: data.chatRoomDetails.initiatorCompanyProfileId,
+          recipient_company_profile_id: data.chatRoomDetails.recipientCompanyProfileId,
+          initiator_company_title: data.chatRoomDetails.initiator_company_title,
+          initiator_company_image: data.chatRoomDetails.initiator_company_image,
+          recipient_company_title: data.chatRoomDetails.recipient_company_title,
+          recipient_company_image: data.chatRoomDetails.recipient_company_image,
+        } : null
+      };
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => 

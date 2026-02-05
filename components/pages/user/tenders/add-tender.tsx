@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { TenderSchema } from "@/schema";
 import { useReusableToast } from "@/components/common/success-toast";
-import { getCurrentCompanyProfile } from "@/actions/supabase/get-current-company-profile";
-import { addTenderStepOne } from "@/actions/supabase/add-tender";
+import { getCurrentCompanyProfile } from "@/actions/neon/company/get-current-company-profile";
+import { addTenderStepOne } from "@/actions/neon/tender/add-tender";
 import { TenderFormStep1 } from "./components/tender-step-one";
 import { TenderFormStep2 } from "./components/tender-step-two";
-import { fetchTenderData } from "@/actions/supabase/get-tender";
-import { updateTenderStepOne } from "@/actions/supabase/update-tender-step-one";
+import { fetchTenderData } from "@/actions/neon/tender/get-tender";
+import { updateTenderStepOne } from "@/actions/neon/tender/update-tender-step-one";
 import { SectorEnum } from "@/constant/text";
-import { updateTenderStepTwo } from "@/actions/supabase/add-tender-step-two";
+import { updateTenderStepTwo } from "@/actions/neon/tender/add-tender-step-two";
 
 type FormValues = z.infer<typeof TenderSchema>;
 
@@ -33,22 +33,22 @@ export function TenderForm() {
     defaultValues: {
       title: "",
       summary: "",
-      pdf_url: "",
-      end_date: new Date(),
+      pdfUrl: "",
+      endDate: new Date(),
       terms: "",
-      scope_of_works: "",
+      scopeOfWorks: "",
       currency: "OMR",
-      pdf_choice: "upload",
-      custom_fields: [{ title: "", description: "" }],
-      tender_sectors: [] as SectorEnum[],
+      pdfChoice: "upload",
+      customFields: [{ title: "", description: "" }],
+      tenderSectors: [] as SectorEnum[],
     },
   });
 
   useEffect(() => {
     async function fetchCompanyProfile() {
       const profile = await getCurrentCompanyProfile();
-      if (profile && profile.profile_image) {
-        setCompanyLogo(profile.profile_image);
+      if (profile && profile.profileImage) {
+        setCompanyLogo(profile.profileImage);
         setCompanyProfile(profile);
       }
     }
@@ -63,10 +63,10 @@ export function TenderForm() {
         "title",
         "summary",
         "currency",
-        "end_date",
+        "endDate",
         "terms",
-        "scope_of_works",
-        "tender_sectors",
+        "scopeOfWorks",
+        "tenderSectors",
       ]);
 
       if (isValid) {
@@ -79,7 +79,7 @@ export function TenderForm() {
           } else {
             result = await addTenderStepOne(stepOneData);
             showToast("success", "New tender created successfully");
-            setTenderId(result.tender_id);
+            setTenderId(result.id);
           }
           setStep(2);
         } catch (error) {
@@ -93,19 +93,19 @@ export function TenderForm() {
         setIsLoading(false);
       }
     } else if (step === 2) {
-      const isValid = await form.trigger(["pdf_url"]);
+      const isValid = await form.trigger(["pdfUrl"]);
 
-      if (isValid && form.getValues("pdf_url")) {
+      if (isValid && form.getValues("pdfUrl")) {
         try {
           const stepTwoData = form.getValues();
           await updateTenderStepTwo({
-            pdf_url: stepTwoData.pdf_url,
-            tender_id: tenderId!,
+            pdfUrl: stepTwoData.pdfUrl || "",
+            tenderId: tenderId!,
           });
           showToast("success", "Tender submitted successfully");
-          if (companyProfile && companyProfile.company_profile_id) {
+          if (companyProfile && companyProfile.companyProfileId) {
             router.push(
-              `/profile/companyprofiles/${companyProfile.company_profile_id}/tenders`
+              `/profile/companyprofiles/${companyProfile.companyProfileId}/tenders`
             );
             router.refresh();
           } else {
@@ -122,7 +122,7 @@ export function TenderForm() {
         const errorMessages = Object.values(errors).map(
           (error) => error.message
         );
-        if (!form.getValues("pdf_url")) {
+        if (!form.getValues("pdfUrl")) {
           errorMessages.push("Please upload a PDF file for your tender.");
         }
         showToast("error", errorMessages.join(", "));
@@ -140,16 +140,16 @@ export function TenderForm() {
               title: data.tender.title || "",
               summary: data.tender.summary || "",
               currency: data.tender.currency || "OMR",
-              pdf_url: data.tender.pdf_url || "",
-              end_date: data.tender.end_date
-                ? new Date(data.tender.end_date)
+              pdfUrl: data.tender.pdfUrl || "",
+              endDate: data.tender.endDate
+                ? new Date(data.tender.endDate)
                 : new Date(),
               terms: data.tender.terms || "",
-              scope_of_works: data.tender.scope_of_works || "",
-              tender_sectors:
-                (data.tender.tender_sectors as SectorEnum[]) || [],
-              pdf_choice: "upload",
-              custom_fields: [{ title: "", description: "" }],
+              scopeOfWorks: data.tender.scopeOfWorks || "",
+              tenderSectors:
+                (data.tender.tenderSectors as SectorEnum[]) || [],
+              pdfChoice: "upload",
+              customFields: [{ title: "", description: "" }],
             };
             form.reset(formattedData);
           }
@@ -159,7 +159,7 @@ export function TenderForm() {
           showToast("error", "Error fetching tender data");
         });
     }
-  }, [tenderId, form]);
+  }, [tenderId, form, showToast]);
 
   const onSubmit = form.handleSubmit(async (data) => {
     if (step === 2) {
@@ -200,7 +200,7 @@ export function TenderForm() {
                 }
               }}
               className="ml-auto"
-              disabled={isLoading || (step === 2 && !form.getValues("pdf_url"))}
+              disabled={isLoading || (step === 2 && !form.getValues("pdfUrl"))}
             >
               {isLoading ? "Processing..." : step === 1 ? "Next" : "Submit"}
             </Button>

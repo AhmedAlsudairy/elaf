@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import PDFUpload from '@/components/common/pdf-upload';
 import { Plus } from "lucide-react";
-import { addSection } from '@/actions/supabase/add-section';
+import { addSection } from '@/actions/neon/section/add-section';
 
 export function AddSectionDialog() {
   const [isLoading, setIsLoading] = useState(false);

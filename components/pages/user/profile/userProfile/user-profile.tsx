@@ -1,4 +1,4 @@
-// app/profile/UserProfileClient.tsx
+// UserProfileClient.tsx
 'use client'
 
 import React from 'react';
@@ -9,24 +9,24 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Mail, Edit, Building, LogOut, Briefcase, Info, UserCircle } from 'lucide-react';
-import { SignOut } from '@/actions/supabase/signout';
+import { SignOutButton, useClerk } from "@clerk/nextjs";
 import { useToast } from "@/components/ui/use-toast";
 
 type UserProfile = {
   id: string;
   email: string;
   name: string;
-  profile_image?: string;
+  profileImage?: string;
   role?: string;
-  phone_number?: string;
+  phoneNumber?: string;
   address?: string;
   bio?: string;
-  company_that_worked_with?: string;
+  companyThatWorkedWith?: string;
 };
 
 type CompanyProfile = {
-  company_profile_id: string;
-  // Add other company profile fields as needed
+  id?: string;
+  companyTitle?: string;
 };
 
 type UserProfileClientProps = {
@@ -36,6 +36,7 @@ type UserProfileClientProps = {
 
 const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfile, initialCompanyProfile }) => {
   const router = useRouter();
+  const { signOut } = useClerk();
   const { toast } = useToast();
 
   const handleEdit = () => {
@@ -43,15 +44,16 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
   };
 
   const handleCompanyProfileClick = () => {
-    router.push(initialCompanyProfile 
-      ? `/profile/companyprofiles/${initialCompanyProfile.company_profile_id}`
+    const companyId = initialCompanyProfile?.id;
+    router.push(companyId 
+      ? `/profile/companyprofiles/${companyId}`
       : "/profile/companyprofiles/new"
     );
   };
 
   const handleSignOut = async () => {
     try {
-      await SignOut();
+      await signOut();
       router.push('/');
       router.refresh();
     } catch (error) {
@@ -64,68 +66,71 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
     }
   };
 
-
-
-
   if (!initialUserProfile) {
     router.push('/');
   }
+
   return (
     <Card className="w-full max-w-3xl mx-auto bg-secondary/10 shadow-lg">
       <CardHeader className="relative pb-8">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
-          <Avatar className="w-24 h-24 sm:w-32 sm:h-32 ring-2 ring-primary">
-            {initialUserProfile.profile_image ? (
-              <Image 
-                src={initialUserProfile.profile_image}
-                alt={initialUserProfile.name}
-                width={128}
-                height={128}
-                className="object-cover"
-              />
-            ) : (
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {initialUserProfile.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <div className="text-center sm:text-left">
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary">{initialUserProfile.name}</h2>
-            {initialUserProfile.role && <Badge className="mt-2" variant="secondary">{initialUserProfile.role}</Badge>}
+        <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+            <Avatar className="w-24 h-24 sm:w-32 sm:h-32 ring-2 ring-primary">
+              {initialUserProfile.profileImage ? (
+                <Image 
+                  src={initialUserProfile.profileImage}
+                  alt={initialUserProfile.name}
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {initialUserProfile.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="text-center sm:text-left">
+              <h2 className="text-2xl sm:text-3xl font-bold text-primary">{initialUserProfile.name}</h2>
+              {initialUserProfile.role && <Badge className="mt-2" variant="secondary">{initialUserProfile.role}</Badge>}
+            </div>
           </div>
+          <Button 
+            onClick={handleEdit} 
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Edit Profile
+          </Button>
         </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={handleEdit} 
-          className="absolute top-4 right-4 bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          <Edit className="h-4 w-4" />
-          <span className="sr-only">Edit Profile</span>
-        </Button>
       </CardHeader>
       <CardContent className="grid gap-4 text-sm sm:text-base">
         <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.email}</span>
+          <Mail className="h-4 w-4 opacity-70" /> 
+          <span>{initialUserProfile.email}</span>
         </div>
-        {initialUserProfile.phone_number && (
+        {initialUserProfile.phoneNumber && (
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.phone_number}</span>
+            <Phone className="h-4 w-4 opacity-70" /> 
+            <span>{initialUserProfile.phoneNumber}</span>
           </div>
         )}
         {initialUserProfile.address && (
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.address}</span>
+            <MapPin className="h-4 w-4 opacity-70" /> 
+            <span>{initialUserProfile.address}</span>
           </div>
         )}
         {initialUserProfile.role && (
           <div className="flex items-center gap-2">
-            <UserCircle className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.role}</span>
+            <UserCircle className="h-4 w-4 opacity-70" /> 
+            <span>{initialUserProfile.role}</span>
           </div>
         )}
-        {initialUserProfile.company_that_worked_with && (
+        {initialUserProfile.companyThatWorkedWith && (
           <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 opacity-70" /> <span>{initialUserProfile.company_that_worked_with}</span>
+            <Briefcase className="h-4 w-4 opacity-70" /> 
+            <span>{initialUserProfile.companyThatWorkedWith}</span>
           </div>
         )}
         {initialUserProfile.bio && (
@@ -145,14 +150,16 @@ const UserProfileClient: React.FC<UserProfileClientProps> = ({ initialUserProfil
             {initialCompanyProfile ? "My Company" : "Create New Company Profile"}
           </Button>
           
-          <Button
-            onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2"
-            variant="destructive"
-          >
-            <LogOut className="w-5 h-5" />
-            Sign Out
-          </Button>
+          <SignOutButton>
+            <Button
+              onClick={handleSignOut}
+              className="w-full flex items-center justify-center gap-2"
+              variant="destructive"
+            >
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </Button>
+          </SignOutButton>
         </div>
       </CardContent>
     </Card>

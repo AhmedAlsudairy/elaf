@@ -1,17 +1,6 @@
+import { SectorEnum } from "@prisma/client";
 
-
-export enum SectorEnum {
-    Technology = 'Technology',
-    Finance = 'Finance',
-    Healthcare = 'Healthcare',
-    Education = 'Education',
-    Manufacturing = 'Manufacturing',
-    Retail = 'Retail',
-    RealEstate = 'RealEstate',
-    Transportation = 'Transportation',
-    Energy = 'Energy',
-    Entertainment = 'Entertainment',
-}
+export { SectorEnum };
 
 export enum TenderStatus {
     Open = 'open',

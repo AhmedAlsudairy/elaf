@@ -1,6 +1,5 @@
 import * as React from "react";
 import { Check, X, ChevronsUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -14,7 +13,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/shadcn/utils";
 
 export interface MultiSelectOption {
@@ -60,34 +58,46 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   return (
     <Popover open={open && !disabled} onOpenChange={setOpen} {...props}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <div
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between h-auto", className, {
-            "opacity-50 cursor-not-allowed": disabled,
-          })}
+          className={cn(
+            "flex min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-pointer",
+            className,
+            {
+              "opacity-50 cursor-not-allowed": disabled,
+            }
+          )}
           onClick={() => !disabled && setOpen(!open)}
-          disabled={disabled}
+          tabIndex={disabled ? -1 : 0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              if (!disabled) setOpen(!open);
+            }
+          }}
         >
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-1 flex-wrap flex-1">
             {selected.length > 0 ? (
               selected.map((item) => (
-                <Badge
-                  variant="default"
+                <span
                   key={item}
-                  className={cn("mr-1 mb-1 bg-primary text-primary-foreground hover:bg-primary/90", {
+                  className={cn("inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary text-primary-foreground text-sm mr-1 mb-1", {
                     "opacity-50": disabled,
                   })}
                 >
                   {options.find((option) => item === option.id)?.name}
-                  <button
-                    type="button"
-                    className={cn("ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", {
+                  <span
+                    role="button"
+                    tabIndex={disabled ? -1 : 0}
+                    className={cn("p-0 h-4 w-4 rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background hover:bg-white/20 inline-flex items-center justify-center", {
                       "cursor-not-allowed": disabled,
+                      "cursor-pointer": !disabled,
                     })}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !disabled) {
+                      if ((e.key === "Enter" || e.key === " ") && !disabled) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         handleUnselect(item);
                       }
                     }}
@@ -95,19 +105,23 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onClick={() => handleUnselect(item)}
-                    disabled={disabled}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleUnselect(item);
+                    }}
+                    aria-label={`Remove ${options.find((option) => item === option.id)?.name}`}
                   >
-                    <X className="h-3 w-3 text-white hover:text-foreground" />
-                  </button>
-                </Badge>
+                    <X className="h-3 w-3" />
+                  </span>
+                </span>
               ))
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>

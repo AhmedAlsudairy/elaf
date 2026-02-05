@@ -1,18 +1,14 @@
 
-import { fetchTenderData } from '@/actions/supabase/get-tender';
+import { fetchTenderData } from '@/actions/neon/tender/get-tender';
 import SingleTenderPage from '@/components/pages/user/tenders/requesttender/tender-single-page-client';
 
-interface PageProps {
-  params: { tenderId?: string };
-}
-
-export default async function TenderPage({ params }: PageProps) {
-  if (!params || typeof params.tenderId === 'undefined') {
+export default async function TenderPage({ params }: { params: Promise<{ tenderId: string }> }) {
+  const { tenderId } = await params;
+  
+  if (!tenderId) {
     return <div>Error: Tender ID is missing. Please check the URL.</div>;
   }
 
-  const tenderId = params.tenderId;
-  
   try {
     const { tender, company } = await fetchTenderData(tenderId);
     

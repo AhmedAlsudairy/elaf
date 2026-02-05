@@ -1,5 +1,6 @@
 import { tenderRequestSchema } from "@/components/pages/user/tenders/requesttender/request-tender-form";
-import { SectorEnum, TenderStatus } from "@/constant/text";
+import { SectorEnum } from "@prisma/client";
+import { TenderStatus } from "@/constant/text";
 import { companySchema, userProfileSchema } from "@/schema";
 import { LucideIcon } from "lucide-react";
 import { z } from "zod";
@@ -74,9 +75,9 @@ export interface FeatureCardProps {
   
   export interface ProfileHeaderProps {
     profile: {
-      company_title: string;
+      companyTitle: string;
       bio?: string;
-      profile_image?: string;
+      profileImage?: string;
     };
     isCurrentUser: boolean;
     isEditing: boolean;
@@ -89,9 +90,9 @@ export interface FeatureCardProps {
     id?: string;
     title: string;
     description: string;
-    file_url: string;
-    tab_name?: string;
-    company_profile_id?: string;
+    fileUrl: string;
+    tabName?: string;
+    companyProfileId?: string;
   }
   
   export interface CustomSectionProps {
@@ -103,7 +104,7 @@ export interface FeatureCardProps {
   
   export interface SectionTab {
   id: string;
-  tab_name: string;
+  tabName: string;
   title: string;
 }
 
@@ -137,13 +138,13 @@ export interface SearchParams {
 
 export interface Tender {
   id: string;
-  tender_id: string;
-  company_profile_id: string;
-  company_title: string;
-  profile_image: string;
-  tender_sectors: SectorEnum[];
-  created_at: string;
-  end_date: string;
+  // tenderId: string; // Redundant if id is used
+  companyProfileId: string;
+  companyTitle: string;
+  profileImage: string;
+  tenderSectors: SectorEnum[];
+  createdAt: string;
+  endDate: string;
   title: string;
   summary: string;
   status: TenderStatus;

@@ -6,20 +6,20 @@ import { format } from 'date-fns';
 interface PDFData {
   title: string;
   summary: string;
-  end_date: Date;
+  endDate: Date;
   terms: string;
-  scope_of_works: string;
-  custom_fields: Array<{ title: string; description: string }>;
-  tender_id: string;
-  content_sections: Array<{
+  scopeOfWorks: string;
+  customFields?: Array<{ title: string; description: string }>;
+  tenderId: string;
+  contentSections: Array<{
     type: 'paragraph' | 'list';
     title: string;
     content: string[];
   }>;
-  bid_price?: number;
+  bidPrice?: number;
   currency?: 'OMR' | 'EGP' | 'SAR' | 'AED';
-  company_name?: string;
-  is_tender_request?: boolean;
+  companyName?: string;
+  isTenderRequest?: boolean;
 }
 
 // Define prop types for the component
@@ -166,17 +166,17 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
     <View style={styles.header} fixed>
       <View style={styles.headerLeft}>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src={elafLogo} />
+          {elafLogo && <Image style={styles.logo} src={elafLogo} />}
         </View>
-        <Text style={styles.metaData}>Tender ID: {data.tender_id}</Text>
+        <Text style={styles.metaData}>Tender ID: {data.tenderId}</Text>
       </View>
       <View style={styles.headerRight}>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src={companyLogo} />
+          {companyLogo && <Image style={styles.logo} src={companyLogo} />}
         </View>
         <Text style={styles.metaData}>Created At: {format(new Date(), 'PPP')}</Text>
-        {data.company_name && (
-          <Text style={styles.metaData}>Company: {data.company_name}</Text>
+        {data.companyName && (
+          <Text style={styles.metaData}>Company: {data.companyName}</Text>
         )}
       </View>
     </View>
@@ -188,10 +188,10 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
         <Header />
         <Text style={styles.title}>{data.title}</Text>
 
-        {data.is_tender_request && data.bid_price !== undefined && data.currency && (
+        {data.isTenderRequest && data.bidPrice !== undefined && data.currency && (
           <View style={styles.section}>
             <Text style={styles.bidPrice}>
-              Bid Price: {data.currency} {data.bid_price.toFixed(2)}
+              Bid Price: {data.currency} {data.bidPrice.toFixed(2)}
             </Text>
           </View>
         )}
@@ -202,7 +202,7 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
         </View>
 
         {/* Custom Content Sections */}
-        {data.content_sections.map((section, index) => (
+        {data.contentSections.map((section, index) => (
           <View key={index} style={styles.section}>
             <Text style={styles.fieldTitle}>{section.title}</Text>
             {section.type === 'paragraph' ? (
@@ -220,11 +220,11 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
           </View>
         ))}
 
-        {!data.is_tender_request && (
+        {!data.isTenderRequest && (
           <>
             <View style={styles.section}>
               <Text style={styles.fieldTitle}>End Date:</Text>
-              <Text style={styles.fieldContent}>{format(data.end_date, 'PPP')}</Text>
+              <Text style={styles.fieldContent}>{format(data.endDate, 'PPP')}</Text>
             </View>
 
             <View style={styles.section}>
@@ -235,11 +235,11 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ data, companyLogo, elafLogo }
             <View style={styles.section}>
               <Text style={styles.fieldTitle}>Scope of Works:</Text>
               <View style={styles.scopeOfWorks}>
-                {renderScopeOfWorks(data.scope_of_works)}
+                {renderScopeOfWorks(data.scopeOfWorks)}
               </View>
             </View>
 
-            {data.custom_fields.map((field, index) => (
+            {data.customFields?.map((field, index) => (
               <View key={index} style={styles.section}>
                 <Text style={styles.fieldTitle}>{field.title}:</Text>
                 <Text style={styles.fieldContent}>{field.description}</Text>

@@ -1,9 +1,10 @@
 import createNextIntlPlugin from 'next-intl/plugin';
  
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
  
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    serverExternalPackages: ['@react-pdf/renderer'],
     images: {
         remotePatterns: [
           {
@@ -13,7 +14,7 @@ const nextConfig = {
           },
           {
             protocol: 'https',
-            hostname: 'rgvkvhrkuimkkmtqxtim.supabase.co',
+            hostname: '*.public.blob.vercel-storage.com',  
             pathname: '/**',
           },
         ],

@@ -1,5 +1,5 @@
 import Posts from "@/components/pages/user/posts/posts-page";
-import { createClient } from "@/lib/utils/supabase/server";
+import { prisma } from '@/lib/prisma'
 import { redirect } from "next/navigation";
 
 

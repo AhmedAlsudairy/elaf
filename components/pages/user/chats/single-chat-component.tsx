@@ -22,9 +22,9 @@ import {
   Menu,
   Loader2,
 } from "lucide-react";
-import { fetchTenderData } from "@/actions/supabase/get-tender";
+import { fetchTenderData } from "@/actions/neon/tender/get-tender";
 import PDFUpload from "@/components/common/pdf-upload";
-import { getReadStatus, sendMessage, getMessages } from "@/actions/supabase/chats";
+import { sendMessage, getMessages } from "@/actions/neon/chat/chats";
 import { useQuery } from '@tanstack/react-query';
 import { useSubscribeToChat } from "@/hooks/messages subs-hook";
 
@@ -94,10 +94,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const { data: readStatus } = useQuery({
-    queryKey: ['readStatus'],
-    queryFn: getReadStatus
-  });
+
 
   const newMessages = useSubscribeToChat(chatRoomId);
 
@@ -112,22 +109,31 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     setAllMessages(initialMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
   }, [initialMessages]);
 
-  useEffect(() => {
-    const fetchChatRoomDetails = async () => {
-      if (allMessages.length > 0 && !chatRoomDetails) {
-        try {
-          const result = await getMessages(chatRoomId, 1, 0);
-          if (result.chatRoomDetails) {
-            setChatRoomDetails(result.chatRoomDetails);
-          }
-        } catch (error) {
-          console.error("Error fetching chat room details:", error);
-        }
-      }
-    };
+        useEffect(() => {
+          const fetchChatRoomDetails = async () => {
+            if (!chatRoomDetails) {  // Remove the allMessages.length check
+              try {
+                const result = await getMessages(chatRoomId, 1, 0);
+                if (result.chatRoomDetails) {
+                  setChatRoomDetails({
+                    id: result.chatRoomDetails.id,
+                    tender_id: result.chatRoomDetails.tenderId,
+                    initiator_company_profile_id: result.chatRoomDetails.initiatorCompanyProfileId,
+                    recipient_company_profile_id: result.chatRoomDetails.recipientCompanyProfileId,
+                    initiator_company_title: result.chatRoomDetails.initiator_company_title,
+                    initiator_company_image: result.chatRoomDetails.initiator_company_image,
+                    recipient_company_title: result.chatRoomDetails.recipient_company_title,
+                    recipient_company_image: result.chatRoomDetails.recipient_company_image,
+                  });
+                }
+              } catch (error) {
+                console.error("Error fetching chat room details:", error);
+              }
+            }
+          };
 
-    fetchChatRoomDetails();
-  }, [allMessages, chatRoomId, chatRoomDetails]);
+          fetchChatRoomDetails();
+        }, [chatRoomId, chatRoomDetails]);  // Changed dependency from allMessages to chatRoomId
 
   const lastTenderMessage = useMemo(() => {
     return [...allMessages].reverse().find(message => message.tender_id !== null);
@@ -138,7 +144,14 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
       if (lastTenderMessage?.tender_id) {
         try {
           const result = await fetchTenderData(lastTenderMessage.tender_id);
-          setTenderInfo(result.tender);
+          if (result.tender) {
+            setTenderInfo({
+              tender_id: result.tender.id,
+              title: result.tender.title,
+              status: "Active",
+              end_date: result.tender.endDate ? new Date(result.tender.endDate).toISOString() : null,
+            });
+          }
         } catch (error) {
           console.error("Error fetching tender info:", error);
         }
@@ -152,47 +165,71 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [allMessages]);
 
-  const handleSendMessage = async () => {
-    if ((!newMessage.trim() && pdfUrls.length === 0) || !chatRoomDetails || !currentCompanyProfile) return;
 
-    setIsSendingMessage(true);
+  //debugging!
+const handleSendMessage = async () => {
+  console.log('1. Starting handleSendMessage');
+  console.log('2. newMessage:', newMessage);
+  console.log('3. pdfUrls:', pdfUrls);
+  console.log('4. chatRoomDetails:', chatRoomDetails);
+  console.log('5. currentCompanyProfile:', currentCompanyProfile);
 
-    const receiverCompanyProfileId =
-      chatRoomDetails.initiator_company_profile_id === currentCompanyProfile.company_profile_id
-        ? chatRoomDetails.recipient_company_profile_id
-        : chatRoomDetails.initiator_company_profile_id;
+  if ((!newMessage.trim() && pdfUrls.length === 0) || !chatRoomDetails || !currentCompanyProfile) {
+    console.log('6. EARLY RETURN - condition failed');
+    return;
+  }
 
-    try {
-      const result = await sendMessage(
-        chatRoomId,
-        newMessage,
-        currentCompanyProfile.company_profile_id,
-        receiverCompanyProfileId,
-        undefined,
-        undefined,
-        pdfUrls[0]
-      );
-      if (result && result.success && result.data) {
-        setNewMessage("");
-        setPdfUrls([]);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to send message",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error);
+  console.log('7. Passed validation, setting isSendingMessage to true');
+  setIsSendingMessage(true);
+
+        const receiverCompanyProfileId =
+          chatRoomDetails.initiator_company_profile_id === currentCompanyProfile.company_profile_id
+            ? chatRoomDetails.recipient_company_profile_id
+            : chatRoomDetails.initiator_company_profile_id;
+
+  console.log('8. receiverCompanyProfileId:', receiverCompanyProfileId);
+
+  try {
+    console.log('9. Calling sendMessage...');
+
+    const result = await sendMessage(
+      chatRoomId,
+      newMessage,
+      currentCompanyProfile.company_profile_id,
+      receiverCompanyProfileId,
+      undefined,
+      undefined,
+      pdfUrls[0]
+    );
+
+    console.log('10. sendMessage result:', result);
+
+    if (result && result.success && result.data) {
+      console.log('11. Message sent successfully. Clearing inputs.');
+      setNewMessage("");
+      setPdfUrls([]);
+    } else {
+      console.log('12. ERROR: sendMessage returned failure');
       toast({
         title: "Error",
-        description: "Unexpected error sending message",
+        description: "Failed to send message",
         variant: "destructive",
       });
-    } finally {
-      setIsSendingMessage(false);
     }
-  };
+
+  } catch (error) {
+    console.log('13. Unexpected error:', error);
+    toast({
+      title: "Error",
+      description: "Unexpected error sending message",
+      variant: "destructive",
+    });
+  } finally {
+    console.log('14. Finished handleSendMessage, resetting isSendingMessage');
+    setIsSendingMessage(false);
+  }
+};
+
 
   const getOtherCompanyDetails = useCallback(() => {
     if (!chatRoomDetails || !currentCompanyProfile) return null;
@@ -262,7 +299,7 @@ const ChatRoomComponent: React.FC<ChatRoomComponentProps> = ({
               )}
             </div>
             <div className="flex items-center mt-1 text-xs text-gray-500">
-              <span>{message.sender_name}</span>
+              <span>{message.sender_name || message.company_title || 'Unknown'}</span>
               <span className="mx-1">•</span>
               <span>{format(new Date(message.created_at), "HH:mm")}</span>
             </div>

@@ -85,4 +85,18 @@ export async function addCompany(data: CompanyFormData) {
     revalidatePath('/profile')
     revalidatePath('/chats')
 
-    return { success: true, data: company }
+    return { success: true, data: company }  } catch (error) {
+    console.error('Error creating company:', error)
+
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error:
+          'Invalid form data: ' +
+          error.errors.map((e) => e.message).join(', '),
+      }
+    }
+
+    return { success: false, error: 'Failed to create company profile' }
+  }
+}

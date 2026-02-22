@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { pusherServer } from "@/lib/pusher-server";
 
-const prisma = new PrismaClient();
+
 
 // GET /api/socialMedia/posts/[id]/comments
 export async function GET(

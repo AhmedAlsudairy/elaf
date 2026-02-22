@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient, NotificationType } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { pusherServer } from "@/lib/pusher";
 
-const prisma = new PrismaClient();
+
 
 // GET /api/notifications - fetch all notifications for the logged-in user
 export async function GET() {

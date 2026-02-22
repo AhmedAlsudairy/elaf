@@ -61,7 +61,7 @@ export async function POST(
 
     const userProfile = await prisma.userProfile.findUnique({
       where: { clerkUserId: userId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     if (!userProfile) {

@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { pusherServer } from "@/lib/pusher";
-
-
 
 // GET /api/notifications - fetch all notifications for the logged-in user
 export async function GET() {
@@ -14,7 +11,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Find the logged-in user's profile
     const userProfile = await prisma.userProfile.findUnique({
       where: { clerkUserId: userId },
       select: { id: true },
@@ -24,13 +20,10 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Fetch notifications, newest first
     const notifications = await prisma.notification.findMany({
       where: { userId: userProfile.id },
       include: {
-        actor: { select: { id: true, name: true, profileImage: true } },
-        post: { select: { id: true, content: true } },
-        comment: { select: { id: true, content: true } },
+        user: { select: { id: true, name: true, profileImage: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -49,12 +42,13 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const { userId } = await auth();
-    const body = await request.json();
-    const { notificationIds }: { notificationIds: string[] } = body;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const body = await request.json();
+    const { notificationIds }: { notificationIds: string[] } = body;
 
     if (!notificationIds || notificationIds.length === 0) {
       return NextResponse.json(
@@ -63,7 +57,6 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Update notifications to read
     const updatedNotifications = await prisma.notification.updateMany({
       where: { id: { in: notificationIds }, userId },
       data: { read: true },

@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CreatePostModal from "@/components/pages/socialmedia/CreatePostModal";
 import FeedList from "@/components/pages/socialmedia/FeedList";
 import { useUser } from "@clerk/nextjs";
+import SuggestedCompanies from "@/components/pages/socialmedia/SuggestedCompanies";
 
 type FeedType = "fyp" | "following" | "news";
 
@@ -89,23 +90,7 @@ export default function SocialMediaPage() {
       {/* Right Sidebar - Suggested Accounts */}
       <div className="w-80 bg-white border-l border-gray-200 p-6 hidden xl:block sticky top-0 h-screen overflow-y-auto">
         <h3 className="text-lg font-semibold mb-6">Suggested Accounts</h3>
-        <div className="space-y-4">
-          {/* TODO: Fetch and display suggested companies */}
-          {[1, 2, 3, 4, 5].map((item) => (
-            <div key={item} className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
-                <AvatarFallback>TC</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">FAKE  Company  {item}</p>
-                <p className="text-xs text-gray-500">Technology</p>
-              </div>
-              <Button size="sm" variant="outline">
-                Follow
-              </Button>
-            </div>
-          ))}
-        </div>
+        <SuggestedCompanies />
       </div>
 
       {/* Create Post Modal */}

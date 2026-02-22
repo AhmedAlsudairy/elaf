@@ -17,6 +17,16 @@ const nextConfig = {
             hostname: '*.public.blob.vercel-storage.com',  
             pathname: '/**',
           },
+                    {
+            protocol: 'https',
+            hostname: 'img.clerk.com',
+            pathname: '/**',
+          },
+          {
+            protocol: 'https',
+            hostname: 'images.clerk.dev',
+            pathname: '/**',
+          },
         ],
       },
     }
